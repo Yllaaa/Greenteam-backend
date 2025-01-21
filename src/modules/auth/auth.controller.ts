@@ -19,15 +19,28 @@ import { GoogleAuthGuard } from './guards/google-auth.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  private setAuthCookie(res: Response, token: string) {
+    res.cookie('accessToken', token, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000 * 90,
+      sameSite: 'lax',
+    });
+  }
+
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+    const response = await this.authService.register(registerDto);
+    this.setAuthCookie(res, response?.accessToken);
+    return res.json(response);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+    const response = await this.authService.login(loginDto);
+    this.setAuthCookie(res, response?.accessToken);
+    return res.json(response);
   }
 
   @Get('google/login')
@@ -39,7 +52,9 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const user = req.user;
     const response = await this.authService.googleLogin(user);
-    res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
+    this.setAuthCookie(res, response?.accessToken);
+
+    res.redirect(`${process.env.APP_URL}`);
   }
 
   @UseGuards(AuthGuard('jwt'))
