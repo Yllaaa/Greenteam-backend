@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { DrizzleModule } from './modules/db/drizzle.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { CommonModule } from './modules/common/common.module';
 
 @Global()
 @Module({
@@ -13,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -12,6 +12,11 @@ async function bootstrap() {
     }),
   );
   app.setGlobalPrefix('api/v1');
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
   await app.listen(3000);
 }
 bootstrap();
