@@ -8,12 +8,14 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { AuthRepository } from './auth.repository';
 import { LoginDto, RegisterDto } from './dtos/auth.dto';
-
+import { MailService } from '../common/mail/mail.service';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private authRepository: AuthRepository,
+    private mailService: MailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -46,11 +48,21 @@ export class AuthService {
 
     const hashedPassword = await argon2.hash(registerDto.password);
 
+    const verificationToken = uuidv4();
+
     const newUser = {
+      id: uuidv4(),
       email: registerDto.email,
       password: hashedPassword,
       username: registerDto.username,
+      isVerified: false,
+      verificationToken,
     };
+
+    await this.mailService.sendVerificationEmail(
+      registerDto.email,
+      verificationToken,
+    );
 
     await this.authRepository.createUser(newUser);
 
@@ -129,5 +141,32 @@ export class AuthService {
       },
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async verifyEmail(token: string) {
+    const user = await this.authRepository.checkUserVerification(token);
+    if (!user) {
+      throw new UnauthorizedException('Invalid verification token');
+    }
+    const UpdatedUser = await this.authRepository.verifyEmail(user.id);
+    return { message: 'Email verified successfully', user: UpdatedUser };
+  }
+
+  async resendVerificationEmail(email: string) {
+    const user = await this.authRepository.getUserByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user[0].isEmailVerified) {
+      throw new ConflictException('Email already verified');
+    }
+    const verificationToken = uuidv4();
+
+    await this.authRepository.resendVerificationEmail(email, verificationToken);
+
+    await this.mailService.sendVerificationEmail(email, verificationToken);
+
+    return { message: 'Verification email sent' };
   }
 }

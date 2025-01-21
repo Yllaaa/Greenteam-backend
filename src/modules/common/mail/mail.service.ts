@@ -21,24 +21,24 @@ export class MailService {
     const verificationUrl = `${process.env.APP_URL}/auth/verify/${token}`;
 
     const mailOptions = {
-      from: '"Your App" <noreply@greenteam.com>',
+      from: '"Greenteam" <noreply@greenteam.com>',
       to: email,
       subject: 'Please verify your email',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
           <h2>Welcome to Your App!</h2>
-          <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
+          <p>Thank you for joining Greenteam. Please verify your email address by clicking the button below:</p>
           <div style="margin: 20px 0;">
             <a href="${verificationUrl}" 
-               style="background-color: #4CAF50; color: white; padding: 10px 20px; 
+               style="background-color: #006633; color: white; padding: 10px 20px; 
                       text-decoration: none; border-radius: 5px;">
-              Verify Email
+              Verify Your Email
             </a>
           </div>
           <p>Or copy and paste this link in your browser:</p>
           <p>${verificationUrl}</p>
           <p>If you didn't create an account, please ignore this email.</p>
-          <p>Best regards,<br>Your App Team</p>
+          <p>Best regards,<br>Greenteam Team</p>
         </div>
       `,
     };

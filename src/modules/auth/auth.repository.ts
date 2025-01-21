@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import { users } from '../db/schemas/users';
 import { eq } from 'drizzle-orm';
 import { User } from './interfaces/user.interface';
-
+import { v4 as uuidv4 } from 'uuid';
+import { isEmail } from 'class-validator';
 @Injectable()
 export class AuthRepository {
   constructor(private drizzle: DrizzleService) {}
@@ -46,6 +47,7 @@ export class AuthRepository {
         email: true,
         fullName: true,
         googleId: true,
+        isEmailVerified: true,
       },
     });
   }
@@ -77,14 +79,54 @@ export class AuthRepository {
         avatar: newUser.avatar ?? null,
         googleId: newUser.googleId ?? null,
         isEmailVerified: newUser.isEmailVerified ?? false,
+        verificationToken: newUser.verificationToken ?? null,
       })
       .returning({
         id: users.id,
         email: users.email,
         fullName: users.fullName,
         googleId: users.googleId,
+        isEmailVerified: users.isEmailVerified,
       });
 
     return createdUser;
+  }
+
+  // email verification
+
+  async checkUserVerification(token: string) {
+    const user = await this.drizzle.db
+      .select()
+      .from(users)
+      .where(eq(users.verificationToken, token))
+      .limit(1);
+    console.log(user);
+    return user[0];
+  }
+
+  async verifyEmail(userId) {
+    await this.drizzle.db
+      .update(users)
+      .set({
+        isEmailVerified: true,
+        verificationToken: null,
+      })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        email: users.email,
+        fullName: users.fullName,
+        username: users.username,
+        avatar: users.avatar,
+        bio: users.bio,
+      });
+  }
+
+  async resendVerificationEmail(email: string, verificationToken: string) {
+    await this.drizzle.db
+      .update(users)
+      .set({ verificationToken })
+      .where(eq(users.email, email));
+    return { message: 'Verification email sent' };
   }
 }

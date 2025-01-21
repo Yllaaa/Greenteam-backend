@@ -36,9 +36,7 @@ export const users = pgTable(
     isEmailVerified: boolean('is_email_verified').default(false),
     verificationToken: varchar('verification_token', { length: 255 }),
     joinedAt: timestamp('joined_at').defaultNow(),
-    updatedAt: timestamp('updated_at')
-      .defaultNow()
-      .$onUpdate(() => sql`(now() AT TIME ZONE 'utc'::text)`),
+    updatedAt: timestamp('updated_at').defaultNow(),
   },
   (table) => {
     return {

@@ -8,6 +8,7 @@ import { DrizzleService } from '../db/drizzle.service';
 import { AuthRepository } from './auth.repository';
 import { AuthController } from './auth.controller';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { MailModule } from '../common/mail/mail.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
       }),
       inject: [ConfigService],
     }),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [
