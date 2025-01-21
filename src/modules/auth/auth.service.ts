@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -16,22 +17,34 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const existingUser = await this.authRepository.getUserByEmail(
+    const validUsernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!validUsernameRegex.test(registerDto.username)) {
+      throw new BadRequestException(
+        'Username must be 3-30 characters long and can only contain letters, numbers, and underscores',
+      );
+    }
+    const reservedUsernames = ['greenteam', 'admin', 'root'];
+    if (reservedUsernames.includes(registerDto.username.toLowerCase())) {
+      throw new BadRequestException('Username is not allowed');
+    }
+
+    const existingEmail = await this.authRepository.getUserByEmail(
       registerDto.email,
     );
 
-    if (existingUser[0]) {
-      throw new ConflictException('User already exists');
+    if (existingEmail[0]) {
+      throw new ConflictException('Email already in use');
+    }
+
+    const existingUsername = await this.authRepository.getUserByUsername(
+      registerDto.username,
+    );
+
+    if (existingUsername[0]) {
+      throw new ConflictException('Username already in use');
     }
 
     const hashedPassword = await argon2.hash(registerDto.password);
-
-    const validUsernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!validUsernameRegex.test(registerDto.username)) {
-      throw new Error(
-        'Username can only contain letters, numbers, and underscores',
-      );
-    }
 
     const newUser = {
       email: registerDto.email,
@@ -46,7 +59,6 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { identifier, password } = loginDto;
-
     if (!identifier || !password) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -56,7 +68,7 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private generateToken(user: any) {
+  generateToken(user: any) {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -72,7 +84,7 @@ export class AuthService {
         avatar: user.avatar,
         bio: user.bio,
       },
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 
@@ -99,13 +111,22 @@ export class AuthService {
     if (!user[0]) {
       const newUser = {
         email: profile.email,
-        fullName: profile.name,
+        fullName: profile.fullName,
         googleId: profile.googleId,
+        password: await argon2.hash(profile.id + process.env.SECRET),
+        avatar: profile.picture,
       };
 
-      await this.authRepository.createUser(newUser);
-
-      return this.generateToken(user[0]);
+      user = await this.authRepository.createUser(newUser);
     }
+
+    return this.generateToken(user[0]);
+  }
+
+  async validateJwtUser(userId: string) {
+    const user = await this.authRepository.getUserById(userId);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const currentUser = { id: user.id, email: user.email };
+    return currentUser;
   }
 }

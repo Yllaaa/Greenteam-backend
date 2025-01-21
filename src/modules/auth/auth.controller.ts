@@ -13,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { LoginDto, RegisterDto } from './dtos/auth.dto';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -29,16 +30,16 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @Get('google/login')
+  @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const user = req.user;
-    const jwt = await this.authService.login(user);
-    res.redirect(`http://your-frontend-url.com?token=${jwt.access_token}`);
+    const response = await this.authService.googleLogin(user);
+    res.redirect(`http://localhost:3000?token=${response?.accessToken}`);
   }
 
   @UseGuards(AuthGuard('jwt'))
