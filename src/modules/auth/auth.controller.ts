@@ -39,7 +39,7 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const user = req.user;
     const response = await this.authService.googleLogin(user);
-    res.redirect(`http://localhost:3000?token=${response?.accessToken}`);
+    res.redirect(`${process.env.FRONTEND_URL}?token=${response?.accessToken}`);
   }
 
   @UseGuards(AuthGuard('jwt'))
