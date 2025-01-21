@@ -129,4 +129,37 @@ export class AuthRepository {
       .where(eq(users.email, email));
     return { message: 'Verification email sent' };
   }
+
+  async forgotPassword(
+    id: string,
+    hashedToken: string | null,
+    resetExpires: Date | null,
+  ) {
+    await this.drizzle.db
+      .update(users)
+      .set({
+        passwordResetToken: hashedToken,
+        passwordResetTokenExpires: resetExpires,
+      })
+      .where(eq(users.id, id));
+  }
+
+  async getUserByResetToken(hashedToken: string) {
+    return await this.drizzle.db
+      .select()
+      .from(users)
+      .where(eq(users.passwordResetToken, hashedToken))
+      .limit(1);
+  }
+
+  async resetPassword(id: string, hashedPassword: string) {
+    await this.drizzle.db
+      .update(users)
+      .set({
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetTokenExpires: null,
+      })
+      .where(eq(users.id, id));
+  }
 }

@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { LoginDto, RegisterDto } from './dtos/auth.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -75,9 +76,16 @@ export class AuthController {
     return this.authService.resendVerificationEmail(email);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get('me')
-  getProfile(@Req() req) {
-    return req.user;
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Post('reset-password/:token')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Param('token') token: string,
+  ) {
+    return this.authService.resetPassword(resetPasswordDto, token);
   }
 }
