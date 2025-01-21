@@ -1,0 +1,132 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as argon2 from 'argon2';
+import { AuthRepository } from './auth.repository';
+import { LoginDto, RegisterDto } from './dtos/auth.dto';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private jwtService: JwtService,
+    private authRepository: AuthRepository,
+  ) {}
+
+  async register(registerDto: RegisterDto) {
+    const validUsernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!validUsernameRegex.test(registerDto.username)) {
+      throw new BadRequestException(
+        'Username must be 3-30 characters long and can only contain letters, numbers, and underscores',
+      );
+    }
+    const reservedUsernames = ['greenteam', 'admin', 'root'];
+    if (reservedUsernames.includes(registerDto.username.toLowerCase())) {
+      throw new BadRequestException('Username is not allowed');
+    }
+
+    const existingEmail = await this.authRepository.getUserByEmail(
+      registerDto.email,
+    );
+
+    if (existingEmail[0]) {
+      throw new ConflictException('Email already in use');
+    }
+
+    const existingUsername = await this.authRepository.getUserByUsername(
+      registerDto.username,
+    );
+
+    if (existingUsername[0]) {
+      throw new ConflictException('Username already in use');
+    }
+
+    const hashedPassword = await argon2.hash(registerDto.password);
+
+    const newUser = {
+      email: registerDto.email,
+      password: hashedPassword,
+      username: registerDto.username,
+    };
+
+    await this.authRepository.createUser(newUser);
+
+    return this.generateToken(newUser);
+  }
+
+  async login(loginDto: LoginDto) {
+    const { identifier, password } = loginDto;
+    if (!identifier || !password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const user = await this.validateUser(identifier, password);
+
+    return this.generateToken(user);
+  }
+
+  generateToken(user: any) {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+    };
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: user.fullName,
+        avatar: user.avatar,
+        bio: user.bio,
+      },
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  async validateUser(identifier: string, password: string) {
+    let user;
+
+    const isEmail = identifier.includes('@');
+    const field = isEmail ? 'email' : 'username';
+
+    user = await this.authRepository.validateUser(field, identifier);
+
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    const isPasswordValid = await argon2.verify(user.password, password);
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid credentials');
+
+    return user;
+  }
+
+  async googleLogin(profile: any) {
+    let user = await this.authRepository.getUserByEmail(profile.email);
+
+    if (!user[0]) {
+      const newUser = {
+        email: profile.email,
+        fullName: profile.fullName,
+        googleId: profile.googleId,
+        password: await argon2.hash(profile.id + process.env.SECRET),
+        avatar: profile.picture,
+      };
+
+      user = await this.authRepository.createUser(newUser);
+    }
+
+    return this.generateToken(user[0]);
+  }
+
+  async validateJwtUser(userId: string) {
+    const user = await this.authRepository.getUserById(userId);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const currentUser = { id: user.id, email: user.email };
+    return currentUser;
+  }
+}
