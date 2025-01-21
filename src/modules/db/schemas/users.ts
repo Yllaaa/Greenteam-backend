@@ -34,6 +34,7 @@ export const users = pgTable(
     passwordResetTokenExpires: timestamp('password_reset_token_expires'),
     status: userStatus().default('ACTIVE'),
     isEmailVerified: boolean('is_email_verified').default(false),
+    verificationToken: varchar('verification_token', { length: 255 }),
     joinedAt: timestamp('joined_at').defaultNow(),
     updatedAt: timestamp('updated_at')
       .defaultNow()

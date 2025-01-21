@@ -76,6 +76,7 @@ export class AuthRepository {
           : newUser.email.split('@')[0],
         avatar: newUser.avatar ?? null,
         googleId: newUser.googleId ?? null,
+        isEmailVerified: newUser.isEmailVerified ?? false,
       })
       .returning({
         id: users.id,

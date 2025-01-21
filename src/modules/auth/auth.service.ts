@@ -68,26 +68,6 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  generateToken(user: any) {
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      username: user.username,
-    };
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        fullName: user.fullName,
-        avatar: user.avatar,
-        bio: user.bio,
-      },
-      accessToken: this.jwtService.sign(payload),
-    };
-  }
-
   async validateUser(identifier: string, password: string) {
     let user;
 
@@ -115,6 +95,7 @@ export class AuthService {
         googleId: profile.googleId,
         password: await argon2.hash(profile.id + process.env.SECRET),
         avatar: profile.picture,
+        isEmailVerified: true,
       };
 
       user = await this.authRepository.createUser(newUser);
@@ -128,5 +109,25 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('User not found!');
     const currentUser = { id: user.id, email: user.email };
     return currentUser;
+  }
+
+  generateToken(user: any) {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+    };
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: user.fullName,
+        avatar: user.avatar,
+        bio: user.bio,
+      },
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 }
