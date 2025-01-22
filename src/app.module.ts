@@ -5,6 +5,7 @@ import { DrizzleModule } from './modules/db/drizzle.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from './modules/common/common.module';
+import { PagesModule } from './modules/pages/pages.module';
 
 @Global()
 @Module({
@@ -15,6 +16,7 @@ import { CommonModule } from './modules/common/common.module';
       isGlobal: true,
     }),
     CommonModule,
+    PagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

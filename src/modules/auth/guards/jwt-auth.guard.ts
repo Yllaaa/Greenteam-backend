@@ -6,7 +6,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { DrizzleService } from '../../db/drizzle.service';
-import { users } from '../../db/schemas/users';
+import { users } from '../../db/schemas/users/users';
 import { eq } from 'drizzle-orm';
 
 @Injectable()
