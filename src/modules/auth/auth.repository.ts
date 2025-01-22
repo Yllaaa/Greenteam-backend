@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
-import { users } from '../db/schemas/users';
+import { users } from '../db/schemas/users/users';
 import { eq } from 'drizzle-orm';
 import { User } from './interfaces/user.interface';
 import { v4 as uuidv4 } from 'uuid';
