@@ -46,7 +46,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     const response = await this.authService.login(loginDto);
     this.setAuthCookie(res, response?.accessToken);
-    return response;
+    res.json(response);
   }
 
   @Get('google/login')
