@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from './modules/common/common.module';
 import { PagesModule } from './modules/pages/pages.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Global()
 @Module({
@@ -17,6 +18,7 @@ import { PagesModule } from './modules/pages/pages.module';
     }),
     CommonModule,
     PagesModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
