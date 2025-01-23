@@ -105,7 +105,7 @@ export class AuthRepository {
   }
 
   async verifyEmail(userId) {
-    await this.drizzle.db
+    return await this.drizzle.db
       .update(users)
       .set({
         isEmailVerified: true,
@@ -153,13 +153,21 @@ export class AuthRepository {
   }
 
   async resetPassword(id: string, hashedPassword: string) {
-    await this.drizzle.db
+    return await this.drizzle.db
       .update(users)
       .set({
         password: hashedPassword,
         passwordResetToken: null,
         passwordResetTokenExpires: null,
       })
-      .where(eq(users.id, id));
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        email: users.email,
+        fullName: users.fullName,
+        username: users.username,
+        avatar: users.avatar,
+        bio: users.bio,
+      });
   }
 }

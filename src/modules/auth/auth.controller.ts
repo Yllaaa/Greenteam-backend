@@ -64,8 +64,10 @@ export class AuthController {
   }
 
   @Get('verify/:token')
-  async verifyEmail(@Param('token') token: string) {
-    return this.authService.verifyEmail(token);
+  async verifyEmail(@Param('token') token: string, @Res() res: Response) {
+    const response = await this.authService.verifyEmail(token);
+    this.setAuthCookie(res, response?.accessToken);
+    res.json(response);
   }
 
   @Post('resend-verification')
@@ -85,7 +87,13 @@ export class AuthController {
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
     @Param('token') token: string,
+    @Res() res: Response,
   ) {
-    return this.authService.resetPassword(resetPasswordDto, token);
+    const response = await this.authService.resetPassword(
+      resetPasswordDto,
+      token,
+    );
+    this.setAuthCookie(res, response?.accessToken);
+    res.json(response);
   }
 }

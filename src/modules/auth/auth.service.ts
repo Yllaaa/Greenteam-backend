@@ -154,7 +154,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid verification token');
     }
     const UpdatedUser = await this.authRepository.verifyEmail(user.id);
-    return { message: 'Email verified successfully', user: UpdatedUser };
+    const payload = {
+      sub: UpdatedUser[0].id,
+      email: UpdatedUser[0].email,
+      username: UpdatedUser[0].username,
+    };
+
+    return {
+      message: 'Email verified successfully',
+      user: UpdatedUser,
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 
   async resendVerificationEmail(email: string) {
@@ -240,8 +250,20 @@ export class AuthService {
 
     const hashedPassword = await argon2.hash(resetPasswordDto.password);
 
-    await this.authRepository.resetPassword(user[0].id, hashedPassword);
+    const updatedUser = await this.authRepository.resetPassword(
+      user[0].id,
+      hashedPassword,
+    );
 
-    return { message: 'Password has been reset successfully' };
+    const payload = {
+      sub: updatedUser[0].id,
+      email: updatedUser[0].email,
+      username: updatedUser[0].username,
+    };
+
+    return {
+      message: 'Password has been reset successfully',
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 }
