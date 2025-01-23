@@ -26,26 +26,23 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-
-    const requiresVerification = this.reflector.getAllAndOverride<boolean>(
-      'requiresVerification',
-      [context.getHandler(), context.getClass()],
-    );
-
-    if (!requiresVerification) {
-      return true;
-    }
-
-    const dbUser = await this.drizzle.db
-      .select()
+    const savedUser = await this.drizzle.db
+      .select({
+        id: users.id,
+        isEmailVerified: users.isEmailVerified,
+        email: users.email,
+        username: users.username,
+        status: users.status,
+      })
       .from(users)
-      .where(eq(users.id, user.sub))
+      .where(eq(users.id, user.id))
       .limit(1);
 
-    if (!dbUser[0]?.isEmailVerified) {
+    if (!savedUser[0]?.isEmailVerified) {
       throw new UnauthorizedException('Please verify your email');
     }
 
+    request.user = savedUser[0];
     return true;
   }
 }
