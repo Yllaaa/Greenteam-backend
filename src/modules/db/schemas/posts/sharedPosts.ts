@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  timestamp,
-  foreignKey,
-  index,
-} from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core';
 import { posts } from './posts';
 import { creatorTypeEnum, sharedEntityTypeEnum } from './enums';
 import { relations } from 'drizzle-orm';
@@ -21,6 +13,7 @@ export const sharedPosts = pgTable(
       .unique(),
     sharedEntityType: sharedEntityTypeEnum('shared_entity_type').notNull(),
     sharedEntityId: uuid('shared_entity_id').notNull(),
+    content: text('content'),
     sharedByType: creatorTypeEnum('shared_by_type').notNull(),
     sharedById: uuid('shared_by_id').notNull(),
     sharedAt: timestamp('shared_at').defaultNow().notNull(),

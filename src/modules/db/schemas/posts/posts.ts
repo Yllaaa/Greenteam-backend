@@ -9,6 +9,7 @@ import { users } from '../users/users';
 import { relations } from 'drizzle-orm';
 import { polls } from './polls';
 import { postSubTopics, topics } from '../topics/topics';
+import { comments } from './comments-likes';
 
 export const posts = pgTable('posts', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -42,6 +43,7 @@ export const postsRelations = relations(posts, ({ many, one }) => ({
     fields: [posts.creatorId],
     references: [users.id],
   }),
+  comments: many(comments),
 }));
 
 export const mediaRelations = relations(media, ({ one }) => ({
