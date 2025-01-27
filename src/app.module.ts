@@ -8,6 +8,7 @@ import { CommonModule } from './modules/common/common.module';
 import { PagesModule } from './modules/pages/pages.module';
 import { EventsModule } from './modules/events/events.module';
 import { UsersModule } from './modules/users/users.module';
+import { SharedModulesModule } from './modules/shared-modules/shared-modules.module';
 
 @Global()
 @Module({
@@ -21,6 +22,7 @@ import { UsersModule } from './modules/users/users.module';
     PagesModule,
     EventsModule,
     UsersModule,
+    SharedModulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
