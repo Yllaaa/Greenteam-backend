@@ -1,1 +1,0 @@
-ALTER TABLE "Users_accounts" ADD COLUMN "verification_token" varchar(255);
