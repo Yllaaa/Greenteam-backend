@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { UsersRepository } from './users.repository';
-import { DrizzleModule } from '../db/drizzle.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../database/entities/users/users.entity';
 
 @Module({
-  imports: [DrizzleModule],
+  imports: [TypeOrmModule.forFeature([User])],
   providers: [UsersService, UsersRepository],
   controllers: [UsersController],
 })

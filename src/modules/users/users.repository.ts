@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { DrizzleService } from '../db/drizzle.service';
-import { users } from '../db/schemas/schema';
-import { eq } from 'drizzle-orm';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../database/entities/users/users.entity';
+
 @Injectable()
 export class UsersRepository {
-  constructor(private drizzle: DrizzleService) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   async getMe(userId: string) {
-    return await this.drizzle.db.query.users.findFirst({
-      where: eq(users.id, userId),
-      columns: {
+    return await this.userRepository.findOne({
+      where: { id: userId },
+      select: {
         id: true,
         email: true,
         fullName: true,
         username: true,
         avatar: true,
         bio: true,
+        isEmailVerified: true,
       },
     });
   }
 
   async deleteUser(userId: string) {
-    return await this.drizzle.db.delete(users).where(eq(users.id, userId));
+    return await this.userRepository.delete(userId);
   }
 }

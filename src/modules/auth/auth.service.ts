@@ -37,7 +37,7 @@ export class AuthService {
       registerDto.email,
     );
 
-    if (existingEmail[0]) {
+    if (existingEmail) {
       throw new ConflictException('Email already in use');
     }
 
@@ -45,7 +45,7 @@ export class AuthService {
       registerDto.username,
     );
 
-    if (existingUsername[0]) {
+    if (existingUsername) {
       throw new ConflictException('Username already in use');
     }
 
@@ -58,7 +58,7 @@ export class AuthService {
       email: registerDto.email,
       password: hashedPassword,
       username: registerDto.username,
-      isVerified: false,
+      isEmailVerified: false,
       verificationToken,
     };
 
@@ -85,7 +85,6 @@ export class AuthService {
 
   async validateUser(identifier: string, password: string) {
     let user;
-
     const isEmail = identifier.includes('@');
     const field = isEmail ? 'email' : 'username';
 
@@ -103,7 +102,7 @@ export class AuthService {
   async googleLogin(profile: any) {
     let user = await this.authRepository.getUserByEmail(profile.email);
 
-    if (!user[0]) {
+    if (!user) {
       const newUser = {
         email: profile.email,
         fullName: profile.fullName,
@@ -116,16 +115,16 @@ export class AuthService {
       user = await this.authRepository.createUser(newUser);
     }
 
-    return this.generateToken(user[0]);
+    return this.generateToken(user);
   }
 
   async validateJwtUser(userId: string) {
     const user = await this.authRepository.getUserById(userId);
-    if (!user[0]) throw new UnauthorizedException('User not found!');
+    if (!user) throw new UnauthorizedException('User not found!');
     const currentUser = {
-      id: user[0].id,
-      email: user[0].email,
-      username: user[0].username,
+      id: user.id,
+      email: user.email,
+      username: user.username,
     };
     return currentUser;
   }
@@ -136,7 +135,6 @@ export class AuthService {
       email: user.email,
       username: user.username,
     };
-
     return {
       user: {
         id: user.id,
@@ -145,13 +143,13 @@ export class AuthService {
         fullName: user.fullName,
         avatar: user.avatar,
         bio: user.bio,
+        isEmailVerified: user.isEmailVerified,
       },
       accessToken: this.jwtService.sign(payload),
     };
   }
 
   // verify email
-
   async verifyEmail(token: string) {
     const user = await this.authRepository.checkUserVerification(token);
     if (!user) {
@@ -159,9 +157,9 @@ export class AuthService {
     }
     const UpdatedUser = await this.authRepository.verifyEmail(user.id);
     const payload = {
-      sub: UpdatedUser[0].id,
-      email: UpdatedUser[0].email,
-      username: UpdatedUser[0].username,
+      sub: UpdatedUser?.id,
+      email: UpdatedUser?.email,
+      username: UpdatedUser?.username,
     };
 
     return {
@@ -177,15 +175,13 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user[0].isEmailVerified) {
+    if (user.isEmailVerified) {
       throw new ConflictException('Email already verified');
     }
     const verificationToken = uuidv4();
 
     await this.authRepository.resendVerificationEmail(email, verificationToken);
-
     await this.mailService.sendVerificationEmail(email, verificationToken);
-
     return { message: 'Verification email sent' };
   }
 
@@ -206,7 +202,7 @@ export class AuthService {
       forgotPasswordDto.email,
     );
 
-    if (!user[0]) {
+    if (!user) {
       return {
         message:
           'If your email is registered, you will receive a password reset link',
@@ -218,18 +214,18 @@ export class AuthService {
 
     try {
       await this.authRepository.forgotPassword(
-        user[0].id,
+        user.id,
         hashedToken,
         resetExpires,
       );
-      await this.mailService.sendPasswordResetEmail(user[0].email, rawToken);
+      await this.mailService.sendPasswordResetEmail(user.email, rawToken);
 
       return {
         message:
           'If your email is registered, you will receive a password reset link',
       };
     } catch (error) {
-      await this.authRepository.forgotPassword(user[0].id, '', new Date(0));
+      await this.authRepository.forgotPassword(user.id, '', new Date(0));
       throw new Error('Failed to process password reset');
     }
   }
@@ -239,30 +235,30 @@ export class AuthService {
 
     const user = await this.authRepository.getUserByResetToken(hashedToken);
 
-    if (!user[0]) {
+    if (!user) {
       throw new UnauthorizedException('Invalid or expired reset token');
     }
 
     if (
-      user[0] &&
-      user[0].passwordResetTokenExpires &&
-      user[0].passwordResetTokenExpires < new Date()
+      user &&
+      user.passwordResetTokenExpires &&
+      user.passwordResetTokenExpires < new Date()
     ) {
-      await this.authRepository.forgotPassword(user[0].id, null, null);
+      await this.authRepository.forgotPassword(user.id, '', new Date(0));
       throw new UnauthorizedException('Reset token has expired');
     }
 
     const hashedPassword = await argon2.hash(resetPasswordDto.password);
 
     const updatedUser = await this.authRepository.resetPassword(
-      user[0].id,
+      user.id,
       hashedPassword,
     );
 
     const payload = {
-      sub: updatedUser[0].id,
-      email: updatedUser[0].email,
-      username: updatedUser[0].username,
+      sub: updatedUser?.id,
+      email: updatedUser?.email,
+      username: updatedUser?.username,
     };
 
     return {
