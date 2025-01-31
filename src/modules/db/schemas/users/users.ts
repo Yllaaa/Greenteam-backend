@@ -11,6 +11,8 @@ import {
   boolean,
   check,
 } from 'drizzle-orm/pg-core';
+import { posts } from '../posts/posts';
+import { pollVotes } from '../posts/polls';
 
 export const userStatus = pgEnum('USER_STATUS', [
   'ACTIVE',
@@ -45,3 +47,8 @@ export const users = pgTable(
     };
   },
 );
+
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+  pollsVotes: many(pollVotes),
+}));
