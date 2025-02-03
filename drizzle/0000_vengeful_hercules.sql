@@ -1,3 +1,4 @@
+CREATE TYPE "public"."USER_STATUS" AS ENUM('ACTIVE', 'DEACTIVATED', 'BANNED');--> statement-breakpoint
 CREATE TYPE "public"."creator_type" AS ENUM('user', 'page', 'group_member');--> statement-breakpoint
 CREATE TYPE "public"."likeable_type" AS ENUM('post', 'comment', 'event', 'product', 'news');--> statement-breakpoint
 CREATE TYPE "public"."media_parent_type" AS ENUM('post', 'message');--> statement-breakpoint
@@ -5,14 +6,24 @@ CREATE TYPE "public"."media_type" AS ENUM('photo', 'video', 'document', 'audio')
 CREATE TYPE "public"."post_type" AS ENUM('post', 'poll', 'shared');--> statement-breakpoint
 CREATE TYPE "public"."shared_entity_type" AS ENUM('post', 'product', 'news', 'event');--> statement-breakpoint
 CREATE TYPE "public"."visibility_level" AS ENUM('only_me', 'friends', 'public');--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "media" (
+CREATE TABLE IF NOT EXISTS "Users_accounts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"parent_type" "media_parent_type" NOT NULL,
-	"parent_id" uuid NOT NULL,
-	"url" varchar(2048) NOT NULL,
-	"media_size" varchar(255) NOT NULL,
-	"duration_minutes" varchar(255),
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"email" varchar(255) NOT NULL,
+	"password" varchar(255) NOT NULL,
+	"full_name" varchar(255) NOT NULL,
+	"username" varchar(255) NOT NULL,
+	"bio" varchar(255),
+	"profile_picture" varchar(255),
+	"phone_number" varchar(255),
+	"google_id" varchar(255),
+	"password_reset_token" varchar(255),
+	"password_reset_token_expires" timestamp,
+	"status" "USER_STATUS" DEFAULT 'ACTIVE',
+	"is_email_verified" boolean DEFAULT false,
+	"verification_token" varchar(255),
+	"joined_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "Users_accounts_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "posts" (
@@ -20,9 +31,9 @@ CREATE TABLE IF NOT EXISTS "posts" (
 	"type" "post_type" DEFAULT 'post' NOT NULL,
 	"content" text,
 	"main_topic_id" uuid NOT NULL,
-	"visibility_level" "visibility_level" NOT NULL,
 	"creator_type" "creator_type" NOT NULL,
 	"creator_id" uuid NOT NULL,
+	"media_url" varchar(2048),
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -37,30 +48,6 @@ CREATE TABLE IF NOT EXISTS "shared_posts" (
 	"shared_by_id" uuid NOT NULL,
 	"shared_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "shared_posts_post_id_unique" UNIQUE("post_id")
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "poll_options" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"poll_id" uuid NOT NULL,
-	"option_text" varchar(255) NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "poll_votes" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"option_id" uuid NOT NULL,
-	"voter_id" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "polls" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"parent_type" "media_parent_type" NOT NULL,
-	"parent_id" uuid NOT NULL,
-	"question" text NOT NULL,
-	"closes_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "post_sub_topics" (
@@ -108,24 +95,6 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "poll_options" ADD CONSTRAINT "poll_options_poll_id_polls_id_fk" FOREIGN KEY ("poll_id") REFERENCES "public"."polls"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "poll_votes" ADD CONSTRAINT "poll_votes_option_id_poll_options_id_fk" FOREIGN KEY ("option_id") REFERENCES "public"."poll_options"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "poll_votes" ADD CONSTRAINT "poll_votes_voter_id_Users_accounts_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "post_sub_topics" ADD CONSTRAINT "post_sub_topics_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -155,6 +124,8 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "user_email_idx" ON "Users_accounts" USING btree ("email");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "user_username_idx" ON "Users_accounts" USING btree ("username");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "shared_entity_idx" ON "shared_posts" USING btree ("shared_entity_type","shared_entity_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "topic_parent_idx" ON "topics" USING btree ("parent_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comment_post_idx" ON "comments" USING btree ("post_id");--> statement-breakpoint

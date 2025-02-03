@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1737404407353,
-      "tag": "0000_romantic_madame_web",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1737466389533,
-      "tag": "0001_thankful_harry_osborn",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1738002614176,
-      "tag": "0002_careless_stranger",
+      "when": 1738609067854,
+      "tag": "0000_vengeful_hercules",
       "breakpoints": true
     }
   ]

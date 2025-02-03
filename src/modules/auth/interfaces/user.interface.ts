@@ -5,4 +5,5 @@ export interface User {
   username: string;
   avatar: string | null;
   bio: string | null;
+  isEmailVerified: boolean;
 }
