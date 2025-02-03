@@ -26,5 +26,6 @@ import { SharedModulesModule } from './modules/shared-modules/shared-modules.mod
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: [DrizzleModule],
 })
 export class AppModule {}

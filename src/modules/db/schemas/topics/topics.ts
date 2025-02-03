@@ -34,8 +34,13 @@ export const postSubTopics = pgTable('post_sub_topics', {
     .references(() => topics.id),
 });
 
-export const topicsRelations = relations(topics, ({ many }) => ({
+export const topicsRelations = relations(topics, ({ many, one }) => ({
   postTopics: many(postSubTopics),
+  parent: one(topics, {
+    fields: [topics.parentId],
+    references: [topics.id],
+  }),
+  children: many(topics),
 }));
 
 export const postSubTopicsRelations = relations(postSubTopics, ({ one }) => ({

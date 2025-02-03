@@ -1,10 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import { users } from '../db/schemas/users/users';
-import { eq } from 'drizzle-orm';
+import { eq, is } from 'drizzle-orm';
 import { User } from './interfaces/user.interface';
-import { v4 as uuidv4 } from 'uuid';
-import { isEmail } from 'class-validator';
+
 @Injectable()
 export class AuthRepository {
   constructor(private drizzle: DrizzleService) {}
@@ -20,12 +19,13 @@ export class AuthRepository {
         username: true,
         avatar: true,
         bio: true,
+        isEmailVerified: true,
       },
     });
   }
 
   async getUserById(id: string): Promise<User> {
-    const user = await this.drizzle.db.query.users.findMany({
+    const user = await this.drizzle.db.query.users.findFirst({
       where: eq(users.id, id),
       columns: {
         id: true,
@@ -36,11 +36,12 @@ export class AuthRepository {
         bio: true,
       },
     });
+
     return user as unknown as User;
   }
 
-  async getUserByEmail(email: string) {
-    return await this.drizzle.db.query.users.findMany({
+  async getUserByEmail(email: string): Promise<User> {
+    const user = this.drizzle.db.query.users.findMany({
       where: eq(users.email, email),
       columns: {
         id: true,
@@ -50,6 +51,7 @@ export class AuthRepository {
         isEmailVerified: true,
       },
     });
+    return user as unknown as User;
   }
 
   async getUserByUsername(username: string) {
@@ -64,8 +66,8 @@ export class AuthRepository {
     });
   }
 
-  async createUser(newUser: any) {
-    const createdUser = await this.drizzle.db
+  async createUser(newUser: any): Promise<User> {
+    const [createdUser] = await this.drizzle.db
       .insert(users)
       .values({
         email: newUser.email,
@@ -89,7 +91,7 @@ export class AuthRepository {
         isEmailVerified: users.isEmailVerified,
       });
 
-    return createdUser;
+    return createdUser as unknown as User;
   }
 
   // email verification
@@ -100,7 +102,6 @@ export class AuthRepository {
       .from(users)
       .where(eq(users.verificationToken, token))
       .limit(1);
-    console.log(user);
     return user[0];
   }
 
@@ -119,6 +120,7 @@ export class AuthRepository {
         username: users.username,
         avatar: users.avatar,
         bio: users.bio,
+        isEmailVerified: users.isEmailVerified,
       });
   }
 

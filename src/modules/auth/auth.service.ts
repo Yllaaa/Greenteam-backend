@@ -12,6 +12,7 @@ import { MailService } from '../common/mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 import * as crypto from 'crypto';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -58,7 +59,7 @@ export class AuthService {
       email: registerDto.email,
       password: hashedPassword,
       username: registerDto.username,
-      isVerified: false,
+      isEmailVerified: false,
       verificationToken,
     };
 
@@ -67,9 +68,9 @@ export class AuthService {
       verificationToken,
     );
 
-    await this.authRepository.createUser(newUser);
+    const createdUser = await this.authRepository.createUser(newUser);
 
-    return this.generateToken(newUser);
+    return this.generateToken(createdUser);
   }
 
   async login(loginDto: LoginDto) {
@@ -79,7 +80,7 @@ export class AuthService {
     }
 
     const user = await this.validateUser(identifier, password);
-
+    console.log(user);
     return this.generateToken(user);
   }
 
@@ -88,9 +89,7 @@ export class AuthService {
 
     const isEmail = identifier.includes('@');
     const field = isEmail ? 'email' : 'username';
-
     user = await this.authRepository.validateUser(field, identifier);
-
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const isPasswordValid = await argon2.verify(user.password, password);
@@ -103,7 +102,7 @@ export class AuthService {
   async googleLogin(profile: any) {
     let user = await this.authRepository.getUserByEmail(profile.email);
 
-    if (!user[0]) {
+    if (!user) {
       const newUser = {
         email: profile.email,
         fullName: profile.fullName,
@@ -116,16 +115,16 @@ export class AuthService {
       user = await this.authRepository.createUser(newUser);
     }
 
-    return this.generateToken(user[0]);
+    return this.generateToken(user);
   }
 
   async validateJwtUser(userId: string) {
     const user = await this.authRepository.getUserById(userId);
-    if (!user[0]) throw new UnauthorizedException('User not found!');
+    if (!user) throw new UnauthorizedException('User not found!');
     const currentUser = {
-      id: user[0].id,
-      email: user[0].email,
-      username: user[0].username,
+      id: user.id,
+      email: user.email,
+      username: user.username,
     };
     return currentUser;
   }
@@ -136,7 +135,6 @@ export class AuthService {
       email: user.email,
       username: user.username,
     };
-
     return {
       user: {
         id: user.id,
@@ -145,6 +143,7 @@ export class AuthService {
         fullName: user.fullName,
         avatar: user.avatar,
         bio: user.bio,
+        isEmailVerified: user.isEmailVerified,
       },
       accessToken: this.jwtService.sign(payload),
     };
