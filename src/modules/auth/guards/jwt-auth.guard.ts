@@ -21,6 +21,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isJwtValid = await super.canActivate(context);
     if (!isJwtValid) {
+      console.log('JWT is not valid');
       return false;
     }
 
@@ -36,8 +37,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       })
       .from(users)
       .where(eq(users.id, user.id))
-      .limit(1);
-
+      .limit(1)
+      .toSQL();
     if (!savedUser[0]?.isEmailVerified) {
       throw new UnauthorizedException('Please verify your email');
     }
