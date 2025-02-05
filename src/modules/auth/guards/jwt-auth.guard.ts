@@ -37,8 +37,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       })
       .from(users)
       .where(eq(users.id, user.id))
-      .limit(1)
-      .toSQL();
+      .limit(1);
+
     if (!savedUser[0]?.isEmailVerified) {
       throw new UnauthorizedException('Please verify your email');
     }

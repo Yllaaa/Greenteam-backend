@@ -12,7 +12,6 @@ import { MailService } from '../common/mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 import * as crypto from 'crypto';
-import { isEmail } from 'class-validator';
 
 @Injectable()
 export class AuthService {
