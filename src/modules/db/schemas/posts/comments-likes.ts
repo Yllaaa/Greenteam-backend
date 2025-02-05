@@ -9,7 +9,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { posts } from './posts';
 import { relations } from 'drizzle-orm';
-import { likeableTypeEnum } from './enums';
+import { reactionableTypeEnum, reactionTypeEnum } from './enums';
 
 export const comments = pgTable(
   'comments',
@@ -40,24 +40,28 @@ export const commentRelations = relations(comments, ({ one, many }) => ({
     references: [comments.id],
   }),
   replies: many(comments),
-  likes: many(likes),
+  likes: many(publicationsReactions),
 }));
 
-export const likes = pgTable(
-  'likes',
+export const publicationsReactions = pgTable(
+  'publications_reactions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(),
-    likeableType: likeableTypeEnum('likeable_type').notNull(),
-    likeableId: uuid('likeable_id').notNull(),
+    reactionableType: reactionableTypeEnum('likeable_type').notNull(),
+    reactionableId: uuid('likeable_id').notNull(),
+    reactionType: reactionTypeEnum().notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
     userLikeIdx: uniqueIndex('user_like_idx').on(
       table.userId,
-      table.likeableType,
-      table.likeableId,
+      table.reactionableType,
+      table.reactionableId,
     ),
-    likeableIdx: index('likeable_idx').on(table.likeableType, table.likeableId),
+    likeableIdx: index('likeable_idx').on(
+      table.reactionableType,
+      table.reactionableId,
+    ),
   }),
 );

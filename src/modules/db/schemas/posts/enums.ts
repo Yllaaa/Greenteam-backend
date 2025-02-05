@@ -21,27 +21,15 @@ export const mediaTypeEnum = pgEnum('media_type', [
   'audio',
 ]);
 
-export const mediaParentTypeEnum = pgEnum('media_parent_type', [
-  'post',
-  'message',
-]);
-
-export const pollParentTypeEnum = pgEnum('media_parent_type', [
-  'post',
-  'message',
-]);
-
-export const sharedEntityTypeEnum = pgEnum('shared_entity_type', [
-  'post',
-  'product',
-  'news',
-  'event',
-]);
-
-export const likeableTypeEnum = pgEnum('likeable_type', [
+export const reactionableTypeEnum = pgEnum('reactionable_type', [
   'post',
   'comment',
-  'event',
-  'product',
-  'news',
+  'forum-question',
+]);
+
+export const reactionTypeEnum = pgEnum('reaction_type', [
+  'like',
+  'dislike',
+  'do',
+  'sign',
 ]);
