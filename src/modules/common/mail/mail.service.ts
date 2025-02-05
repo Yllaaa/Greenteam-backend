@@ -18,7 +18,7 @@ export class MailService {
   }
 
   async sendVerificationEmail(email: string, token: string) {
-    const verificationUrl = `${process.env.APP_URL}/auth/verify/${token}`;
+    const verificationUrl = `${process.env.APP_URL}/en/verification/?key=${token}`;
 
     const mailOptions = {
       from: '"Greenteam" <noreply@greenteam.com>',
@@ -52,7 +52,7 @@ export class MailService {
   }
 
   async sendPasswordResetEmail(email: string, token: string) {
-    const resetUrl = `${process.env.APP_URL}/auth/reset-password/${token}`;
+    const resetUrl = `${process.env.APP_URL}/auth/reset-password/?key=${token}`;
 
     const mailOptions = {
       from: '"Greenteam" <noreply@greenteam.com>',
