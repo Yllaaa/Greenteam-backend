@@ -7,6 +7,14 @@ import { posts, postSubTopics } from 'src/modules/db/schemas/schema';
 export class PostsRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
+  async findById(id: string) {
+    const [post] = await this.drizzleService.db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, id));
+    return post;
+  }
+
   async createPost(
     content: string,
     mainTopicId: string,
