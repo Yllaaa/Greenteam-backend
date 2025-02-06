@@ -26,7 +26,7 @@ export class MailService {
       subject: 'Please verify your email',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Welcome to Your App!</h2>
+          <h2>Welcome to Greenteam!</h2>
           <p>Thank you for joining Greenteam. Please verify your email address by clicking the button below:</p>
           <div style="margin: 20px 0;">
             <a href="${verificationUrl}" 

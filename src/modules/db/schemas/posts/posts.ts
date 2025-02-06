@@ -1,13 +1,12 @@
 import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
-import { postTypeEnum, creatorTypeEnum } from './enums';
+import { creatorTypeEnum } from './enums';
 import { users } from '../users/users';
 import { relations } from 'drizzle-orm';
 import { postSubTopics, topics } from '../topics/topics';
-import { comments, publicationsReactions } from './comments-likes';
+import { publicationsComments, publicationsReactions } from './comments-likes';
 
 export const posts = pgTable('posts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  type: postTypeEnum('type').notNull().default('post'),
   content: text('content'),
   mainTopicId: uuid('main_topic_id')
     .references(() => topics.id)
@@ -29,6 +28,6 @@ export const postsRelations = relations(posts, ({ many, one }) => ({
     fields: [posts.creatorId],
     references: [users.id],
   }),
-  comments: many(comments),
+  comments: many(publicationsComments),
   reactions: many(publicationsReactions),
 }));
