@@ -5,7 +5,7 @@ import { posts, postSubTopics } from 'src/modules/db/schemas/schema';
 
 @Injectable()
 export class PostsRepository {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async createPost(
     content: string,
@@ -73,5 +73,38 @@ export class PostsRepository {
         },
       },
     });
+  }
+
+  async getPostsByMainTopic(topic: string) {
+    return await this.drizzleService.db.query.posts.findMany({
+      with: {
+        user_creator: true,
+        mainTopic: {
+          columns: { name: true },
+          where: (topics, { eq }) => eq(topics.name, topic),
+        }
+      }
+    })
+  }
+
+  async getPostsBySubTopic(subTopic: string) {
+    return await this.drizzleService.db.query.posts.findMany({
+      with: {
+        user_creator: true,
+        subTopics: {
+          columns: { name: true },
+          with: {
+            topic: {
+              columns: { name: true },
+              where: (topics, { eq }) => eq(topics.name, subTopic),
+            }
+          }
+        }
+      }
+    })
+  }
+
+  async getAllPosts() {
+    return await this.drizzleService.db.query.posts.findMany({ with: { user_creator: true } });
   }
 }
