@@ -4,7 +4,7 @@ export interface PublicNewsResponseInterface {
             source: {
                 name: string;
             };
-            author: string | null;
+            author: string;
             title: string;
             description: string;
             url: string;

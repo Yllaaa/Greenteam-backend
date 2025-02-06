@@ -47,6 +47,7 @@ export class FetchNewsService {
             newsPost.published_at = new Date(news.publishedAt);
             newsPost.url = news.url;
             newsPost.image = news.urlToImage;
+            newsPost.author = news.author;
             return newsPost;
         });
     }
@@ -70,6 +71,7 @@ export class FetchNewsService {
             newsPost.url = post.url;
             newsPost.image = post.author.image.url;
             newsPost.blog_id = blog.id;
+            newsPost.author = post.author.displayName;
             return newsPost;
         });
     }

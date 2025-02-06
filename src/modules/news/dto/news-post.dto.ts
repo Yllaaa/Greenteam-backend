@@ -23,4 +23,8 @@ export class NewsPostDto implements NewsPostInterface {
     @IsDate()
     @IsNotEmpty()
     published_at: Date;
+
+    @IsString()
+    @IsNotEmpty()
+    author: string;
 }
