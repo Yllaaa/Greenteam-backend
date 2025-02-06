@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, date } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, date, boolean } from "drizzle-orm/pg-core";
 import { blogs } from "../schema";
 import { relations } from 'drizzle-orm';
 
@@ -9,7 +9,8 @@ export const news = pgTable('news', {
     image: varchar(),
     url: varchar(),
     published_at: date(),
-    blog_id: uuid().references(() => blogs.id)
+    blog_id: uuid().references(() => blogs.id),
+    published: boolean().default(false),
 })
 
 export const newsRelations = relations(news, ({ one }) => ({

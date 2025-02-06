@@ -1,8 +1,7 @@
 import { IsDate, IsDateString, IsNotEmpty, IsString, IsUrl } from "class-validator";
-import { NewsPostInterface } from "../interfaces/news-post.interface";
 
-export class NewsPostDto implements NewsPostInterface {
-    blog_id: string;
+export class NewsPostDto {
+    blog_id?: string;
 
     @IsString()
     @IsNotEmpty()
@@ -27,4 +26,6 @@ export class NewsPostDto implements NewsPostInterface {
     @IsString()
     @IsNotEmpty()
     author: string;
+
+    published: boolean = false;
 }
