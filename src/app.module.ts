@@ -9,6 +9,7 @@ import { PagesModule } from './modules/pages/pages.module';
 import { EventsModule } from './modules/events/events.module';
 import { UsersModule } from './modules/users/users.module';
 import { SharedModulesModule } from './modules/shared-modules/shared-modules.module';
+import { ForumModule } from './modules/forum/forum.module';
 
 @Global()
 @Module({
@@ -23,6 +24,7 @@ import { SharedModulesModule } from './modules/shared-modules/shared-modules.mod
     EventsModule,
     UsersModule,
     SharedModulesModule,
+    ForumModule,
   ],
   controllers: [AppController],
   providers: [AppService],

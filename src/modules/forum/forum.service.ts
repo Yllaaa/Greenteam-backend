@@ -1,0 +1,15 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForumRepository } from './forum.repository';
+import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
+@Injectable()
+export class ForumService {
+  constructor(private readonly forumRepository: ForumRepository) {}
+  async createPublication(dto: CreateForumPublicationDto, authorId: string) {
+    const topic = await this.forumRepository.findTopicById(dto.mainTopicId);
+    if (!topic) {
+      throw new NotFoundException('Topic not found');
+    }
+
+    return this.forumRepository.createPublication(dto, authorId);
+  }
+}

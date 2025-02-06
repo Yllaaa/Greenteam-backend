@@ -4,6 +4,7 @@ export const publicationTypeEnum = pgEnum('publication_type', [
   'post',
   'forum-question',
 ]);
+
 export const visibilityLevelEnum = pgEnum('visibility_level', [
   'only_me',
   'friends',
