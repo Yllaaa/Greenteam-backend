@@ -21,4 +21,15 @@ export class CommonRepository {
       },
     });
   }
+
+  async getMainTopics() {
+    return await this.drizzleService.db.query.topics.findMany({
+      columns: {
+        id: true,
+        name: true,
+        parentId: true,
+      },
+      where: (topics, { isNull }) => isNull(topics.parentId),
+    });
+  }
 }

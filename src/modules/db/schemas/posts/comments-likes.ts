@@ -64,7 +64,9 @@ export const publicationsReactions = pgTable(
   'publications_reactions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
     reactionableType: reactionableTypeEnum('likeable_type').notNull(),
     reactionableId: uuid('likeable_id').notNull(),
     reactionType: reactionTypeEnum().notNull(),

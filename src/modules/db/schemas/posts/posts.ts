@@ -13,7 +13,6 @@ export const posts = pgTable('posts', {
     .notNull(),
   creatorType: creatorTypeEnum('creator_type').notNull(),
   creatorId: uuid('creator_id').notNull(),
-  mediaUrl: varchar('media_url', { length: 2048 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
