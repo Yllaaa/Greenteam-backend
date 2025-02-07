@@ -75,10 +75,17 @@ export class PostsRepository {
     });
   }
 
-  async getPostsByMainTopic(topic: string) {
+  async getPostsByMainTopic(topic: string, offset: number, limit: number) {
     return await this.drizzleService.db.query.posts.findMany({
+      offset: offset,
+      limit: limit,
       with: {
-        user_creator: true,
+        user_creator: {
+          columns: {
+            fullname: true,
+            avatar: true,
+          }
+        },
         mainTopic: {
           columns: { name: true },
           where: (topics, { eq }) => eq(topics.name, topic),
@@ -87,10 +94,17 @@ export class PostsRepository {
     })
   }
 
-  async getPostsBySubTopic(subTopic: string) {
+  async getPostsBySubTopic(subTopic: string, offset: number, limit: number) {
     return await this.drizzleService.db.query.posts.findMany({
+      offset: offset,
+      limit: limit,
       with: {
-        user_creator: true,
+        user_creator: {
+          columns: {
+            fullname: true,
+            avatar: true,
+          }
+        },
         subTopics: {
           columns: { name: true },
           with: {
@@ -104,7 +118,18 @@ export class PostsRepository {
     })
   }
 
-  async getAllPosts() {
-    return await this.drizzleService.db.query.posts.findMany({ with: { user_creator: true } });
+  async getAllPosts(offset: number, limit: number) {
+    return await this.drizzleService.db.query.posts.findMany({
+      offset: offset,
+      limit: limit,
+      with: {
+        user_creator: {
+          columns: {
+            fullname: true,
+            avatar: true,
+          }
+        }
+      }
+    });
   }
 }

@@ -19,9 +19,9 @@ export class PostsController {
   @Get()
   async getPosts(@Query() topic: GetPostsDto) {
     if (topic.mainTopic)
-      return this.postsService.getPostsByMainTopic(topic.mainTopic);
+      return this.postsService.getPostsByMainTopic(topic);
     if (topic.subTopic)
-      return this.postsService.getPostsBySubTopic(topic.subTopic);
-    return this.postsService.getAllPosts();
+      return this.postsService.getPostsBySubTopic(topic);
+    return this.postsService.getAllPosts(topic);
   }
 }

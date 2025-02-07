@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PostsRepository } from './posts.repository';
 import { Post } from './types/post.type';
 import { CreatePostDto } from './dto/create-post.dto';
+import { GetPostsDto } from './dto/get-posts.dto';
+
 @Injectable()
 export class PostsService {
   constructor(private readonly postsRepository: PostsRepository) { }
@@ -23,15 +25,15 @@ export class PostsService {
     return (await this.postsRepository.getPostById(post.id)) as unknown as Post;
   }
 
-  async getPostsByMainTopic(topic: string) {
-    return await this.postsRepository.getPostsByMainTopic(topic);
+  async getPostsByMainTopic(topic: GetPostsDto) {
+    return await this.postsRepository.getPostsByMainTopic(topic.mainTopic, topic.offset, topic.limit);
   }
 
-  async getPostsBySubTopic(subTopic: string) {
-    return await this.postsRepository.getPostsBySubTopic(subTopic);
+  async getPostsBySubTopic(topic: GetPostsDto) {
+    return await this.postsRepository.getPostsBySubTopic(topic.subTopic, topic.offset, topic.limit);
   }
 
-  async getAllPosts() {
-    return await this.postsRepository.getAllPosts();
+  async getAllPosts(topic: GetPostsDto) {
+    return await this.postsRepository.getAllPosts(topic.offset, topic.limit);
   }
 }

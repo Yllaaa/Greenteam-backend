@@ -19,9 +19,8 @@ export const topics = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
-    parentIdx: index('topic_parent_idx').on(table.parentId),
-  }),
+  (table) => [
+    index('topic_parent_idx').on(table.parentId),],
 );
 
 export const postSubTopics = pgTable('post_sub_topics', {

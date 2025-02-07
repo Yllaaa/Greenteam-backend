@@ -28,4 +28,4 @@ import { SharedModulesModule } from './modules/shared-modules/shared-modules.mod
   providers: [AppService],
   exports: [DrizzleModule],
 })
-export class AppModule {}
+export class AppModule { }
