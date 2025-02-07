@@ -1,0 +1,2 @@
+CREATE TYPE "public"."publications_status" AS ENUM('draft', 'published', 'hidden');--> statement-breakpoint
+ALTER TABLE "forum_publications" ADD COLUMN "status" "publications_status" DEFAULT 'published';

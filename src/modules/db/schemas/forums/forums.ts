@@ -15,6 +15,12 @@ import {
 } from '../schema';
 import { relations } from 'drizzle-orm';
 
+export const publicationsStatus = pgEnum('publications_status', [
+  'draft',
+  'published',
+  'hidden',
+]);
+
 export const forumSections = pgEnum('forum_sections', [
   'doubt',
   'need',
@@ -35,6 +41,7 @@ export const forumPublications = pgTable(
       .references(() => users.id),
     section: forumSections().notNull(),
     mediaUrl: varchar('media_url', { length: 2048 }),
+    status: publicationsStatus().default('published'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({

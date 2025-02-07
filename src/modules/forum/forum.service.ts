@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ForumRepository } from './forum.repository';
 import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
+import { plainToInstance } from 'class-transformer';
 @Injectable()
 export class ForumService {
   constructor(private readonly forumRepository: ForumRepository) {}
@@ -9,7 +10,18 @@ export class ForumService {
     if (!topic) {
       throw new NotFoundException('Topic not found');
     }
-
     return this.forumRepository.createPublication(dto, authorId);
+  }
+
+  async getPublications(filter, pagination: { limit: number; page: number }) {
+    const results = await this.forumRepository.getForumPublications(
+      {
+        section: filter.section,
+        mainTopicId: filter.mainTopic,
+      },
+      pagination,
+    );
+
+    return results;
   }
 }
