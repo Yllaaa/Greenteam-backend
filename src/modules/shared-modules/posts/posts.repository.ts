@@ -89,7 +89,8 @@ export class PostsRepository {
         mainTopic: {
           columns: { name: true },
           where: (topics, { eq }) => eq(topics.name, topic),
-        }
+        },
+        comments: true
       }
     })
   }
@@ -113,7 +114,8 @@ export class PostsRepository {
               where: (topics, { eq }) => eq(topics.name, subTopic),
             }
           }
-        }
+        },
+        comments: true
       }
     })
   }
@@ -128,7 +130,8 @@ export class PostsRepository {
             fullname: true,
             avatar: true,
           }
-        }
+        },
+        comments: true
       }
     });
   }
