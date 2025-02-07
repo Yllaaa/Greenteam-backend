@@ -17,7 +17,7 @@ export class ForumService {
     const results = await this.forumRepository.getForumPublications(
       {
         section: filter.section,
-        mainTopicId: filter.mainTopic,
+        mainTopicId: filter.mainTopicId,
       },
       pagination,
     );

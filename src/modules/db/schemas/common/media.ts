@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, index } from 'drizzle-orm/pg-core';
-import { mediaParentTypeEnum, mediaTypeEnum } from '../enums';
+import { mediaParentTypeEnum, mediaTypeEnum } from '../posts/enums';
 
 export const media = pgTable('media', {
   id: uuid('id').primaryKey().defaultRandom(),
