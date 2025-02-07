@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { eq, SQL } from 'drizzle-orm';
+import { eq, inArray, SQL } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
-import { posts, postSubTopics } from 'src/modules/db/schemas/schema';
+import { posts, postSubTopics, topics } from 'src/modules/db/schemas/schema';
 
 @Injectable()
 export class PostsRepository {
@@ -76,47 +76,47 @@ export class PostsRepository {
   }
 
   async getPostsByMainTopic(topic: string, offset: number, limit: number) {
+    const topic_posts = this.drizzleService.db
+      .select({ post_id: posts.id })
+      .from(posts)
+      .innerJoin(topics, eq(topics.id, posts.mainTopicId))
+      .where(eq(topics.name, topic))
     return await this.drizzleService.db.query.posts.findMany({
       offset: offset,
       limit: limit,
       with: {
         user_creator: {
           columns: {
-            fullname: true,
+            fullName: true,
             avatar: true,
           }
         },
-        mainTopic: {
-          columns: { name: true },
-          where: (topics, { eq }) => eq(topics.name, topic),
-        },
         comments: true
-      }
+      },
+      where: inArray(posts.id, topic_posts),
     })
   }
 
   async getPostsBySubTopic(subTopic: string, offset: number, limit: number) {
+    const subTopic_posts = this.drizzleService.db
+      .select({ post_id: posts.id })
+      .from(posts)
+      .innerJoin(postSubTopics, eq(posts.id, postSubTopics.postId))
+      .innerJoin(topics, eq(topics.id, postSubTopics.topicId))
+      .where(eq(topics.name, subTopic))
     return await this.drizzleService.db.query.posts.findMany({
       offset: offset,
       limit: limit,
       with: {
         user_creator: {
           columns: {
-            fullname: true,
+            fullName: true,
             avatar: true,
           }
         },
-        subTopics: {
-          columns: { name: true },
-          with: {
-            topic: {
-              columns: { name: true },
-              where: (topics, { eq }) => eq(topics.name, subTopic),
-            }
-          }
-        },
         comments: true
-      }
+      },
+      where: inArray(posts.id, subTopic_posts),
     })
   }
 
@@ -127,7 +127,7 @@ export class PostsRepository {
       with: {
         user_creator: {
           columns: {
-            fullname: true,
+            fullName: true,
             avatar: true,
           }
         },

@@ -48,7 +48,11 @@ export class DrizzleService implements OnApplicationBootstrap {
         }
       },
       posts: {
-        count: 100
+        count: 100,
+        with: {
+          comments: 2,
+          postSubTopics: 2
+        }
       }
     }));
   }
