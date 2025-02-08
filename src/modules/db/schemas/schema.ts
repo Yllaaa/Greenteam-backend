@@ -6,3 +6,4 @@ export * from './posts/enums';
 export * from './forums/forums';
 export * from './common/media';
 export * from './events/events';
+export * from './pages/pages';
