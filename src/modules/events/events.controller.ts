@@ -1,11 +1,13 @@
-import { Body, Controller, Get, HttpStatus, NotImplementedException, Param, Post, Query, Req, Request, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, NotImplementedException, Param, Post, Query, Req, Request, Res, UseGuards } from '@nestjs/common';
 import { EventsDto } from './dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from './dto/getEvents.dto';
 import { IdParamDto } from './dto/id-param.dto';
 import { Response } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('events')
+@UseGuards(JwtAuthGuard)
 export class EventsController {
     constructor(
         readonly eventsService: EventsService
