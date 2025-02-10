@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, Min } from "class-validator";
+import { IsIn, IsNumber, IsOptional, Min } from "class-validator";
+import { EventCategory } from "src/modules/db/schemas/schema";
 
 export class GetEventsDto {
     @Type(() => Number)
@@ -7,4 +8,8 @@ export class GetEventsDto {
     @Min(0)
     @IsOptional()
     pageNo: number = 0
+
+    @IsIn(EventCategory.enumValues)
+    @IsOptional()
+    category: string
 }

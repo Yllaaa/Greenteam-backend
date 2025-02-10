@@ -36,4 +36,13 @@ export class EventsService {
         const offset = page * this.EVENTS_PER_PAGE;
         return await this.eventRepository.getEvents(offset, this.EVENTS_PER_PAGE)
     }
+
+    async getEventsByCategory(page: number, category: string) {
+        const offset = page * this.EVENTS_PER_PAGE;
+        return await this.eventRepository.getEventsByCategory(offset, this.EVENTS_PER_PAGE, category)
+    }
+
+    async getEventDetails(id: string) {
+        return await this.eventRepository.getEventDetails(id)
+    }
 }

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, NotImplementedException, Param, Post, Request } from '@nestjs/common';
+import { Body, Controller, Get, NotImplementedException, Param, Post, Query, Request } from '@nestjs/common';
 import { EventsDto } from './dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from './dto/getEvents.dto';
+import { IdParamDto } from './dto/id-param.dto';
 
 @Controller('events')
 export class EventsController {
@@ -19,9 +20,17 @@ export class EventsController {
         throw new NotImplementedException();
     }
 
-    @Get(':pageNo?')
-    async getEvents(@Param() page: GetEventsDto) {
+    @Get('')
+    async getEvents(@Query() page: GetEventsDto) {
         page.pageNo = page.pageNo || 0
+        if (page.category) {
+            return await this.eventsService.getEventsByCategory(page.pageNo, page.category)
+        }
         return await this.eventsService.getEvents(page.pageNo)
+    }
+
+    @Get(':id')
+    async getEventDetail(@Param() idDto: IdParamDto) {
+        return await this.eventsService.getEventDetails(idDto.id)
     }
 }
