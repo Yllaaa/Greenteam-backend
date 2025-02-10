@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, varchar, date, uuid, text, smallint } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, varchar, date, uuid, text, smallint, primaryKey } from 'drizzle-orm/pg-core';
 import { topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
 
@@ -32,11 +32,17 @@ export const events_relations = relations(events, ({ one, many }) => ({
 export const events_joined = pgTable('events_joined', {
     user_id: uuid().notNull().references(() => users.id),
     event_id: uuid().notNull().references(() => events.id)
-})
+}, (table) => [
+    primaryKey({columns: [table.event_id, table.user_id]})
+])
 
 export const events_joined_relations = relations(events_joined, ({ one }) => ({
     user: one(users, {
         fields: [events_joined.user_id],
         references: [users.id]
+    }),
+    event: one(events, {
+        fields: [events_joined.event_id],
+        references: [events.id]
     })
 }))

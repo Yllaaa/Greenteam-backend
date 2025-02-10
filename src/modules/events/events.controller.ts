@@ -40,10 +40,10 @@ export class EventsController {
     @Get(':id/join')
     async joinEvent(@Param() eventDto: IdParamDto, @Req() req, @Res() res: Response) {
         if (!(await this.eventsService.eventExist(eventDto.id))) {
-            res.status(HttpStatus.NOT_FOUND)
+            res.status(HttpStatus.NOT_FOUND).send()
             return
         }
         await this.eventsService.AddEventJoined(eventDto.id, req.user)
-        res.status(HttpStatus.CREATED)
+        res.status(HttpStatus.CREATED).send()
     }
 }
