@@ -32,7 +32,21 @@ export class EventsRepository {
 
     async getEventDetails(id: string) {
         return await this.drizzleService.db.query.events.findFirst({
-            where: eq(events.id, id)
+            where: eq(events.id, id),
+            with: {
+                topic: true,
+                events_joined: {
+                    columns: {},
+                    with: {
+                        user: {
+                            columns: {
+                                fullName: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                }
+            }
         })
     }
 
