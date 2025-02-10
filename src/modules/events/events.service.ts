@@ -45,4 +45,12 @@ export class EventsService {
     async getEventDetails(id: string) {
         return await this.eventRepository.getEventDetails(id)
     }
+
+    async eventExist(event_id: string) {
+        return (await this.eventRepository.getEvent(event_id)) != undefined
+    }
+
+    async AddEventJoined(event_id: string, user: any) {
+        return await this.eventRepository.addEventJoin(event_id, user.id)
+    }
 }

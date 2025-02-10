@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { DrizzleService } from "../db/drizzle.service";
-import { events } from "../db/schemas/schema";
+import { events, events_joined } from "../db/schemas/schema";
 import { eq } from "drizzle-orm";
 
 @Injectable()
@@ -34,4 +34,16 @@ export class EventsRepository {
         })
     }
 
+    async getEvent(id: string) {
+        return await this.drizzleService.db.query.events.findFirst({
+            where: eq(events.id, id)
+        })
+    }
+
+    async addEventJoin(event_id: string, user_id: string) {
+        return await this.drizzleService.db.insert(events_joined).values({
+            user_id: user_id,
+            event_id: event_id
+        })
+    }
 }

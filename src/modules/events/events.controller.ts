@@ -1,8 +1,9 @@
-import { Body, Controller, Get, NotImplementedException, Param, Post, Query, Request } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, NotImplementedException, Param, Post, Query, Req, Request, Res } from '@nestjs/common';
 import { EventsDto } from './dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from './dto/getEvents.dto';
 import { IdParamDto } from './dto/id-param.dto';
+import { Response } from 'express';
 
 @Controller('events')
 export class EventsController {
@@ -32,5 +33,15 @@ export class EventsController {
     @Get(':id')
     async getEventDetail(@Param() idDto: IdParamDto) {
         return await this.eventsService.getEventDetails(idDto.id)
+    }
+
+    @Get(':id/join')
+    async joinEvent(@Param() eventDto: IdParamDto, @Req() req, @Res() res: Response) {
+        if (!(await this.eventsService.eventExist(eventDto.id))) {
+            res.status(HttpStatus.NOT_FOUND)
+            return
+        }
+        await this.eventsService.AddEventJoined(eventDto.id, req.user)
+        res.status(HttpStatus.CREATED)
     }
 }
