@@ -7,4 +7,4 @@ import { PagesRepository } from './pages.repository';
   controllers: [PagesController],
   providers: [PagesService, PagesRepository],
 })
-export class PagesModule {}
+export class PagesModule { }

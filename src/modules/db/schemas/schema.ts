@@ -5,3 +5,4 @@ export * from './posts/comments-likes';
 export * from './posts/enums';
 export * from './forums/forums';
 export * from './common/media';
+export * from './events/events';
