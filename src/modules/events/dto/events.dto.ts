@@ -1,4 +1,4 @@
-import { IsDate, IsIn, IsString } from "class-validator";
+import { IsDate, IsIn, IsString, IsUUID } from "class-validator";
 import { EventCategory } from "src/modules/db/schemas/schema";
 
 export class EventsDto {
@@ -25,4 +25,7 @@ export class EventsDto {
     category: string
 
     poster: string
+
+    @IsUUID()
+    topic_id: string
 }

@@ -13,7 +13,7 @@ export class EventsController {
 
     @Post('user')
     async createEventFromUser(@Body() event: EventsDto, @Request() req) {
-        this.eventsService.createEventFromUser(event, req.user)
+        return this.eventsService.createEventFromUser(event, req.user)
     }
 
     @Post('page')

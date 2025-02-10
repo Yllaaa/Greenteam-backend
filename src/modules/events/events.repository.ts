@@ -10,7 +10,7 @@ export class EventsRepository {
     ) { }
 
     async createEvent(event: any) {
-        await this.drizzleService.db.insert(events).values(event)
+        return await this.drizzleService.db.insert(events).values(event).returning()
     }
 
     async getEvents(offset: number, limit: number) {

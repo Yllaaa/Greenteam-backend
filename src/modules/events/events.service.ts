@@ -17,19 +17,19 @@ export class EventsService {
     async createEventFromUser(event: EventsDto, user: any) {
         event.creator_id = user.id;
         event.creator_type = 'User'
-        await this.createEvent(event)
+        return await this.createEvent(event)
     }
 
     async createEventFromPage(event: EventsDto, page: any) {
         event.creator_id = page.id
         event.creator_type = 'Page'
-        await this.createEvent(event)
+        return await this.createEvent(event)
     }
 
     private async createEvent(event: EventsDto) {
         this.convertDate(event.start_date)
         this.convertDate(event.end_date)
-        await this.eventRepository.createEvent(event)
+        return await this.eventRepository.createEvent(event)
     }
 
     async getEvents(page: number) {

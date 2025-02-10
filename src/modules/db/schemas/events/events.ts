@@ -1,5 +1,5 @@
 import { pgEnum, pgTable, varchar, date, uuid, text, smallint } from 'drizzle-orm/pg-core';
-import { users } from '../schema';
+import { topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
 
 export const EventCreatorType = pgEnum('EventCreatorType', ['User', 'Page'])
@@ -18,10 +18,15 @@ export const events = pgTable('events', {
     category: EventCategory().notNull(),
     poster: varchar().notNull(),
     priority: smallint().notNull().default(0),
+    topic_id: uuid().notNull().references(() => topics.id)
 });
 
-export const events_relations = relations(events, ({ many }) => ({
-    events_joined: many(events_joined)
+export const events_relations = relations(events, ({ one, many }) => ({
+    events_joined: many(events_joined),
+    topic: one(topics, {
+        fields: [events.topic_id],
+        references: [topics.id]
+    })
 }))
 
 export const events_joined = pgTable('events_joined', {
