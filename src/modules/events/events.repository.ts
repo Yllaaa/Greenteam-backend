@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { DrizzleService } from "../db/drizzle.service";
 import { events, events_joined } from "../db/schemas/schema";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 @Injectable()
 export class EventsRepository {
@@ -16,7 +16,8 @@ export class EventsRepository {
     async getEvents(offset: number, limit: number) {
         return await this.drizzleService.db.query.events.findMany({
             offset: offset,
-            limit: limit
+            limit: limit,
+            orderBy: [asc(events.priority), asc(events.start_date)]
         })
     }
 
@@ -25,6 +26,7 @@ export class EventsRepository {
             offset: offset,
             limit: limit,
             where: eq(events.category, category),
+            orderBy: [asc(events.priority), asc(events.start_date)]
         })
     }
 

@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, varchar, date, uuid, text } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, varchar, date, uuid, text, smallint } from 'drizzle-orm/pg-core';
 import { users } from '../schema';
 import { relations } from 'drizzle-orm';
 
@@ -16,7 +16,8 @@ export const events = pgTable('events', {
     start_date: date().notNull(),
     end_date: date().notNull(),
     category: EventCategory().notNull(),
-    poster: varchar().notNull()
+    poster: varchar().notNull(),
+    priority: smallint().notNull().default(0),
 });
 
 export const events_relations = relations(events, ({ many }) => ({
