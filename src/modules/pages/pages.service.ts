@@ -14,8 +14,12 @@ export class PagesService {
         return await this.pagesRepository.createPage(page)
     }
 
-    async getPage(id: string){
-        return await this.pagesRepository.getPage(id)
+    async getPage(user: any){
+        return await this.pagesRepository.getPage(user.id)
+    }
+
+    async getPageId(user: any){
+        return (await this.pagesRepository.getPageId(user.id))?.id
     }
 
     async addPageContact(contact: PageContactDto, page_id: string){

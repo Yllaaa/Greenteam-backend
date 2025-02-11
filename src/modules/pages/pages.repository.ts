@@ -13,9 +13,9 @@ export class PagesRepository {
         return await this.drizzleService.db.insert(pages).values(page)
     }
 
-    async getPage(id: string){
+    async getPage(userId: string){
         return await this.drizzleService.db.query.pages.findFirst({
-            where: eq(pages.id, id),
+            where: eq(pages.owner_id, userId),
             with: {
                 owner: {
                     columns: {
@@ -36,6 +36,15 @@ export class PagesRepository {
                         }
                     }
                 }
+            }
+        })
+    }
+
+    async getPageId(userId: string){
+        return await this.drizzleService.db.query.pages.findFirst({
+            where: eq(pages.owner_id, userId),
+            columns: {
+                id: true
             }
         })
     }
