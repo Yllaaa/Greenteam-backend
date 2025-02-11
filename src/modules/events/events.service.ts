@@ -1,56 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  HttpStatus,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { EventsRepository } from './events.repository';
 import { EventsDto } from './dto/events.dto';
+import { PostgresError } from 'postgres';
 
 @Injectable()
 export class EventsService {
-    readonly EVENTS_PER_PAGE = 10
+  readonly EVENTS_PER_PAGE = 10;
 
-    constructor(
-        readonly eventRepository: EventsRepository
-    ) { }
+  constructor(readonly eventsRepository: EventsRepository) {}
 
-    private convertDate(date: Date) {
-        date.setFullYear(0)
+  async createEvent(event: EventsDto, userId: string) {
+    event.creatorId ||= userId;
+    return await this.eventsRepository.createEvent(event);
+  }
+
+  async getEvents(category, page: number, limit: number) {
+    return await this.eventsRepository.getEvents(category, page, limit);
+  }
+
+  async getEventDetails(id: string) {
+    return await this.eventsRepository.getEventDetails(id);
+  }
+
+  async eventExist(event_id: string) {
+    return (await this.eventsRepository.getEvent(event_id)) != undefined;
+  }
+
+  async addUserJoinedEvent(eventId: string, userId: string) {
+    try {
+      if (!(await this.eventExist(eventId))) {
+        throw new NotFoundException('Event not found');
+      }
+
+      return await this.eventsRepository.addUserJoinedEvent(eventId, userId);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('User already joined this event');
+      }
+
+      throw error;
     }
-
-    async createEventFromUser(event: EventsDto, user: any) {
-        event.creator_id = user.id;
-        event.creator_type = 'User'
-        return await this.createEvent(event)
-    }
-
-    async createEventFromPage(event: EventsDto, page: any) {
-        event.creator_id = page.id
-        event.creator_type = 'Page'
-        return await this.createEvent(event)
-    }
-
-    private async createEvent(event: EventsDto) {
-        this.convertDate(event.start_date)
-        this.convertDate(event.end_date)
-        return await this.eventRepository.createEvent(event)
-    }
-
-    async getEvents(page: number) {
-        const offset = page * this.EVENTS_PER_PAGE;
-        return await this.eventRepository.getEvents(offset, this.EVENTS_PER_PAGE)
-    }
-
-    async getEventsByCategory(page: number, category: string) {
-        const offset = page * this.EVENTS_PER_PAGE;
-        return await this.eventRepository.getEventsByCategory(offset, this.EVENTS_PER_PAGE, category)
-    }
-
-    async getEventDetails(id: string) {
-        return await this.eventRepository.getEventDetails(id)
-    }
-
-    async eventExist(event_id: string) {
-        return (await this.eventRepository.getEvent(event_id)) != undefined
-    }
-
-    async AddEventJoined(event_id: string, user: any) {
-        return await this.eventRepository.addEventJoin(event_id, user.id)
-    }
+  }
 }

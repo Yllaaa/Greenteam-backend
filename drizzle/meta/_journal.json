@@ -36,6 +36,34 @@
       "when": 1738886791179,
       "tag": "0004_good_carnage",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1739220595055,
+      "tag": "0005_watery_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1739226248465,
+      "tag": "0006_demonic_surge",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1739226520228,
+      "tag": "0007_stale_salo",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1739228121473,
+      "tag": "0008_huge_scarlet_spider",
+      "breakpoints": true
     }
   ]
 }

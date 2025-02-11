@@ -1,35 +1,36 @@
-import { Type } from "class-transformer";
-import { IsDate, IsIn, IsString, IsUUID } from "class-validator";
-import { EventCategory } from "src/modules/db/schemas/schema";
+import { Type } from 'class-transformer';
+import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import { SQL } from 'drizzle-orm';
+import { EventCategory } from 'src/modules/db/schemas/schema';
 
 export class EventsDto {
-    creator_id: string
+  @IsUUID()
+  @IsOptional()
+  creatorId: string;
 
-    creator_type: string
+  @IsIn(['user', 'page'])
+  creatorType: SQL<'user' | 'page'>;
 
-    @IsString()
-    name: string
+  @IsString()
+  title: string;
 
-    @IsString()
-    description: string
+  @IsString()
+  description: string;
 
-    @IsString()
-    location: string
+  @IsString()
+  location: string;
 
-    @Type(() => Date)
-    @IsDate()
-    start_date: Date
+  @Type(() => Date)
+  @IsDate()
+  startDate: Date;
 
-    @Type(() => Date)
-    @IsDate()
-    end_date: Date
+  @Type(() => Date)
+  @IsDate()
+  endDate: Date;
 
-    @IsIn(EventCategory.enumValues)
-    category: string
+  @IsIn(EventCategory.enumValues)
+  category: SQL<'social' | 'volunteering&work' | 'talks&workshops'>;
 
-    @IsString()
-    poster: string
-
-    @IsUUID()
-    topic_id: string
+  @IsUUID()
+  topicId: string;
 }
