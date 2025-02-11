@@ -1,22 +1,22 @@
-import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsString, Min } from "class-validator";
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
 export class GetPostsDto {
-    @IsString()
-    @IsOptional()
-    mainTopic: string;
+  @IsInt()
+  @IsOptional()
+  mainTopicId: number;
 
-    @IsString()
-    @IsOptional()
-    subTopic: string;
+  @IsInt()
+  @IsOptional()
+  subTopicId: number;
 
-    @Type(() => Number)
-    @IsInt()
-    @Min(0)
-    offset: number = 0;
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  page: number = 0;
 
-    @Type(() => Number)
-    @IsInt()
-    @Min(1)
-    limit: number = 10;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit: number = 10;
 }

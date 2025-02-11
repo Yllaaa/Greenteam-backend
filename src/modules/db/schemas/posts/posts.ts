@@ -1,20 +1,25 @@
-import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
-import { postTypeEnum, creatorTypeEnum } from './enums';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  timestamp,
+  serial,
+} from 'drizzle-orm/pg-core';
+import { creatorTypeEnum } from './enums';
 import { users } from '../users/users';
 import { relations } from 'drizzle-orm';
 import { postSubTopics, topics } from '../topics/topics';
-import { comments, publicationsReactions } from './comments-likes';
+import { publicationsComments, publicationsReactions } from './comments-likes';
 
 export const posts = pgTable('posts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  type: postTypeEnum('type').notNull().default('post'),
   content: text('content'),
-  mainTopicId: uuid('main_topic_id')
+  mainTopicId: serial('main_topic_id')
     .references(() => topics.id)
     .notNull(),
   creatorType: creatorTypeEnum('creator_type').notNull(),
   creatorId: uuid('creator_id').notNull(),
-  mediaUrl: varchar('media_url', { length: 2048 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -29,6 +34,6 @@ export const postsRelations = relations(posts, ({ many, one }) => ({
     fields: [posts.creatorId],
     references: [users.id],
   }),
-  comments: many(comments),
+  comments: many(publicationsComments),
   reactions: many(publicationsReactions),
 }));

@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { eq, inArray, SQL } from 'drizzle-orm';
+import { eq, exists, inArray, SQL, and, or } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import { posts, postSubTopics, topics } from 'src/modules/db/schemas/schema';
 
 @Injectable()
 export class PostsRepository {
-  constructor(private readonly drizzleService: DrizzleService) { }
+  constructor(private readonly drizzleService: DrizzleService) {}
+
+  async findById(id: string) {
+    const [post] = await this.drizzleService.db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, id));
+    return post;
+  }
 
   async createPost(
     content: string,
@@ -18,7 +26,7 @@ export class PostsRepository {
       .insert(posts)
       .values({
         content,
-        mainTopicId,
+        mainTopicId: Number(mainTopicId),
         creatorId: creatorId ?? userId,
         creatorType,
       })
@@ -31,7 +39,7 @@ export class PostsRepository {
     return post;
   }
 
-  async addSubtopic(postId: string, topicId: string) {
+  async addSubtopic(postId: string, topicId: number) {
     return await this.drizzleService.db
       .insert(postSubTopics)
       .values({ postId, topicId });
@@ -75,49 +83,45 @@ export class PostsRepository {
     });
   }
 
-  async getPostsByMainTopic(topic: string, offset: number, limit: number) {
-    const topic_posts = this.drizzleService.db
-      .select({ post_id: posts.id })
-      .from(posts)
-      .innerJoin(topics, eq(topics.id, posts.mainTopicId))
-      .where(eq(topics.name, topic))
-    return await this.drizzleService.db.query.posts.findMany({
-      offset: offset,
-      limit: limit,
-      with: {
-        user_creator: {
-          columns: {
-            fullName: true,
-            avatar: true,
-          }
-        },
-        comments: true
-      },
-      where: inArray(posts.id, topic_posts),
-    })
-  }
+  async getFilteredPosts(
+    mainTopicId: number,
+    subTopicId: number,
+    limit = 10,
+    offset = 0,
+  ) {
+    const conditions: SQL[] = [];
 
-  async getPostsBySubTopic(subTopic: string, offset: number, limit: number) {
-    const subTopic_posts = this.drizzleService.db
-      .select({ post_id: posts.id })
+    if (mainTopicId) {
+      conditions.push(eq(posts.mainTopicId, Number(mainTopicId)));
+    }
+
+    if (subTopicId) {
+      conditions.push(
+        exists(
+          this.drizzleService.db
+            .select()
+            .from(postSubTopics)
+            .where(
+              and(
+                eq(postSubTopics.postId, posts.id),
+                eq(postSubTopics.topicId, Number(subTopicId)),
+              ),
+            ),
+        ),
+      );
+    }
+
+    const query = this.drizzleService.db
+      .select()
       .from(posts)
-      .innerJoin(postSubTopics, eq(posts.id, postSubTopics.postId))
-      .innerJoin(topics, eq(topics.id, postSubTopics.topicId))
-      .where(eq(topics.name, subTopic))
-    return await this.drizzleService.db.query.posts.findMany({
-      offset: offset,
-      limit: limit,
-      with: {
-        user_creator: {
-          columns: {
-            fullName: true,
-            avatar: true,
-          }
-        },
-        comments: true
-      },
-      where: inArray(posts.id, subTopic_posts),
-    })
+      .where(or(...conditions))
+      .orderBy(posts.createdAt)
+      .limit(limit)
+      .offset(offset);
+
+    const data = query.execute();
+
+    return data;
   }
 
   async getAllPosts(offset: number, limit: number) {
@@ -129,10 +133,10 @@ export class PostsRepository {
           columns: {
             fullName: true,
             avatar: true,
-          }
+          },
         },
-        comments: true
-      }
+        comments: true,
+      },
     });
   }
 }

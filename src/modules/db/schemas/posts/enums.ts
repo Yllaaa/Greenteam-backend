@@ -1,6 +1,9 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 
-export const postTypeEnum = pgEnum('post_type', ['post', 'poll', 'shared']);
+export const publicationTypeEnum = pgEnum('publication_type', [
+  'post',
+  'forum_publication',
+]);
 
 export const visibilityLevelEnum = pgEnum('visibility_level', [
   'only_me',
@@ -21,10 +24,17 @@ export const mediaTypeEnum = pgEnum('media_type', [
   'audio',
 ]);
 
+export const mediaParentTypeEnum = pgEnum('media_parent_type', [
+  'post',
+  'comment',
+  'forum_publication',
+  'product',
+]);
+
 export const reactionableTypeEnum = pgEnum('reactionable_type', [
   'post',
   'comment',
-  'forum-question',
+  'forum_publication',
 ]);
 
 export const reactionTypeEnum = pgEnum('reaction_type', [

@@ -1,14 +1,23 @@
-// posts.controller.ts
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { GetPostsDto } from './dto/get-posts.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
 export class PostsController {
-  constructor(private readonly postsService: PostsService) { }
+  constructor(private readonly postsService: PostsService) {}
 
   @Post('publish-post')
   async createPost(@Body() createPostDto: CreatePostDto, @Req() req) {
@@ -18,10 +27,16 @@ export class PostsController {
 
   @Get()
   async getPosts(@Query() topic: GetPostsDto) {
-    if (topic.mainTopic)
-      return this.postsService.getPostsByMainTopic(topic);
-    if (topic.subTopic)
-      return this.postsService.getPostsBySubTopic(topic);
-    return this.postsService.getAllPosts(topic);
+    return this.postsService.getPosts(topic);
+  }
+
+  @Post(':postId/comment')
+  createComment(
+    @Param('postId') postId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.postsService.createComment(postId, userId, dto);
   }
 }
