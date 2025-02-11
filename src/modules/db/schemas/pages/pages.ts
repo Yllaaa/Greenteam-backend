@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, primaryKey, text, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey, text, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { topics, users } from "../schema";
 import { relations } from "drizzle-orm";
 
@@ -15,7 +15,9 @@ export const pages = pgTable('pages', {
     topic_id: uuid().references(() => topics.id),
     category: pageCategory().notNull(),
     page_info_id: uuid()
-})
+}, (table) => [
+    uniqueIndex('page_owner').on(table.owner_id)
+])
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
     owner: one(users, {
