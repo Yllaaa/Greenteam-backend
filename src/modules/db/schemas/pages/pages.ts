@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey, text, uuid, varchar } from "drizzle-orm/pg-core";
 import { topics, users } from "../schema";
 import { relations } from "drizzle-orm";
 
@@ -17,7 +17,7 @@ export const pages = pgTable('pages', {
     page_info_id: uuid()
 })
 
-export const pagesRelations = relations(pages, ({ one }) => ({
+export const pagesRelations = relations(pages, ({ one, many }) => ({
     owner: one(users, {
         fields: [pages.owner_id],
         references: [users.id]
@@ -25,5 +25,43 @@ export const pagesRelations = relations(pages, ({ one }) => ({
     topic: one(topics, {
         fields: [pages.topic_id],
         references: [topics.id]
+    }),
+    contacts: many(pagesContacts),
+    likes: many(pagesLikes)
+}))
+
+export const pagesContacts = pgTable('pages_contacts',{
+    page_id: uuid().notNull().references(() => pages.id),
+    name: varchar().notNull(),
+    title: varchar().notNull(),
+    email: varchar().notNull(),
+    phone_num: varchar().notNull(),
+    personal_picture: varchar()
+}, (table) => [
+    primaryKey({columns: [table.page_id, table.email]})
+])
+
+export const pagesContactsRelations = relations(pagesContacts, ({one}) => ({
+    page: one(pages,{
+        fields: [pagesContacts.page_id],
+        references: [pages.id]
+    })
+}))
+
+export const pagesLikes = pgTable('pages_likes',{
+    page_id: uuid().notNull().references(() => pages.id),
+    user_id: uuid().notNull().references(() => users.id)
+}, (table) => [
+    primaryKey({columns: [table.page_id, table.user_id]})
+])
+
+export const pagesLikesRelations = relations(pagesLikes, ({one}) => ({
+    page: one(pages, {
+        fields: [pagesLikes.page_id],
+        references: [pages.id]
+    }),
+    user: one(users, {
+        fields: [pagesLikes.user_id],
+        references: [users.id]
     })
 }))
