@@ -25,8 +25,8 @@ export class PagesController {
 
     @Post(':id/contact')
     async addPageContact(@Param() pageId: IdParamDto, @Body() contact: PageContactDto, @Req() req, @Res() res: Response){
-        const userPageId = await this.pagesService.getPageId(req.user)
-        if(userPageId !== pageId.id){
+        const pageUserId = await this.pagesService.getPageUserId(pageId.id)
+        if(pageUserId !== req.user.id){
             res.status(HttpStatus.UNAUTHORIZED).send()
             return
         }

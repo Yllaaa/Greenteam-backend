@@ -40,11 +40,11 @@ export class PagesRepository {
         })
     }
 
-    async getPageId(userId: string){
+    async getPageUserId(pageId: string){
         return await this.drizzleService.db.query.pages.findFirst({
-            where: eq(pages.owner_id, userId),
+            where: eq(pages.id, pageId),
             columns: {
-                id: true
+                owner_id: true
             }
         })
     }
