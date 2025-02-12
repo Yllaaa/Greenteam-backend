@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
-import { PostsContainerModule } from './posts/posts.module';
+import { PostsModule } from './posts/posts.module';
 import { RouterModule } from '@nestjs/core';
 import { CommentsModule } from './posts/comments/comments.module';
 import { ReactionsModule } from './posts/reactions/reactions.module';
 
 const postsRoutes = [
-  { path: 'comments', module: CommentsModule },
+  { path: '/', module: CommentsModule },
   { path: 'reactions', module: ReactionsModule },
 ];
 
 @Module({
   imports: [
-    PostsContainerModule,
+    PostsModule,
     RouterModule.register([
-      { path: 'posts', module: PostsContainerModule, children: postsRoutes },
+      { path: 'posts', module: PostsModule, children: postsRoutes },
     ]),
   ],
 })
