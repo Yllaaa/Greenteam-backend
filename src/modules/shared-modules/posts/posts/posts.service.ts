@@ -35,7 +35,7 @@ export class PostsService {
     return (await this.postsRepository.getPostById(post.id)) as unknown as Post;
   }
 
-  async getPosts(topic: GetPostsDto) {
+  async getPosts(topic: GetPostsDto, userId: string) {
     if (topic.mainTopicId && topic.subTopicId) {
       throw new BadRequestException(
         'You can only filter by main topic or sub topic',
@@ -50,6 +50,7 @@ export class PostsService {
         page: topic.page,
         limit: topic.limit,
       },
+      userId,
     );
   }
 }
