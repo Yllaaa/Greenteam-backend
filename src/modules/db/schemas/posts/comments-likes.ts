@@ -57,10 +57,25 @@ export const commentsRelations = relations(
       fields: [publicationsComments.publicationId],
       references: [posts.id],
     }),
+    author: one(users, {
+      fields: [publicationsComments.userId],
+      references: [users.id],
+    }),
     replies: many(commentsReplies),
     reactions: many(publicationsReactions),
   }),
 );
+
+export const repliesRelations = relations(commentsReplies, ({ one }) => ({
+  comment: one(publicationsComments, {
+    fields: [commentsReplies.commentId],
+    references: [publicationsComments.id],
+  }),
+  author: one(users, {
+    fields: [commentsReplies.userId],
+    references: [users.id],
+  }),
+}));
 
 export const publicationsReactions = pgTable(
   'publications_reactions',

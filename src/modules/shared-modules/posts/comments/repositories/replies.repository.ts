@@ -28,4 +28,34 @@ export class RepliesRepository {
       .where(eq(commentsReplies.id, id));
     return reply;
   }
+
+  async getRepliesByCommentId(
+    commentId: string,
+    pagination: { limit: number; page: number },
+  ) {
+    const { limit = 10, page = 0 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+    return await this.drizzleService.db.query.commentsReplies.findMany({
+      where: eq(commentsReplies.commentId, commentId),
+      columns: {
+        id: true,
+        commentId: true,
+        content: true,
+        mediaUrl: true,
+        createdAt: true,
+      },
+      with: {
+        author: {
+          columns: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
+      limit,
+      offset,
+    });
+  }
 }

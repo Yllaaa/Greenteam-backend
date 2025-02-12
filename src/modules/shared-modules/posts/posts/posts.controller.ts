@@ -12,12 +12,15 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { CreateCommentDto } from './dto/create-comment.dto';
-
+import { CreateCommentDto } from '../comments/dtos/create-comment.dto';
+import { CommentsService } from '../comments/comments.service';
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly commentsService: CommentsService,
+  ) {}
 
   @Post('publish-post')
   async createPost(@Body() createPostDto: CreatePostDto, @Req() req) {
@@ -26,27 +29,8 @@ export class PostsController {
   }
 
   @Get()
-  async getPosts(@Query() topic: GetPostsDto) {
-    return this.postsService.getPosts(topic);
-  }
-
-  @Post(':postId/comment')
-  createComment(
-    @Param('postId') postId: string,
-    @Body() dto: CreateCommentDto,
-    @Req() req,
-  ) {
+  async getPosts(@Query() topic: GetPostsDto, @Req() req) {
     const userId = req.user.id;
-    return this.postsService.createComment(postId, userId, dto);
-  }
-
-  @Post(':postId/comments/:commentId/reply')
-  createReply(
-    @Param('commentId') commentId: string,
-    @Body() dto: CreateCommentDto,
-    @Req() req,
-  ) {
-    const userId = req.user.id;
-    return this.postsService.createCommentReply(commentId, userId, dto);
+    return this.postsService.getPosts(topic, userId);
   }
 }
