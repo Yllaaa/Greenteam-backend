@@ -1,4 +1,4 @@
-import { Type } from "class-transformer"
+import { Transform, Type } from "class-transformer"
 import { IsBoolean, IsEmpty, IsIn, IsNumber, IsString, IsUUID, Min } from "class-validator"
 import { productMarketType } from "src/modules/db/schemas/products/products"
 
@@ -20,7 +20,10 @@ export class ProductDto{
     @Min(0)
     price: number
 
-    @Type(() => Boolean)
+    @Transform(({ value }) => {
+        if (value == 'true' || value == '1') return true;
+        return false;
+        })
     @IsBoolean()
     is_hidden: boolean
 
