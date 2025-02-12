@@ -15,7 +15,6 @@ export class CommentsRepository {
         userId: createCommentDto.userId,
         publicationId: createCommentDto.publicationId,
         publicationType: 'post',
-        parentCommentId: createCommentDto.parentCommentId ?? null,
       })
       .returning();
     return comment[0];
