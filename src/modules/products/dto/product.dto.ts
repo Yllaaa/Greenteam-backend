@@ -33,10 +33,12 @@ export class ProductDto{
     @IsString()
     location: string
 
-    @IsUUID()
-    topic_id: string
+    @Type(() => Number)
+    @IsNumber()
+    topic_id: number
 
-    @IsUUID()
-    sub_topic_id: string
+    @Type(() => Number)
+    @IsNumber()
+    sub_topic_id: number
 
 }

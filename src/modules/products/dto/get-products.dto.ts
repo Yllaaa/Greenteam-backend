@@ -1,14 +1,17 @@
+import { Type } from 'class-transformer';
 import { productMarketType } from './../../db/schemas/products/products';
-import { IsIn, IsOptional, IsUUID } from "class-validator"
+import { IsIn, IsNumber, IsOptional } from "class-validator"
 
 export class GetProductsDto{
-    @IsUUID()
+    @Type(() => Number)
+    @IsNumber()
     @IsOptional()
-    topic_id: string
+    topic_id: number
 
-    @IsUUID()
+    @Type(() => Number)
+    @IsNumber()
     @IsOptional()
-    sub_topic_id: string
+    sub_topic_id: number
 
     @IsIn(productMarketType.enumValues)
     @IsOptional()

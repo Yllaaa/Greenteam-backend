@@ -1,4 +1,4 @@
-import { boolean, integer, pgEnum, pgTable, primaryKey, text, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, pgEnum, pgTable, primaryKey, serial, text, uuid, varchar } from "drizzle-orm/pg-core";
 import { topics, users } from "../schema";
 import { relations } from "drizzle-orm";
 
@@ -16,8 +16,8 @@ export const products = pgTable('products',{
     is_hidden: boolean().default(false),
     market_type: productMarketType().notNull(),
     location: varchar().notNull(),
-    topic_id: uuid().notNull().references(() => topics.id),
-    sub_topic_id: uuid().notNull().references(() => topics.id)
+    topic_id: serial().notNull().references(() => topics.id),
+    sub_topic_id: serial().notNull().references(() => topics.id)
 })
 
 export const productsRelations = relations(products,({one, many})=>({
