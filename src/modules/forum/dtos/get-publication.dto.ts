@@ -13,6 +13,7 @@ export class GetForumPublicationsDto {
   section?: ForumSection;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   mainTopicId?: number;
 

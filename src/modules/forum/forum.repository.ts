@@ -7,7 +7,10 @@ import {
   topics,
   users,
 } from '../db/schemas/schema';
-import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
+import {
+  CreateForumPublicationDto,
+  ForumSection,
+} from './dtos/create-forumPublication.dto';
 import { and, desc, eq, isNull, SQL, sql } from 'drizzle-orm';
 
 @Injectable()
@@ -40,7 +43,7 @@ export class ForumRepository {
 
   async getForumPublications(
     filter?: {
-      section?: SQL<'doubt' | 'need' | 'dream'>;
+      section?: ForumSection;
       mainTopicId?: number;
     },
     pagination?: { limit: number; page: number },

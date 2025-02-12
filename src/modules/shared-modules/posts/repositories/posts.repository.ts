@@ -4,6 +4,8 @@ import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   posts,
   postSubTopics,
+  publicationsComments,
+  publicationsReactions,
   topics,
   users,
 } from 'src/modules/db/schemas/schema';
@@ -108,20 +110,35 @@ export class PostsRepository {
           content: posts.content,
           createdAt: posts.createdAt,
         },
-        mainTopic: {
-          id: topics.id,
-          name: topics.name,
-        },
-        userCreator: {
+        author: {
           id: users.id,
           fullName: users.fullName,
           avatar: users.avatar,
           username: users.username,
         },
+        commentCount: this.commentCountQuery,
+        likeCount: this.reactionCountQueries.like,
+        dislikeCount: this.reactionCountQueries.dislike,
       })
       .from(posts)
-      .leftJoin(topics, eq(posts.mainTopicId, topics.id))
       .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(
+        publicationsComments,
+        eq(posts.id, publicationsComments.publicationId),
+      )
+      .leftJoin(
+        publicationsReactions,
+        eq(posts.id, publicationsReactions.reactionableId),
+      )
+      .groupBy(
+        posts.id,
+        posts.content,
+        posts.createdAt,
+        users.id,
+        users.fullName,
+        users.avatar,
+        users.username,
+      )
       .orderBy(posts.createdAt);
 
     const conditions: SQL[] = [];
@@ -173,4 +190,24 @@ export class PostsRepository {
       },
     });
   }
+
+  private readonly commentCountQuery = sql<number>`
+  COUNT(DISTINCT ${publicationsComments.id})
+`.as('comment_count');
+
+  private readonly reactionCountQueries = {
+    like: sql<number>`
+    COUNT(CASE 
+      WHEN ${publicationsReactions.reactionType} = 'like' 
+      THEN 1 
+    END)
+  `.as('like_count'),
+
+    dislike: sql<number>`
+    COUNT(CASE 
+      WHEN ${publicationsReactions.reactionType} = 'dislike' 
+      THEN 1 
+    END)
+  `.as('dislike_count'),
+  };
 }

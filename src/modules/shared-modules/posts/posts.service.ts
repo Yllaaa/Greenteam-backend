@@ -34,6 +34,11 @@ export class PostsService {
   }
 
   async getPosts(topic: GetPostsDto) {
+    if (topic.mainTopicId && topic.subTopicId) {
+      throw new BadRequestException(
+        'You can only filter by main topic or sub topic',
+      );
+    }
     return await this.postsRepository.getFilteredPosts(
       {
         mainTopicId: topic.mainTopicId,
