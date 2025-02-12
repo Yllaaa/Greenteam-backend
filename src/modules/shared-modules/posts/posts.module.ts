@@ -6,7 +6,6 @@ import { CommentsRepository } from './comments/repositories/comments.repository'
 import { RepliesRepository } from './comments/repositories/replies.repository';
 import { CommentsModule } from './comments/comments.module';
 import { ReactionsModule } from './reactions/reactions.module';
-import { PostsModule } from './posts/posts.module';
 
 @Module({
   providers: [
@@ -17,6 +16,6 @@ import { PostsModule } from './posts/posts.module';
   ],
   controllers: [PostsController],
   exports: [PostsService],
-  imports: [CommentsModule, ReactionsModule, PostsModule],
+  imports: [CommentsModule, ReactionsModule],
 })
 export class PostsContainerModule {}
