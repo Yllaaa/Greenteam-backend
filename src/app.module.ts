@@ -1,3 +1,4 @@
+import { ProductsModule } from './modules/products/products.module';
 import { Global, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -14,6 +15,7 @@ import { ForumModule } from './modules/forum/forum.module';
 @Global()
 @Module({
   imports: [
+    ProductsModule,
     DrizzleModule,
     AuthModule,
     ConfigModule.forRoot({
