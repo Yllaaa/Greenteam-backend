@@ -24,18 +24,10 @@ export class PagesRepository {
                     }
                 },
                 topic: true,
-                contacts: true,
-                followers: {
-                    columns: {},
-                    with:{
-                        user: {
-                            columns: {
-                                fullName: true,
-                                avatar: true
-                            }
-                        }
-                    }
-                }
+                contacts: true
+            },
+            extras: {
+                followersCount: this.drizzleService.db.$count(pagesFollowers, eq(pagesFollowers.page_id, pages.id)).as('followersCount')
             }
         })
     }
