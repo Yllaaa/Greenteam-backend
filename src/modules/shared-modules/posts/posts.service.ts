@@ -35,10 +35,14 @@ export class PostsService {
 
   async getPosts(topic: GetPostsDto) {
     return await this.postsRepository.getFilteredPosts(
-      topic.mainTopicId,
-      topic.subTopicId,
-      topic.page,
-      topic.limit,
+      {
+        mainTopicId: topic.mainTopicId,
+        subTopicId: topic.subTopicId,
+      },
+      {
+        page: topic.page,
+        limit: topic.limit,
+      },
     );
   }
 

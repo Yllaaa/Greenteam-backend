@@ -14,9 +14,9 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
-  @IsUUID()
+  @IsInt()
   @IsNotEmpty()
-  mainTopicId: string;
+  mainTopicId: number;
 
   @IsUUID()
   @IsOptional()

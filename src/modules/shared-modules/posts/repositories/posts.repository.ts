@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { eq, exists, inArray, SQL, and, or } from 'drizzle-orm';
+import { eq, exists, inArray, SQL, and, or, sql } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
-import { posts, postSubTopics, topics } from 'src/modules/db/schemas/schema';
+import {
+  posts,
+  postSubTopics,
+  topics,
+  users,
+} from 'src/modules/db/schemas/schema';
 
 @Injectable()
 export class PostsRepository {
@@ -17,7 +22,7 @@ export class PostsRepository {
 
   async createPost(
     content: string,
-    mainTopicId: string,
+    mainTopicId: number,
     creatorId: string,
     creatorType: SQL<'user' | 'page' | 'group_member'>,
     userId: string,
@@ -84,15 +89,45 @@ export class PostsRepository {
   }
 
   async getFilteredPosts(
-    mainTopicId: number,
-    subTopicId: number,
-    limit = 10,
-    offset = 0,
+    filters?: {
+      mainTopicId?: number;
+      subTopicId?: number;
+    },
+    pagination?: {
+      limit?: number;
+      page?: number;
+    },
   ) {
+    const { mainTopicId, subTopicId } = filters || {};
+    const { limit = 10, page = 0 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+    const queryBuilder = this.drizzleService.db
+      .select({
+        post: {
+          id: posts.id,
+          content: posts.content,
+          createdAt: posts.createdAt,
+        },
+        mainTopic: {
+          id: topics.id,
+          name: topics.name,
+        },
+        userCreator: {
+          id: users.id,
+          fullName: users.fullName,
+          avatar: users.avatar,
+          username: users.username,
+        },
+      })
+      .from(posts)
+      .leftJoin(topics, eq(posts.mainTopicId, topics.id))
+      .leftJoin(users, eq(posts.creatorId, users.id))
+      .orderBy(posts.createdAt);
+
     const conditions: SQL[] = [];
 
     if (mainTopicId) {
-      conditions.push(eq(posts.mainTopicId, Number(mainTopicId)));
+      conditions.push(eq(posts.mainTopicId, mainTopicId));
     }
 
     if (subTopicId) {
@@ -106,20 +141,19 @@ export class PostsRepository {
                 eq(postSubTopics.postId, posts.id),
                 eq(postSubTopics.topicId, Number(subTopicId)),
               ),
-            ),
+            )
+            .orderBy(posts.createdAt),
         ),
       );
     }
 
-    const query = this.drizzleService.db
-      .select()
-      .from(posts)
-      .where(or(...conditions))
-      .orderBy(posts.createdAt)
-      .limit(limit)
-      .offset(offset);
+    if (conditions.length > 0) {
+      queryBuilder.where(or(...conditions));
+    }
 
-    const data = query.execute();
+    const paginatedQuery = queryBuilder.limit(limit).offset(offset);
+
+    const data = await paginatedQuery.execute();
 
     return data;
   }
