@@ -8,7 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ForumService } from './forum.service';
-import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
+import {
+  CreateForumPublicationDto,
+  ForumSection,
+} from './dtos/create-forumPublication.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetForumPublicationsDto } from './dtos/get-publication.dto';
 
@@ -30,8 +33,8 @@ export class ForumController {
   async getForumPublications(@Query() query: GetForumPublicationsDto) {
     return this.forumService.getPublications(
       {
-        section: query.section,
-        mainTopicId: query.mainTopicId,
+        section: query?.section ?? ForumSection.DREAM,
+        mainTopicId: query?.mainTopicId ?? 1,
       },
       { limit: query.limit ?? 10, page: query.page ?? 1 },
     );
