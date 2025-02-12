@@ -2,6 +2,7 @@ import {
   pgTable,
   uuid,
   text,
+  varchar,
   timestamp,
   index,
   uniqueIndex,
@@ -24,22 +25,30 @@ export const publicationsComments = pgTable(
       .references(() => posts.id, { onDelete: 'cascade' })
       .notNull(),
     publicationType: publicationTypeEnum('publication_type').notNull(),
-    parentCommentId: uuid('parent_comment_id').references(
-      () => publicationsComments.id,
-      { onDelete: 'cascade' },
-    ),
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id),
     content: text('content').notNull(),
+    mediaUrl: varchar('media_url'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => [
-    index('comment_post_idx').on(table.publicationId),
-    index('comment_parent_idx').on(table.parentCommentId),
-  ],
+  (table) => [index('comment_post_idx').on(table.publicationId)],
 );
+
+export const commentsReplies = pgTable('comments_replies', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  commentId: uuid('comment_id')
+    .references(() => publicationsComments.id, { onDelete: 'cascade' })
+    .notNull(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  content: text('content').notNull(),
+  mediaUrl: varchar('media_url'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
 
 export const commentsRelations = relations(
   publicationsComments,
@@ -48,12 +57,8 @@ export const commentsRelations = relations(
       fields: [publicationsComments.publicationId],
       references: [posts.id],
     }),
-    parentComment: one(publicationsComments, {
-      fields: [publicationsComments.parentCommentId],
-      references: [publicationsComments.id],
-    }),
-    replies: many(publicationsComments),
-    likes: many(publicationsReactions),
+    replies: many(commentsReplies),
+    reactions: many(publicationsReactions),
   }),
 );
 
@@ -64,8 +69,8 @@ export const publicationsReactions = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id),
-    reactionableType: reactionableTypeEnum('likeable_type').notNull(),
-    reactionableId: uuid('likeable_id').notNull(),
+    reactionableType: reactionableTypeEnum('reactionable_type').notNull(),
+    reactionableId: uuid('reactionable_id').notNull(),
     reactionType: reactionTypeEnum().notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },

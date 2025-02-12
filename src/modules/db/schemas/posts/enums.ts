@@ -34,6 +34,7 @@ export const mediaParentTypeEnum = pgEnum('media_parent_type', [
 export const reactionableTypeEnum = pgEnum('reactionable_type', [
   'post',
   'comment',
+  'reply',
   'forum_publication',
 ]);
 

@@ -3,17 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PostsRepository } from './repositories/posts.repository';
-import { CommentsRepository } from './repositories/comments.repository';
+import { PostsRepository } from './posts.repository';
+import { CommentsRepository } from '../comments/comments.repository';
 import { Post } from './types/post.type';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
+import { RepliesRepository } from '../comments/replies.repository';
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly commentRepository: CommentsRepository,
+    private readonly repliesRepository: RepliesRepository,
   ) {}
   async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
     const post = await this.postsRepository.createPost(
@@ -69,6 +71,17 @@ export class PostsService {
       userId,
       content: dto.content,
       parentCommentId: dto.parentCommentId,
+    });
+  }
+
+  async createCommentReply(commentId: string, userId: string, dto: any) {
+    const comment = await this.commentRepository.findById(commentId);
+    if (!comment) throw new NotFoundException('Comment not found');
+
+    return this.repliesRepository.createCommentReply({
+      commentId,
+      userId,
+      content: dto.content,
     });
   }
 }

@@ -39,4 +39,14 @@ export class PostsController {
     const userId = req.user.id;
     return this.postsService.createComment(postId, userId, dto);
   }
+
+  @Post(':postId/comments/:commentId/reply')
+  createReply(
+    @Param('commentId') commentId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.postsService.createCommentReply(commentId, userId, dto);
+  }
 }
