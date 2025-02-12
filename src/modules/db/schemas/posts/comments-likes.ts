@@ -1,11 +1,11 @@
 import {
   pgTable,
   uuid,
-  varchar,
   text,
   timestamp,
   index,
   uniqueIndex,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { posts } from './posts';
 import { relations } from 'drizzle-orm';
@@ -35,13 +35,10 @@ export const publicationsComments = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
-    postIdx: index('comment_post_idx').on(table.publicationId),
-    publicationHierarchyIdx: index('pub_comment_hierarchy_idx').on(
-      table.publicationId,
-      table.parentCommentId,
-    ),
-  }),
+  (table) => [
+    index('comment_post_idx').on(table.publicationId),
+    index('comment_parent_idx').on(table.parentCommentId),
+  ],
 );
 
 export const commentsRelations = relations(
@@ -72,15 +69,12 @@ export const publicationsReactions = pgTable(
     reactionType: reactionTypeEnum().notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => ({
-    userLikeIdx: uniqueIndex('user_like_idx').on(
+  (table) => [
+    uniqueIndex('user_like_idx').on(
       table.userId,
       table.reactionableType,
       table.reactionableId,
     ),
-    likeableIdx: index('likeable_idx').on(
-      table.reactionableType,
-      table.reactionableId,
-    ),
-  }),
+    index('likeable_idx').on(table.reactionableType, table.reactionableId),
+  ],
 );

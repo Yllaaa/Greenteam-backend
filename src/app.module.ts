@@ -30,4 +30,4 @@ import { ForumModule } from './modules/forum/forum.module';
   providers: [AppService],
   exports: [DrizzleModule],
 })
-export class AppModule {}
+export class AppModule { }

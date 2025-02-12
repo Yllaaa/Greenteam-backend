@@ -5,6 +5,7 @@ import {
   IsUUID,
   IsArray,
   IsOptional,
+  IsInt,
 } from 'class-validator';
 import { SQL } from 'drizzle-orm';
 
@@ -13,9 +14,9 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
-  @IsUUID()
+  @IsInt()
   @IsNotEmpty()
-  mainTopicId: string;
+  mainTopicId: number;
 
   @IsUUID()
   @IsOptional()
@@ -25,6 +26,6 @@ export class CreatePostDto {
   creatorType: SQL<'user' | 'page' | 'group_member'>;
 
   @IsArray()
-  @IsUUID('all', { each: true })
-  subtopicIds: string[];
+  @IsInt({ each: true })
+  subtopicIds: number[];
 }

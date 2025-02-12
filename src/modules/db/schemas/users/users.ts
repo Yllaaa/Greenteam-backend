@@ -28,7 +28,7 @@ export const users = pgTable(
     email: varchar('email', { length: 255 }).notNull().unique(),
     password: varchar('password', { length: 255 }).notNull(),
     fullName: varchar('full_name', { length: 255 }).notNull(),
-    username: varchar('username', { length: 255 }).notNull(),
+    username: varchar('username', { length: 255 }).notNull().unique(),
     bio: varchar('bio', { length: 255 }),
     avatar: varchar('profile_picture', { length: 255 }),
     phoneNumber: varchar('phone_number', { length: 255 }),
@@ -41,12 +41,10 @@ export const users = pgTable(
     joinedAt: timestamp('joined_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => {
-    return {
-      emailIdx: uniqueIndex('user_email_idx').on(table.email),
-      usernameIdx: uniqueIndex('user_username_idx').on(table.username),
-    };
-  },
+  (table) => [
+    uniqueIndex('user_email_idx').on(table.email),
+    uniqueIndex('user_username_idx').on(table.username),
+  ],
 );
 
 export const usersRelations = relations(users, ({ many }) => ({

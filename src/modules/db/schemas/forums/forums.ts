@@ -6,6 +6,7 @@ import {
   timestamp,
   index,
   pgEnum,
+  serial,
 } from 'drizzle-orm/pg-core';
 import {
   publicationsComments,
@@ -33,7 +34,7 @@ export const forumPublications = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     headline: varchar('headline', { length: 255 }).notNull(),
     content: text('content').notNull(),
-    mainTopicId: uuid('main_topic_id')
+    mainTopicId: serial('main_topic_id')
       .references(() => topics.id)
       .notNull(),
     authorId: uuid('user_id')

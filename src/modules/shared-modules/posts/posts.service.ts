@@ -8,6 +8,7 @@ import { CommentsRepository } from './repositories/comments.repository';
 import { Post } from './types/post.type';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { GetPostsDto } from './dto/get-posts.dto';
 @Injectable()
 export class PostsService {
   constructor(
@@ -30,6 +31,19 @@ export class PostsService {
       );
     }
     return (await this.postsRepository.getPostById(post.id)) as unknown as Post;
+  }
+
+  async getPosts(topic: GetPostsDto) {
+    return await this.postsRepository.getFilteredPosts(
+      {
+        mainTopicId: topic.mainTopicId,
+        subTopicId: topic.subTopicId,
+      },
+      {
+        page: topic.page,
+        limit: topic.limit,
+      },
+    );
   }
 
   async createComment(postId: string, userId: string, dto: CreateCommentDto) {

@@ -1,4 +1,11 @@
-import { IsEnum, IsString, IsUUID, Length, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsString,
+  IsUUID,
+  Length,
+  MinLength,
+} from 'class-validator';
 import { SQL } from 'drizzle-orm';
 export enum ForumSection {
   DOUBT = 'doubt',
@@ -15,8 +22,8 @@ export class CreateForumPublicationDto {
   @MinLength(10)
   content: string;
 
-  @IsUUID()
-  mainTopicId: string;
+  @IsInt()
+  mainTopicId: number;
 
   @IsEnum(ForumSection)
   section: SQL<'doubt' | 'need' | 'dream'>;
