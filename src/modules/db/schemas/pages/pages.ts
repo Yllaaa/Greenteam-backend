@@ -29,7 +29,7 @@ export const pagesRelations = relations(pages, ({ one, many }) => ({
         references: [topics.id]
     }),
     contacts: many(pagesContacts),
-    likes: many(pagesLikes)
+    followers: many(pagesFollowers)
 }))
 
 export const pagesContacts = pgTable('pages_contacts',{
@@ -50,20 +50,20 @@ export const pagesContactsRelations = relations(pagesContacts, ({one}) => ({
     })
 }))
 
-export const pagesLikes = pgTable('pages_likes',{
+export const pagesFollowers = pgTable('pages_followers',{
     page_id: uuid().notNull().references(() => pages.id),
     user_id: uuid().notNull().references(() => users.id)
 }, (table) => [
     primaryKey({columns: [table.page_id, table.user_id]})
 ])
 
-export const pagesLikesRelations = relations(pagesLikes, ({one}) => ({
+export const pagesFollowersRelations = relations(pagesFollowers, ({one}) => ({
     page: one(pages, {
-        fields: [pagesLikes.page_id],
+        fields: [pagesFollowers.page_id],
         references: [pages.id]
     }),
     user: one(users, {
-        fields: [pagesLikes.user_id],
+        fields: [pagesFollowers.user_id],
         references: [users.id]
     })
 }))

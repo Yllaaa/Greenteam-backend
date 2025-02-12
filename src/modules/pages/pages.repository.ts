@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
-import { pages, pagesContacts, pagesLikes } from '../db/schemas/schema';
+import { pages, pagesContacts, pagesFollowers } from '../db/schemas/schema';
 import { eq } from 'drizzle-orm';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class PagesRepository {
                 },
                 topic: true,
                 contacts: true,
-                likes: {
+                followers: {
                     columns: {},
                     with:{
                         user: {
@@ -53,8 +53,8 @@ export class PagesRepository {
         return await this.drizzleService.db.insert(pagesContacts).values(contact).returning()
     }
 
-    async addPageLike(page_id: string, user_id: string){
-        return await this.drizzleService.db.insert(pagesLikes).values({
+    async addPageFollower(page_id: string, user_id: string){
+        return await this.drizzleService.db.insert(pagesFollowers).values({
             page_id: page_id,
             user_id: user_id
         }).returning()

@@ -27,7 +27,7 @@ export class PagesService {
         return await this.pagesRepository.addPageContact(contact)
     }
 
-    async addPageLike(page_id: string, user: any){
-        return await this.pagesRepository.addPageLike(page_id, user.id)
+    async addPageFollower(page_id: string, user: any){
+        return await this.pagesRepository.addPageFollower(page_id, user.id)
     }
 }

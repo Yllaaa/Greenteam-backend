@@ -13,7 +13,7 @@ export class PagesController {
         private readonly pagesService: PagesService
     ){ }
 
-    @Post()
+    @Post('create-page')
     async createPage(@Body() page: PageDto, @Req() req){
         return await this.pagesService.createPage(page, req.user)
     }
@@ -23,7 +23,7 @@ export class PagesController {
         return await this.pagesService.getPage(req.user)
     }
 
-    @Post(':id/contact')
+    @Post(':id/add-contact')
     async addPageContact(@Param() pageId: IdParamDto, @Body() contact: PageContactDto, @Req() req, @Res() res: Response){
         const pageUserId = await this.pagesService.getPageUserId(pageId.id)
         if(pageUserId !== req.user.id){
@@ -34,8 +34,8 @@ export class PagesController {
         res.status(HttpStatus.CREATED).send()
     }
 
-    @Get(':id/like')
-    async addPageLike(@Param() pageId: IdParamDto, @Req() req){
-        return await this.pagesService.addPageLike(pageId.id, req.user)
+    @Get(':id/follow')
+    async addPageFollower(@Param() pageId: IdParamDto, @Req() req){
+        return await this.pagesService.addPageFollower(pageId.id, req.user)
     }
 }
