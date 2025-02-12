@@ -14,7 +14,7 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 
-@Controller('posts')
+@Controller()
 @UseGuards(JwtAuthGuard)
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}

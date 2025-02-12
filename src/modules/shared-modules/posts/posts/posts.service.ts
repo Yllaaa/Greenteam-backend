@@ -4,12 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PostsRepository } from './posts.repository';
-import { CommentsRepository } from '../comments/comments.repository';
+import { CommentsRepository } from '../comments/repositories/comments.repository';
 import { Post } from './types/post.type';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { RepliesRepository } from '../comments/replies.repository';
+import { RepliesRepository } from '../comments/repositories/replies.repository';
 @Injectable()
 export class PostsService {
   constructor(

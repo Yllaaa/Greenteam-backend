@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { PostsModule } from './posts/posts.module';
+import { PostsContainerModule } from './posts/posts.module';
 
 @Module({
-  imports: [PostsModule]
+  imports: [PostsContainerModule],
 })
 export class SharedModulesModule {}
