@@ -10,7 +10,7 @@ export class PagesRepository {
     ) { }
 
     async createPage(page: any){
-        return await this.drizzleService.db.insert(pages).values(page)
+        return await this.drizzleService.db.insert(pages).values(page).returning()
     }
 
     async getPage(userId: string){
@@ -50,13 +50,13 @@ export class PagesRepository {
     }
 
     async addPageContact(contact: any){
-        return await this.drizzleService.db.insert(pagesContacts).values(contact)
+        return await this.drizzleService.db.insert(pagesContacts).values(contact).returning()
     }
 
     async addPageLike(page_id: string, user_id: string){
         return await this.drizzleService.db.insert(pagesLikes).values({
             page_id: page_id,
             user_id: user_id
-        })
+        }).returning()
     }
 }
