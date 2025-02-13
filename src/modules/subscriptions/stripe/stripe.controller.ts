@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
 import { StripeService } from "./stripe.service";
 import { IdParamDto } from "./dto/id-param.dto";
 import { JwtAuthGuard } from "src/modules/auth/guards/jwt-auth.guard";
@@ -11,7 +11,7 @@ export class StripeController {
 
     @Get(':subscriptionId/create-payment-session')
     @UseGuards(JwtAuthGuard)
-    async createPaymentSession(subscriptionId: IdParamDto, @Req() req) {
+    async createPaymentSession(@Param() subscriptionId: IdParamDto, @Req() req) {
         return await this.stripeService.createStripeSession(subscriptionId.id, req.user);
     }
 

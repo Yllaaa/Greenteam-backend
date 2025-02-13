@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import { SubscriptionsService } from "./subscriptions.service";
 import { SubscriptionDto } from "./dto/subscription.dto";
+import { IdParamDto } from "./stripe/dto/id-param.dto";
 
 @Controller('subscriptions')
 export class SubscriptionsController {
@@ -16,5 +17,10 @@ export class SubscriptionsController {
     @Post('create')
     async createSubscription(@Req() req, @Body() subscription: SubscriptionDto) {
         return await this.subService.createSubscription(subscription.type,req.user);
+    }
+
+    @Get(':id/cancel')
+    async cancelSubscription(@Req() req, @Param() subscription: IdParamDto) {
+        return await this.subService.setSubscriptionStateCanceled(subscription.id, req.user);
     }
 }
