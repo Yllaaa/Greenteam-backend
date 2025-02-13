@@ -9,6 +9,12 @@ export class SubscriptionsRepository {
         private readonly drizzleService: DrizzleService
     ) { }
 
+    async getSubscriptionById(subscriptionId: string) {
+        return await this.drizzleService.db.query.subscriptions.findFirst({
+            where: eq(subscriptions.id, subscriptionId),
+        });
+    }
+
     async getUserActiveSubscriptions(userId: string) {
         return await this.drizzleService.db.query.subscriptions.findMany({
             where: and(eq(subscriptions.userId, userId), eq(subscriptions.state, SubscriptionState.Active)),

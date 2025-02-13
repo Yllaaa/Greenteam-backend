@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { SubscriptionsRepository } from "./subscriptions.repository";
 import { SubscriptionState, SubscriptionType, subscriptionTypes } from "../db/schemas/schema";
 
@@ -7,6 +7,12 @@ export class SubscriptionsService {
     constructor(
         private readonly subRepository: SubscriptionsRepository
     ) { }
+
+    async getSubscriptionPrice(subscriptionId: string) {
+        const sub = await this.subRepository.getSubscriptionById(subscriptionId);
+        if(!sub) throw new NotFoundException();
+        return (process.env[`SUBSCRIPTION_PRICE_${sub.type}`] || 0) as number;
+    }
 
     async createSubscription(subscriptionType: typeof subscriptionTypes.enumValues[number], user: any) {
         return await this.subRepository.createSubscription({
@@ -21,16 +27,23 @@ export class SubscriptionsService {
         return await this.subRepository.getUserSubscriptions(userId);
     }
 
-    private async setSubscriptionState(subscriptionId: string, user: any, state: SubscriptionState) {
-        return await this.subRepository.updateSubscription(subscriptionId, user.id, { state: state });
-    }
-
     async setSubscriptionStateActive(subscriptionId: string, user: any) {
-        return await this.setSubscriptionState(subscriptionId, user, SubscriptionState.Active);
+        const sub = await this.subRepository.getSubscriptionById(subscriptionId);
+        if (!sub) throw new NotFoundException();
+        sub.endDate?.setMonth(sub.endDate?.getMonth() + 1)
+        return await this.subRepository.updateSubscription(subscriptionId, user.id,
+            {
+                state: SubscriptionState.Active ,
+                endDate: sub?.endDate
+            });
     }
 
     async setSubscriptionStateCanceled(subscriptionId: string, user: any) {
-        return await this.setSubscriptionState(subscriptionId, user, SubscriptionState.Canceled);
+        return await this.subRepository.updateSubscription(subscriptionId, user.id,
+            {
+                state: SubscriptionState.Canceled,
+                endDate: new Date()
+            });
     }
 
 }
