@@ -10,6 +10,8 @@ import { EventsModule } from './modules/events/events.module';
 import { UsersModule } from './modules/users/users.module';
 import { SharedModulesModule } from './modules/shared-modules/shared-modules.module';
 import { ForumModule } from './modules/forum/forum.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { StripeModule } from './modules/subscriptions/stripe/stripe.module';
 
 @Global()
 @Module({
@@ -25,6 +27,8 @@ import { ForumModule } from './modules/forum/forum.module';
     UsersModule,
     SharedModulesModule,
     ForumModule,
+    SubscriptionsModule,
+    StripeModule
   ],
   controllers: [AppController],
   providers: [AppService],
