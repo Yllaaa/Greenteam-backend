@@ -24,7 +24,7 @@ export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull().references(() => users.id),
     type: subscriptionTypes().notNull(),
-    endDate: timestamp('end_date').notNull(),
+    endDate: timestamp('end_date'),
     state: subscriptionStates().notNull(),
 })
 
