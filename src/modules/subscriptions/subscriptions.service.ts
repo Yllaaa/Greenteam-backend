@@ -25,8 +25,8 @@ export class SubscriptionsService {
         });
     }
 
-    async getUserSubscriptions(userId: string) {
-        return await this.subRepository.getUserSubscriptions(userId);
+    async getUserSubscriptions(user: any) {
+        return await this.subRepository.getUserSubscriptions(user.id);
     }
 
     async setSubscriptionStateActive(subscriptionId: string, user: any) {
