@@ -5,7 +5,10 @@ export class CommonController {
   constructor(private readonly commonService: CommonService) {}
 
   @Get('topics')
-  async getTopics(@Query('mainTopics') mainTopics: boolean) {
-    return this.commonService.getTopics(mainTopics);
+  async getTopics(
+    @Query('mainTopics') mainTopics: boolean,
+    @Query('tree') tree: boolean,
+  ) {
+    return this.commonService.getTopics(mainTopics, { tree });
   }
 }

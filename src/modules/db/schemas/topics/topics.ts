@@ -6,6 +6,7 @@ import {
   timestamp,
   foreignKey,
   index,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
 import { relations } from 'drizzle-orm';
@@ -13,15 +14,13 @@ import { relations } from 'drizzle-orm';
 export const topics = pgTable(
   'topics',
   {
-    id: uuid('id').primaryKey().defaultRandom(),
+    id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
-    parentId: uuid('parent_id').references(() => topics.id),
+    parentId: serial('parent_id').references(() => topics.id),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
-    parentIdx: index('topic_parent_idx').on(table.parentId),
-  }),
+  (table) => [index('topic_parent_idx').on(table.parentId)],
 );
 
 export const postSubTopics = pgTable('post_sub_topics', {
@@ -29,7 +28,7 @@ export const postSubTopics = pgTable('post_sub_topics', {
   postId: uuid('post_id')
     .notNull()
     .references(() => posts.id),
-  topicId: uuid('topic_id')
+  topicId: serial('topic_id')
     .notNull()
     .references(() => topics.id),
 });

@@ -1,17 +1,77 @@
-import { pgEnum, pgTable, varchar, date, uuid, text } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  pgTable,
+  varchar,
+  date,
+  uuid,
+  text,
+  smallint,
+  primaryKey,
+  timestamp,
+  serial,
+} from 'drizzle-orm/pg-core';
+import { creatorTypeEnum, topics, users } from '../schema';
+import { relations } from 'drizzle-orm';
 
-export const EventCreatorType = pgEnum('EventCreatorType', ['User', 'Page'])
-
-export const EventCategory = pgEnum('Event Category', ['Social Events', 'Volunteering', 'Jobs', 'Talks / Workshops'])
+export const EventCategory = pgEnum('Event Category', [
+  'social',
+  'volunteering&work',
+  'talks&workshops',
+]);
 
 export const events = pgTable('events', {
-    creator_id: uuid().notNull(),
-    creator_type: EventCreatorType().notNull(),
-    name: varchar().notNull(),
-    description: text().notNull(),
-    location: varchar().notNull(),
-    start_date: date().notNull(),
-    end_date: date().notNull(),
-    category: EventCategory().notNull(),
-    poster: varchar().notNull()
+  id: uuid().primaryKey().defaultRandom(),
+  creatorId: uuid('creator_id').notNull(),
+  creatorType: creatorTypeEnum('creator_type').notNull(),
+  title: varchar().notNull(),
+  description: text(),
+  location: varchar().notNull(),
+  startDate: timestamp('start_date'),
+  endDate: timestamp('end_date'),
+  category: EventCategory(),
+  poster: varchar(),
+  priority: smallint().notNull().default(0),
+  topicId: serial('topic_id')
+    .notNull()
+    .references(() => topics.id),
+  createdAt: timestamp().notNull().defaultNow(),
 });
+
+export const events_relations = relations(events, ({ one, many }) => ({
+  usersJoined: many(usersJoinedEvent),
+  userCreator: one(users, {
+    fields: [events.creatorId],
+    references: [users.id],
+  }),
+  topic: one(topics, {
+    fields: [events.topicId],
+    references: [topics.id],
+  }),
+}));
+
+export const usersJoinedEvent = pgTable(
+  'users_joined_event',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
+    eventId: uuid('event_id')
+      .notNull()
+      .references(() => events.id),
+  },
+  (table) => [primaryKey({ columns: [table.eventId, table.userId] })],
+);
+
+export const usersJoinedEventRelations = relations(
+  usersJoinedEvent,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [usersJoinedEvent.userId],
+      references: [users.id],
+    }),
+    event: one(events, {
+      fields: [usersJoinedEvent.eventId],
+      references: [events.id],
+    }),
+  }),
+);
