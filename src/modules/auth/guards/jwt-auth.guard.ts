@@ -8,6 +8,8 @@ import { Reflector } from '@nestjs/core';
 import { DrizzleService } from '../../db/drizzle.service';
 import { users } from '../../db/schemas/users/users';
 import { eq } from 'drizzle-orm';
+import { subscriptions, SubscriptionState } from '../../db/schemas/subscriptions/subscriptions';
+import { Role } from 'src/modules/authorization/role.enum';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -27,23 +29,32 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const savedUser = await this.drizzle.db
-      .select({
-        id: users.id,
-        isEmailVerified: users.isEmailVerified,
-        email: users.email,
-        username: users.username,
-        status: users.status,
-      })
-      .from(users)
-      .where(eq(users.id, user.id))
-      .limit(1);
+    const savedUser = await this.drizzle.db.query.users.findFirst({
+      columns: {
+        id: true,
+        isEmailVerified: true,
+        email: true,
+        username: true,
+        status: true,
+      },
+      where: eq(users.id, user.id),
+      with: {
+        subscriptions: {
+          columns: {
+            type: true
+          },
+          where: eq(subscriptions.state, SubscriptionState.Active)
+        }
+      }
+    })
 
-    if (!savedUser[0]?.isEmailVerified) {
+    if (!savedUser?.isEmailVerified) {
       throw new UnauthorizedException('Please verify your email');
     }
 
-    request.user = savedUser[0];
+    request.user = savedUser;
+    request.user.roles = savedUser.subscriptions.map((subscription) => Role[subscription.type]);
+    delete request.user.subscriptions
     return true;
   }
 }
