@@ -16,7 +16,7 @@ export class StripeRepository {
     async updatePayment(paymentId: string, payment: Partial<typeof stripePayments.$inferInsert>) {
         return await this.drizzleService.db.update(stripePayments)
             .set(payment)
-            .where(eq(stripePayments.id, paymentId))
+            .where(eq(stripePayments.paymentIntentId, paymentId))
             .returning();
     }
 }

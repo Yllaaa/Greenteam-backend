@@ -28,10 +28,8 @@ export class StripeService {
             paymentIntentId: session.id,
             subscriptionId: subscriptionId,
             userId: user.id,
-            price: amount
         });
 
-        session.metadata = { paymentId: payment[0].id, user: user };
         return session;
     }
 
@@ -39,18 +37,21 @@ export class StripeService {
         return await this.stripeRepository.updatePayment(paymentId, { status: status });
     }
 
-    async confirmPayment(paymentMetadat: any) {
-        const payment = await this.updatePaymentStatus(paymentMetadat.paymentId, StripePaymentStatus.Paid);
-        await this.subService.setSubscriptionStateActive(payment[0].subscriptionId, paymentMetadat.user);
+    async confirmPayment(paymentId: string) {
+        const payment = await this.updatePaymentStatus(paymentId, StripePaymentStatus.Paid);
+        if (!payment[0]) return;
+        await this.subService.setSubscriptionStateActive(payment[0].subscriptionId, {id: payment[0].userId});
     }
 
     async stripeWebhook(body: any, signature: string) {
         const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ""
         const event = this.stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret);
         if (event.type === 'payment_intent.succeeded') {
-            await this.confirmPayment(event.data.object.metadata.paymentId);
+            const paymentId = (event.data.object as any).id;
+            await this.confirmPayment(paymentId);
         }else if(event.type === 'payment_intent.payment_failed') {
-            await this.updatePaymentStatus(event.data.object.metadata.paymentId, StripePaymentStatus.Failed);
+            const paymentId = (event.data.object as any).id;
+            await this.updatePaymentStatus(paymentId, StripePaymentStatus.Failed);
         }
     }
 }

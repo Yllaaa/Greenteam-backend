@@ -12,11 +12,9 @@ export enum StripePaymentStatus {
 export const stripePaymentsStatus = pgEnum('stripe_payments_status', ['Pending', 'Paid', 'Failed'])
 
 export const stripePayments = pgTable('stripe_payments', {
-    id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull().references(() => users.id),
     subscriptionId: uuid('subscription_id').notNull().references(() => subscriptions.id),
-    price: integer('price').notNull(),
-    paymentIntentId: varchar('payment_intent_id').notNull(),
+    paymentIntentId: varchar('payment_intent_id').notNull().primaryKey(),
     status: stripePaymentsStatus('status').default('Pending'),
     createdAt: timestamp('created_at').defaultNow(),
 })
