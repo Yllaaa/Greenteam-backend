@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { DrizzleService } from "../db/drizzle.service";
 import { subscriptions, SubscriptionState } from "../db/schemas/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 
 @Injectable()
 export class SubscriptionsRepository {
@@ -35,6 +35,13 @@ export class SubscriptionsRepository {
         return await this.drizzleService.db.update(subscriptions)
             .set(subscription)
             .where(and(eq(subscriptions.id, subscriptionId), eq(subscriptions.userId, userId)))
+            .returning();
+    }
+
+    async updateSubscriptionsToExpired(date: Date) {
+        return await this.drizzleService.db.update(subscriptions)
+            .set({ state: SubscriptionState.Expired })
+            .where(and(lt(subscriptions.endDate, date), eq(subscriptions.state, SubscriptionState.Active)))
             .returning();
     }
 }

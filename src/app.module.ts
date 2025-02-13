@@ -12,6 +12,7 @@ import { SharedModulesModule } from './modules/shared-modules/shared-modules.mod
 import { ForumModule } from './modules/forum/forum.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { StripeModule } from './modules/subscriptions/stripe/stripe.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Global()
 @Module({
@@ -28,7 +29,8 @@ import { StripeModule } from './modules/subscriptions/stripe/stripe.module';
     SharedModulesModule,
     ForumModule,
     SubscriptionsModule,
-    StripeModule
+    StripeModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
