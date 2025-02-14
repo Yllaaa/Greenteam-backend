@@ -6,9 +6,8 @@ export class InsertGroupDto {
   @IsNotEmpty()
   ownerId: string;
 
-  @IsUUID()
   @IsNotEmpty()
-  topicId: string;
+  topicId: number;
 
   @Length(3, 255)
   @IsNotEmpty()

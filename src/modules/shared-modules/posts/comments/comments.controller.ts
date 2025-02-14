@@ -1,0 +1,56 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { CommentsService } from './comments.service';
+import { CreateCommentDto } from './dtos/create-comment.dto';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { PaginationDto } from './dtos/pagination.dto';
+
+@UseGuards(JwtAuthGuard)
+@Controller('')
+export class CommentsController {
+  constructor(private readonly commentsService: CommentsService) {}
+
+  @Post(':postId/comment')
+  createComment(
+    @Param('postId') postId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.commentsService.createComment(postId, userId, dto);
+  }
+
+  @Post(':postId/comments/:commentId/reply')
+  createReply(
+    @Param('commentId') commentId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.commentsService.createCommentReply(commentId, userId, dto);
+  }
+
+  @Get(':postId/comments')
+  getComments(
+    @Param('postId') postId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.commentsService.getCommentsByPostId(postId, pagination);
+  }
+
+  @Get(':postId/comments/:commentId/replies')
+  getReplies(
+    @Param('commentId') commentId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.commentsService.getRepliesByCommentId(commentId, pagination);
+  }
+}

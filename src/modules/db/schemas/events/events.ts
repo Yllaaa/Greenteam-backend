@@ -8,6 +8,7 @@ import {
   smallint,
   primaryKey,
   timestamp,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { creatorTypeEnum, topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
@@ -30,7 +31,7 @@ export const events = pgTable('events', {
   category: EventCategory(),
   poster: varchar(),
   priority: smallint().notNull().default(0),
-  topicId: uuid('topic_id')
+  topicId: serial('topic_id')
     .notNull()
     .references(() => topics.id),
   createdAt: timestamp().notNull().defaultNow(),

@@ -7,3 +7,6 @@ export * from './forums/forums';
 export * from './common/media';
 export * from './events/events';
 export * from './groups/groups';
+export * from './pages/pages';
+export * from './challenges/challenges';
+

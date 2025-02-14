@@ -6,6 +6,7 @@ import {
   timestamp,
   pgEnum,
   uniqueIndex,
+  serial,
 } from "drizzle-orm/pg-core";
 import { users } from "../users/users";
 import { topics } from "../topics/topics";
@@ -20,7 +21,7 @@ export const groups = pgTable(
     name: varchar("name", { length: 255 }).notNull(),
     description: varchar("description", { length: 255 }).notNull(), 
     cover: varchar("cover", { length: 255 }), 
-    topicId: uuid("topic_id").notNull().references(() => topics.id, { onDelete: "cascade" }),
+    topicId: serial("topic_id").notNull().references(() => topics.id, { onDelete: "cascade" }),
     privacy: privacy().default("PRIVATE"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(), 

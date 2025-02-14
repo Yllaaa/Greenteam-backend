@@ -8,18 +8,6 @@ export class GroupsService {
   constructor(private readonly groupsRepository: GroupsRepository) {}
 
   async createGroup(data: InsertGroupDto) {
-    // TODO: should check for topic exist and user exist 
-    
-    // const owner = await this.UsersRepository.findById(data.ownerId);
-    // if (!owner) {
-    //   throw new NotFoundException(`User with ID ${data.ownerId} not found`);
-    // }
-  
-    // const topic = await this.topicsRepository.findById(data.topicId);
-    // if (!topic) {
-    //   throw new NotFoundException(`Topic with ID ${data.topicId} not found`);
-    // }
-  
     return this.groupsRepository.createGroup(data);
   }
 

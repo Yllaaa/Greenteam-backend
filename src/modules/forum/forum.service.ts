@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ForumRepository } from './forum.repository';
-import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
+import {
+  CreateForumPublicationDto,
+  ForumSection,
+} from './dtos/create-forumPublication.dto';
 import { plainToInstance } from 'class-transformer';
+import { SQL } from 'drizzle-orm';
 @Injectable()
 export class ForumService {
   constructor(private readonly forumRepository: ForumRepository) {}
@@ -13,7 +17,10 @@ export class ForumService {
     return this.forumRepository.createPublication(dto, authorId);
   }
 
-  async getPublications(filter, pagination: { limit: number; page: number }) {
+  async getPublications(
+    filter: { section: ForumSection; mainTopicId: number },
+    pagination: { limit: number; page: number },
+  ) {
     const results = await this.forumRepository.getForumPublications(
       {
         section: filter.section,
