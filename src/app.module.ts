@@ -32,4 +32,4 @@ import { GroupsModule } from './modules/groups/groups.module';
   providers: [AppService],
   exports: [DrizzleModule],
 })
-export class AppModule {}
+export class AppModule { }

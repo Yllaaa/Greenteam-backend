@@ -7,7 +7,10 @@ import {
   topics,
   users,
 } from '../db/schemas/schema';
-import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
+import {
+  CreateForumPublicationDto,
+  ForumSection,
+} from './dtos/create-forumPublication.dto';
 import { and, desc, eq, isNull, SQL, sql } from 'drizzle-orm';
 
 @Injectable()
@@ -32,7 +35,7 @@ export class ForumRepository {
     return publication[0];
   }
 
-  async findTopicById(topicId: string) {
+  async findTopicById(topicId: number) {
     return this.drizzleService.db.query.topics.findFirst({
       where: (topics, { eq }) => eq(topics.id, topicId),
     });
@@ -40,8 +43,8 @@ export class ForumRepository {
 
   async getForumPublications(
     filter?: {
-      section?: SQL<'doubt' | 'need' | 'dream'>;
-      mainTopicId?: string;
+      section?: ForumSection;
+      mainTopicId?: number;
     },
     pagination?: { limit: number; page: number },
   ) {

@@ -13,8 +13,9 @@ export class GetForumPublicationsDto {
   section?: ForumSection;
 
   @IsOptional()
-  @IsUUID()
-  mainTopicId?: string;
+  @Type(() => Number)
+  @IsInt()
+  mainTopicId?: number;
 
   @IsOptional()
   @Type(() => Number)
