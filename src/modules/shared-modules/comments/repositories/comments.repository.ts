@@ -15,6 +15,7 @@ export class CommentsRepository {
     publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
   ) {
     console.log('publicationType', publicationType);
+    console.log('createCommentDto', createCommentDto);
     const comment = await this.drizzleService.db
       .insert(publicationsComments)
       .values({
