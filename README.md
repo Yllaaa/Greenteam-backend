@@ -26,6 +26,10 @@ JWT_SECRET=your_jwt_secret
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
+# Good SMTP
+SMTP_EMAIL=
+SMTP_PASSWORD=
+
 # Public New
 PUBLIC_NEWS_API_KEY=
 
@@ -47,6 +51,22 @@ SUBSCRIPTION_PRICE_Volunteer=
 
 ```bash
 npx drizzle-kit push
+```
+
+* Install Redis
+
+-On Linux
+
+```bash
+sudo apt install redis-server
+sudo service redis-server start
+```
+
+-On Windows
+
+```bash
+docker pull redis
+docker run --name redis -d -p 6379:6379 redis
 ```
 
 ## Running the app
