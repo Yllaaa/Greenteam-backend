@@ -1,4 +1,5 @@
-import { IsIn, IsString, IsUUID } from "class-validator";
+import { Type } from "class-transformer";
+import { IsIn, IsInt, IsString } from "class-validator";
 import { pageCategory } from "src/modules/db/schemas/schema";
 
 export class PageDto{
@@ -19,8 +20,9 @@ export class PageDto{
     @IsString()
     cover: string;
 
-    @IsUUID()
-    topic_id: string;
+    @Type(() => Number)
+    @IsInt()
+    topic_id: number;
 
     @IsIn(pageCategory.enumValues)
     category: string;
