@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { DrizzleService } from '../db/drizzle.service';
+import { DrizzleService } from '../../db/drizzle.service';
 import {
   forumPublications,
   publicationsComments,
   publicationsReactions,
   topics,
   users,
-} from '../db/schemas/schema';
+} from '../../db/schemas/schema';
 import {
   CreateForumPublicationDto,
   ForumSection,
@@ -33,6 +33,12 @@ export class ForumRepository {
       .returning();
 
     return publication[0];
+  }
+
+  async findPublicationById(publicationId: string) {
+    return this.drizzleService.db.query.forumPublications.findFirst({
+      where: eq(forumPublications.id, publicationId),
+    });
   }
 
   async findTopicById(topicId: number) {

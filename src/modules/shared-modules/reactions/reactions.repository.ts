@@ -6,7 +6,7 @@ import { publicationsReactions } from 'src/modules/db/schemas/schema';
 import {
   CreateReactionDto,
   ReactionableTypeEnum,
-} from './dtos/create-reaction.dto';
+} from '../posts/reactions/dtos/create-reaction.dto';
 @Injectable()
 export class ReactionsRepository {
   constructor(private readonly drizzleService: DrizzleService) {}

@@ -4,8 +4,7 @@ import {
   CreateForumPublicationDto,
   ForumSection,
 } from './dtos/create-forumPublication.dto';
-import { plainToInstance } from 'class-transformer';
-import { SQL } from 'drizzle-orm';
+
 @Injectable()
 export class ForumService {
   constructor(private readonly forumRepository: ForumRepository) {}
@@ -30,5 +29,14 @@ export class ForumService {
     );
 
     return results;
+  }
+
+  async getPublication(publicationId: string) {
+    const publication =
+      await this.forumRepository.findPublicationById(publicationId);
+    if (!publication) {
+      throw new NotFoundException('Publication not found');
+    }
+    return publication;
   }
 }

@@ -12,11 +12,11 @@ import {
   CreateForumPublicationDto,
   ForumSection,
 } from './dtos/create-forumPublication.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetForumPublicationsDto } from './dtos/get-publication.dto';
 
 @UseGuards(JwtAuthGuard)
-@Controller('forum')
+@Controller('')
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 

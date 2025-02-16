@@ -15,15 +15,13 @@ import {
   reactionableTypeEnum,
   reactionTypeEnum,
 } from './enums';
-import { users } from '../schema';
+import { forumPublications, users } from '../schema';
 
 export const publicationsComments = pgTable(
   'publications_comments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    publicationId: uuid('publications_id')
-      .references(() => posts.id, { onDelete: 'cascade' })
-      .notNull(),
+    publicationId: uuid('publications_id').notNull(),
     publicationType: publicationTypeEnum('publication_type').notNull(),
     userId: uuid('user_id')
       .notNull()
@@ -56,6 +54,10 @@ export const commentsRelations = relations(
     post: one(posts, {
       fields: [publicationsComments.publicationId],
       references: [posts.id],
+    }),
+    forumPublication: one(forumPublications, {
+      fields: [publicationsComments.publicationId],
+      references: [forumPublications.id],
     }),
     author: one(users, {
       fields: [publicationsComments.userId],

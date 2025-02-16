@@ -1,20 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PostsModule } from './posts/posts.module';
-import { RouterModule } from '@nestjs/core';
-import { CommentsModule } from './posts/comments/comments.module';
-import { ReactionsModule } from './posts/reactions/reactions.module';
-
-const postsRoutes = [
-  { path: '/', module: CommentsModule },
-  { path: 'reactions', module: ReactionsModule },
-];
+import { CommentsModule } from './comments/comments.module';
+import { ReactionsModule } from './reactions/reactions.module';
 
 @Module({
-  imports: [
-    PostsModule,
-    RouterModule.register([
-      { path: 'posts', module: PostsModule, children: postsRoutes },
-    ]),
-  ],
+  imports: [PostsModule, CommentsModule, ReactionsModule],
 })
 export class SharedModulesModule {}
