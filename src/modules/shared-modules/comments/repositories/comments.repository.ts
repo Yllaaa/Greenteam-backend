@@ -14,8 +14,6 @@ export class CommentsRepository {
     },
     publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
   ) {
-    console.log('publicationType', publicationType);
-    console.log('createCommentDto', createCommentDto);
     const comment = await this.drizzleService.db
       .insert(publicationsComments)
       .values({
@@ -32,18 +30,31 @@ export class CommentsRepository {
     id: string,
     publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
   ) {
-    const [comment] = await this.drizzleService.db
-      .select({
-        id: publicationsComments.id,
-        publicationId: publicationsComments.publicationId,
-      })
-      .from(publicationsComments)
-      .where(
-        and(
+    const comment =
+      await this.drizzleService.db.query.publicationsComments.findFirst({
+        where: and(
           eq(publicationsComments.id, id),
           eq(publicationsComments.publicationType, publicationType),
         ),
-      );
+        columns: {
+          id: true,
+          content: true,
+          mediaUrl: true,
+          publicationId: true,
+          createdAt: true,
+        },
+        with: {
+          author: {
+            columns: {
+              id: true,
+              fullName: true,
+              username: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
     return comment;
   }
 

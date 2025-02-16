@@ -20,12 +20,27 @@ export class RepliesRepository {
   }
 
   async findById(id: string) {
-    const [reply] = await this.drizzleService.db
-      .select({
-        id: commentsReplies.id,
-      })
-      .from(commentsReplies)
-      .where(eq(commentsReplies.id, id));
+    const reply = await this.drizzleService.db.query.commentsReplies.findFirst({
+      columns: {
+        id: true,
+        commentId: true,
+        content: true,
+        mediaUrl: true,
+        createdAt: true,
+      },
+      where: eq(commentsReplies.id, id),
+      with: {
+        author: {
+          columns: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
     return reply;
   }
 

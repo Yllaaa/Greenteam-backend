@@ -39,7 +39,6 @@ export class CommentsController {
     const publicationType = this.publicationType;
 
     const publication = await this.forumService.getPublication(publicationId);
-    console.log('publication', publication);
     if (!publication) {
       throw new NotFoundException('Publication not found');
     }

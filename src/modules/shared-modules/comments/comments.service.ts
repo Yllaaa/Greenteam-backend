@@ -18,10 +18,15 @@ export class CommentsService {
       publicationType: SQL<'forum_publication' | 'post' | 'comment'>;
     },
   ) {
-    return this.commentsRepository.createComment(
+    const newComment = await this.commentsRepository.createComment(
       { userId, content: commentDto.content, publicationId },
       commentDto.publicationType,
     );
+    const comment = await this.commentsRepository.findById(
+      newComment.id,
+      commentDto.publicationType,
+    );
+    return comment;
   }
 
   async getCommentsByPublicationId(
@@ -41,11 +46,13 @@ export class CommentsService {
     );
     if (!comment) throw new NotFoundException('Comment not found');
 
-    return this.repliesRepository.createCommentReply({
+    const newReply = await this.repliesRepository.createCommentReply({
       commentId,
       userId,
       content: dto.content,
     });
+    const reply = await this.repliesRepository.findById(newReply.id);
+    return reply;
   }
 
   async getCommentsByPostId(
