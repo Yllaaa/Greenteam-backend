@@ -51,6 +51,10 @@ STRIPE_WEBHOOK_SECRET=
 
 # Subscriptions
 SUBSCRIPTION_PRICE_Volunteer=
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 * Run drizzle push
