@@ -11,9 +11,9 @@ import { ForumService } from './forum.service';
 import {
   CreateForumPublicationDto,
   ForumSection,
-} from './publications/dtos/create-forumPublication.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { GetForumPublicationsDto } from './publications/dtos/get-publication.dto';
+} from './dtos/create-forumPublication.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { GetForumPublicationsDto } from './dtos/get-publication.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('forum')

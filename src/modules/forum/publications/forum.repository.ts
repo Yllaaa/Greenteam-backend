@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { DrizzleService } from '../db/drizzle.service';
+import { DrizzleService } from '../../db/drizzle.service';
 import {
   forumPublications,
   publicationsComments,
   publicationsReactions,
   topics,
   users,
-} from '../db/schemas/schema';
+} from '../../db/schemas/schema';
 import {
   CreateForumPublicationDto,
   ForumSection,
-} from './publications/dtos/create-forumPublication.dto';
+} from './dtos/create-forumPublication.dto';
 import { and, desc, eq, isNull, SQL, sql } from 'drizzle-orm';
 
 @Injectable()

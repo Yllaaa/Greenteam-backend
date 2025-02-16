@@ -3,7 +3,7 @@ import { ForumRepository } from './forum.repository';
 import {
   CreateForumPublicationDto,
   ForumSection,
-} from './publications/dtos/create-forumPublication.dto';
+} from './dtos/create-forumPublication.dto';
 import { plainToInstance } from 'class-transformer';
 import { SQL } from 'drizzle-orm';
 @Injectable()

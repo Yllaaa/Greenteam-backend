@@ -8,16 +8,18 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { CommentsService } from './comments.service';
-import { CreateCommentDto } from './dtos/create-comment.dto';
+import { CreateCommentDto } from '../../comments/dtos/create-comment.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { PaginationDto } from './dtos/pagination.dto';
+import { PaginationDto } from '../../comments/dtos/pagination.dto';
+import { CommentsService } from '../../comments/comments.service';
+import { SQL } from 'drizzle-orm';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-
+  private publicationType: SQL<'forum_publication' | 'post' | 'comment'> =
+    'post' as unknown as SQL<'forum_publication' | 'post' | 'comment'>;
   @Post(':postId/comment')
   createComment(
     @Param('postId') postId: string,
@@ -25,7 +27,11 @@ export class CommentsController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.createComment(postId, userId, dto);
+    const publicationType = this.publicationType;
+    return this.commentsService.createComment(postId, userId, {
+      content: dto.content,
+      publicationType,
+    });
   }
 
   @Post(':postId/comments/:commentId/reply')
@@ -35,7 +41,10 @@ export class CommentsController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.createCommentReply(commentId, userId, dto);
+    return this.commentsService.createCommentReply(commentId, userId, {
+      content: dto.content,
+      publicationType: this.publicationType,
+    });
   }
 
   @Get(':postId/comments')

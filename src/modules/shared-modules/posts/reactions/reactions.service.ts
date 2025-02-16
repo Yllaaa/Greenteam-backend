@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ReactionsRepository } from './reactions.repository';
+import { ReactionsRepository } from '../../reactions/reactions.repository';
 import { CreateReactionDto } from './dtos/create-reaction.dto';
 
 interface ToggleResponse {
