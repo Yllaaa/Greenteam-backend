@@ -2,6 +2,12 @@
 
 ## Description
 
+## Requirements
+
+* NodeJs
+* PostgreSQL
+* Docker
+
 ## Installation
 
 ```bash
