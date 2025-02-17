@@ -10,6 +10,7 @@ import { EventsModule } from './modules/events/events.module';
 import { UsersModule } from './modules/users/users.module';
 import { SharedModulesModule } from './modules/shared-modules/shared-modules.module';
 import { ForumModule } from './modules/forum/forum.module';
+import { ChallengesModule } from './modules/challenges/challenges.module';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { ForumModule } from './modules/forum/forum.module';
     UsersModule,
     SharedModulesModule,
     ForumModule,
+    ChallengesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

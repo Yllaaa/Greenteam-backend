@@ -1,11 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ReactionsRepository } from '../../reactions/reactions.repository';
 import { CreateReactionDto } from './dtos/create-reaction.dto';
-
-interface ToggleResponse {
-  action: 'removed' | 'updated' | 'added';
-  type?: string;
-}
+import { ChallengesService } from 'src/modules/challenges/challenges.service';
 
 @Injectable()
 export class ReactionsService {
@@ -15,47 +11,87 @@ export class ReactionsService {
     reply: ['like', 'dislike'],
   };
 
-  constructor(private readonly reactionsRepository: ReactionsRepository) {}
+  constructor(
+    private readonly reactionsRepository: ReactionsRepository,
+    private readonly challengesService: ChallengesService,
+  ) {}
 
   async toggleReaction(userId: string, dto: CreateReactionDto) {
-    try {
-      const allowedReactions = this.allowedReactions[dto.reactionableType];
-      if (!allowedReactions?.includes(dto.reactionType)) {
-        throw new BadRequestException(
-          `Invalid reaction type "${dto.reactionType}" for ${dto.reactionableType}. Allowed types: ${allowedReactions.join(', ')}`,
-        );
-      }
+    if (!this.isReactionValid(dto.reactionableType, dto.reactionType)) {
+      throw new BadRequestException(
+        `Invalid reaction type "${dto.reactionType}" for ${dto.reactionableType}.`,
+      );
+    }
 
-      const existingReaction = await this.reactionsRepository.findUserReaction(
+    return dto.reactionType === 'do'
+      ? this.handleDoReaction(userId, dto)
+      : this.handleStandardReaction(userId, dto);
+  }
+
+  private async handleDoReaction(userId: string, dto: CreateReactionDto) {
+    const existingDoReaction =
+      await this.reactionsRepository.findUserDoReaction(
         userId,
-        dto.reactionableType,
         dto.reactionableId,
       );
 
-      if (existingReaction) {
-        if (existingReaction.reactionType === dto.reactionType) {
-          await this.reactionsRepository.removeReaction(
-            userId,
-            dto.reactionableType,
-            dto.reactionableId,
-          );
-          return { action: 'removed' };
-        } else {
-          const [updated] = await this.reactionsRepository.updateReaction(
-            userId,
-            dto,
-          );
-          return { action: 'updated', type: updated.reactionType };
-        }
-      }
-
-      const added = await this.reactionsRepository.addReaction(userId, dto);
-      return { action: 'added' };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      throw new BadRequestException('Failed to toggle reaction');
+    if (existingDoReaction) {
+      await Promise.all([
+        this.reactionsRepository.removeReaction(
+          userId,
+          dto.reactionableType,
+          dto.reactionableId,
+        ),
+        this.challengesService.deleteDoPostChallenge(
+          userId,
+          dto.reactionableId,
+        ),
+      ]);
+      return { action: 'removed' };
     }
+
+    await Promise.all([
+      this.reactionsRepository.addReaction(userId, dto),
+      this.challengesService.createDoPostChallenge(userId, dto.reactionableId),
+    ]);
+
+    return { action: 'added' };
+  }
+
+  private async handleStandardReaction(userId: string, dto: CreateReactionDto) {
+    const existingReaction = await this.reactionsRepository.findUserReaction(
+      userId,
+      dto.reactionableType,
+      dto.reactionableId,
+    );
+
+    if (existingReaction) {
+      if (existingReaction.reactionType === dto.reactionType) {
+        await this.reactionsRepository.removeReaction(
+          userId,
+          dto.reactionableType,
+          dto.reactionableId,
+        );
+        return { action: 'removed' };
+      } else {
+        const [updated] = await this.reactionsRepository.updateReaction(
+          userId,
+          dto,
+        );
+        return { action: 'updated', type: updated.reactionType };
+      }
+    }
+
+    await this.reactionsRepository.addReaction(userId, dto);
+    return { action: 'added' };
+  }
+
+  private isReactionValid(
+    reactionableType: string,
+    reactionType: string,
+  ): boolean {
+    return (
+      this.allowedReactions[reactionableType]?.includes(reactionType) ?? false
+    );
   }
 }
