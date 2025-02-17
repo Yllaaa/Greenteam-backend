@@ -35,11 +35,15 @@ export class ReactionsRepository {
     });
   }
 
-  async findUserDoReaction(userId: string, postId: string) {
+  async findUserDoReaction(
+    userId: string,
+    postId: string,
+    reactionableType: ReactionableTypeEnum,
+  ) {
     return this.drizzleService.db.query.publicationsReactions.findFirst({
       where: and(
         eq(publicationsReactions.userId, userId),
-        eq(publicationsReactions.reactionableType, 'post'),
+        eq(publicationsReactions.reactionableType, reactionableType),
         eq(publicationsReactions.reactionableId, postId),
         eq(publicationsReactions.reactionType, 'do'),
       ),
