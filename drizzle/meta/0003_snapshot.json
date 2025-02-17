@@ -1,5 +1,5 @@
 {
-  "id": "06ff4c37-d5cd-4c87-a940-f980850af883",
+  "id": "21ba014a-26ec-4198-86c6-ed1be2995c3b",
   "prevId": "ff4dcb4b-07a9-49ed-8b45-f5e57704f83d",
   "version": "7",
   "dialect": "postgresql",
@@ -532,19 +532,6 @@
         }
       },
       "foreignKeys": {
-        "publications_comments_publications_id_posts_id_fk": {
-          "name": "publications_comments_publications_id_posts_id_fk",
-          "tableFrom": "publications_comments",
-          "tableTo": "posts",
-          "columnsFrom": [
-            "publications_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "publications_comments_user_id_Users_accounts_id_fk": {
           "name": "publications_comments_user_id_Users_accounts_id_fk",
           "tableFrom": "publications_comments",
@@ -1083,9 +1070,9 @@
         },
         "topic_id": {
           "name": "topic_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "category": {
           "name": "category",

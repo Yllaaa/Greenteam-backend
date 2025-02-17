@@ -17,11 +17,16 @@ export class CommentsService {
       content: string;
       publicationType: SQL<'forum_publication' | 'post' | 'comment'>;
     },
-  ) {
-    return this.commentsRepository.createComment(
+  ): Promise<Comment> {
+    const newComment = await this.commentsRepository.createComment(
       { userId, content: commentDto.content, publicationId },
       commentDto.publicationType,
     );
+    const comment = await this.commentsRepository.findById(
+      newComment.id,
+      commentDto.publicationType,
+    );
+    return comment as Comment;
   }
 
   async getCommentsByPublicationId(
@@ -41,11 +46,13 @@ export class CommentsService {
     );
     if (!comment) throw new NotFoundException('Comment not found');
 
-    return this.repliesRepository.createCommentReply({
+    const newReply = await this.repliesRepository.createCommentReply({
       commentId,
       userId,
       content: dto.content,
     });
+    const reply = await this.repliesRepository.findById(newReply.id);
+    return reply;
   }
 
   async getCommentsByPostId(
@@ -63,5 +70,39 @@ export class CommentsService {
     pagination: { limit: number; page: number },
   ) {
     return this.repliesRepository.getRepliesByCommentId(commentId, pagination);
+  }
+
+  async deleteComment(
+    commentId: string,
+    userId: string,
+    publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
+  ) {
+    const comment = await this.commentsRepository.findById(
+      commentId,
+      publicationType,
+    );
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    if (comment.author.id !== userId) {
+      throw new NotFoundException('You are not allowed to delete this comment');
+    }
+
+    return this.commentsRepository.deleteComment(commentId, userId);
+  }
+
+  async deleteReply(id: string, userId: string) {
+    const reply = await this.repliesRepository.findById(id);
+    if (!reply) {
+      throw new NotFoundException('Reply not found');
+    }
+
+    if (reply.author.id !== userId) {
+      throw new NotFoundException('You are not allowed to delete this reply');
+    }
+
+    return this.repliesRepository.deleteReply(id, userId);
   }
 }

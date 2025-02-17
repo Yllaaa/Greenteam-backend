@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -61,5 +62,23 @@ export class CommentsController {
     @Query() pagination: PaginationDto,
   ) {
     return this.commentsService.getRepliesByCommentId(commentId, pagination);
+  }
+
+  @Delete(':postId/comments/:commentId')
+  async deleteComment(@Param('commentId') commentId: string, @Req() req) {
+    const userId = req.user.id;
+    await this.commentsService.deleteComment(
+      commentId,
+      userId,
+      this.publicationType,
+    );
+    return { message: 'Comment deleted successfully' };
+  }
+
+  @Delete(':postId/comments/:commentId/replies/:replyId')
+  async deleteReply(@Param('replyId') replyId: string, @Req() req) {
+    const userId = req.user.id;
+    await this.commentsService.deleteReply(replyId, userId);
+    return { message: 'Reply deleted successfully' };
   }
 }
