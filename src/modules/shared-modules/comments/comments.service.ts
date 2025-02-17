@@ -58,18 +58,25 @@ export class CommentsService {
   async getCommentsByPostId(
     postId: string,
     pagination: { limit: number; page: number },
+    currentUserId: string,
   ) {
     return this.commentsRepository.getCommentsByPublicationId(
       postId,
       pagination,
+      currentUserId,
     );
   }
 
   async getRepliesByCommentId(
     commentId: string,
     pagination: { limit: number; page: number },
+    userId,
   ) {
-    return this.repliesRepository.getRepliesByCommentId(commentId, pagination);
+    return this.repliesRepository.getRepliesByCommentId(
+      commentId,
+      pagination,
+      userId,
+    );
   }
 
   async deleteComment(

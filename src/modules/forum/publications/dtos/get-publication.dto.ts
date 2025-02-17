@@ -1,16 +1,11 @@
 import { IsOptional, IsInt, Min, IsEnum, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-
-export enum ForumSection {
-  DOUBT = 'doubt',
-  NEED = 'need',
-  DREAM = 'dream',
-}
+import { SQL } from 'drizzle-orm';
 
 export class GetForumPublicationsDto {
   @IsOptional()
-  @IsEnum(ForumSection)
-  section?: ForumSection;
+  @IsEnum(['need', 'doubt', 'dream'])
+  section?: SQL<'need' | 'doubt' | 'dream'> | undefined;
 
   @IsOptional()
   @Type(() => Number)
