@@ -19,7 +19,7 @@ export class RepliesRepository {
     return reply[0];
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<CommentReply | null> {
     const reply = await this.drizzleService.db.query.commentsReplies.findFirst({
       columns: {
         id: true,
@@ -41,7 +41,7 @@ export class RepliesRepository {
       },
     });
 
-    return reply;
+    return reply as CommentReply;
   }
 
   async getRepliesByCommentId(
@@ -72,5 +72,14 @@ export class RepliesRepository {
       limit,
       offset,
     });
+  }
+
+  async deleteReply(id: string, userId: string) {
+    return this.drizzleService.db
+      .delete(commentsReplies)
+      .where(
+        and(eq(commentsReplies.id, id), eq(commentsReplies.userId, userId)),
+      )
+      .execute();
   }
 }

@@ -29,7 +29,7 @@ export class CommentsRepository {
   async findById(
     id: string,
     publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
-  ) {
+  ): Promise<Comment | null> {
     const comment =
       await this.drizzleService.db.query.publicationsComments.findFirst({
         where: and(
@@ -55,7 +55,7 @@ export class CommentsRepository {
         },
       });
 
-    return comment;
+    return comment as Comment;
   }
 
   async getCommentsByPublicationId(
@@ -86,5 +86,16 @@ export class CommentsRepository {
       limit: limit,
       offset: offset,
     });
+  }
+
+  async deleteComment(id: string, userId: string) {
+    return this.drizzleService.db
+      .delete(publicationsComments)
+      .where(
+        and(
+          eq(publicationsComments.id, id),
+          eq(publicationsComments.userId, userId),
+        ),
+      );
   }
 }
