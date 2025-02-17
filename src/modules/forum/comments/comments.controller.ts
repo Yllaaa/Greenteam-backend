@@ -66,16 +66,28 @@ export class CommentsController {
   getComments(
     @Param('publicationId') publicationId: string,
     @Query() pagination: PaginationDto,
+    @Req() req,
   ) {
-    return this.commentsService.getCommentsByPostId(publicationId, pagination);
+    const userId = req.user.id;
+    return this.commentsService.getCommentsByPostId(
+      publicationId,
+      pagination,
+      userId,
+    );
   }
 
   @Get(':publicationId/comments/:commentId/replies')
   getReplies(
     @Param('commentId') commentId: string,
     @Query() pagination: PaginationDto,
+    @Req() req,
   ) {
-    return this.commentsService.getRepliesByCommentId(commentId, pagination);
+    const userId = req.user.id;
+    return this.commentsService.getRepliesByCommentId(
+      commentId,
+      pagination,
+      userId,
+    );
   }
 
   @Delete(':publicationId/comments/:commentId')

@@ -4,12 +4,12 @@ import { ForumRepository } from './publications/forum.repository';
 import { ForumService } from './publications/forum.service';
 import { RouterModule } from '@nestjs/core';
 import { forumCommentsModule } from './comments/comments.module';
-import { ReactionsModule } from './reactions/reactions.module';
+import { ForumReactionsModule } from './reactions/reactions.module';
 import { CommentsModule } from '../shared-modules/comments/comments.module';
 
 const postsRoutes = [
   { path: '/', module: forumCommentsModule },
-  { path: 'reactions', module: ReactionsModule },
+  { path: 'reactions', module: ForumReactionsModule },
 ];
 
 @Module({
@@ -21,7 +21,7 @@ const postsRoutes = [
     ]),
     forumCommentsModule,
     CommentsModule,
-    ReactionsModule,
+    ForumReactionsModule,
   ],
 })
 export class ForumModule {}

@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { SQL, and, eq } from 'drizzle-orm';
+import { SQL, and, eq, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
-import { publicationsComments } from 'src/modules/db/schemas/schema';
+import {
+  publicationsComments,
+  publicationsReactions,
+  users,
+} from 'src/modules/db/schemas/schema';
 @Injectable()
 export class CommentsRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
@@ -61,31 +65,82 @@ export class CommentsRepository {
   async getCommentsByPublicationId(
     publicationId: string,
     pagination: { limit: number; page: number },
+    currentUserId?: string,
   ) {
     const { limit = 10, page = 0 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
-    return await this.drizzleService.db.query.publicationsComments.findMany({
-      where: eq(publicationsComments.publicationId, publicationId),
-      columns: {
-        id: true,
-        publicationId: true,
-        content: true,
-        mediaUrl: true,
-        createdAt: true,
-      },
-      with: {
+
+    // Subquery for reaction counts
+    const reactionCountSubquery = this.drizzleService.db
+      .select({
+        commentId: publicationsReactions.reactionableId,
+        likeCount: sql<number>`
+          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+        `.as('like_count'), // Adding alias
+        dislikeCount: sql<number>`
+          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+        `.as('dislike_count'), // Adding alias
+      })
+      .from(publicationsReactions)
+      .where(eq(publicationsReactions.reactionableType, 'comment'))
+      .groupBy(publicationsReactions.reactionableId)
+      .as('reaction_counts');
+
+    return await this.drizzleService.db
+      .select({
+        id: publicationsComments.id,
+        publicationId: publicationsComments.publicationId,
+        content: publicationsComments.content,
+        mediaUrl: publicationsComments.mediaUrl,
+        createdAt: publicationsComments.createdAt,
         author: {
-          columns: {
-            id: true,
-            fullName: true,
-            username: true,
-            avatar: true,
-          },
+          id: users.id,
+          fullName: users.fullName,
+          username: users.username,
+          avatar: users.avatar,
         },
-      },
-      limit: limit,
-      offset: offset,
-    });
+        likeCount:
+          sql<number>`COALESCE(${reactionCountSubquery.likeCount}, 0)`.as(
+            'like_count',
+          ),
+        dislikeCount:
+          sql<number>`COALESCE(${reactionCountSubquery.dislikeCount}, 0)`.as(
+            'dislike_count',
+          ),
+        userReaction: sql<string | null>`
+          CASE 
+            WHEN ${publicationsReactions.userId} = ${currentUserId} 
+            THEN ${publicationsReactions.reactionType} 
+            ELSE NULL 
+          END
+        `.as('user_reaction'),
+      })
+      .from(publicationsComments)
+      .leftJoin(users, eq(publicationsComments.userId, users.id))
+      .leftJoin(
+        reactionCountSubquery,
+        eq(publicationsComments.id, reactionCountSubquery.commentId),
+      )
+      .leftJoin(
+        publicationsReactions,
+        and(
+          eq(publicationsComments.id, publicationsReactions.reactionableId),
+          eq(publicationsReactions.reactionableType, 'comment'),
+          eq(publicationsReactions.userId, currentUserId || ''),
+        ),
+      )
+      .where(eq(publicationsComments.publicationId, publicationId))
+      .groupBy(
+        publicationsComments.id,
+        users.id,
+        reactionCountSubquery.likeCount,
+        reactionCountSubquery.dislikeCount,
+        publicationsReactions.reactionType,
+        publicationsReactions.userId,
+      )
+      .orderBy(desc(publicationsComments.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   async deleteComment(id: string, userId: string) {

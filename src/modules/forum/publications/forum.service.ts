@@ -4,6 +4,7 @@ import {
   CreateForumPublicationDto,
   ForumSection,
 } from './dtos/create-forumPublication.dto';
+import { SQL } from 'drizzle-orm';
 
 @Injectable()
 export class ForumService {
@@ -17,8 +18,12 @@ export class ForumService {
   }
 
   async getPublications(
-    filter: { section: ForumSection; mainTopicId: number },
+    filter: {
+      section: SQL<'need' | 'doubt' | 'dream'> | undefined;
+      mainTopicId: number;
+    },
     pagination: { limit: number; page: number },
+    currentUserId: string,
   ) {
     const results = await this.forumRepository.getForumPublications(
       {
@@ -26,6 +31,7 @@ export class ForumService {
         mainTopicId: filter.mainTopicId,
       },
       pagination,
+      currentUserId,
     );
 
     return results;

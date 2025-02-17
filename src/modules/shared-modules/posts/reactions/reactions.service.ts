@@ -1,6 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ReactionsRepository } from '../../reactions/reactions.repository';
-import { CreateReactionDto } from './dtos/create-reaction.dto';
+import {
+  CreateReactionDto,
+  ReactionableTypeEnum,
+} from './dtos/create-reaction.dto';
 import { ChallengesService } from 'src/modules/challenges/challenges.service';
 
 @Injectable()
@@ -33,6 +36,7 @@ export class ReactionsService {
       await this.reactionsRepository.findUserDoReaction(
         userId,
         dto.reactionableId,
+        ReactionableTypeEnum.POST,
       );
 
     if (existingDoReaction) {
