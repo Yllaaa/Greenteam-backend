@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { SQL } from 'drizzle-orm';
 
 export class CreateCommentDto {
   @IsString()

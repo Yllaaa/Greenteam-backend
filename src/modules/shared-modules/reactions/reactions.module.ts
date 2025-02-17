@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ReactionsController } from './reactions.controller';
 import { ReactionsService } from './reactions.service';
+import { ReactionsController } from './reactions.controller';
 import { ReactionsRepository } from './reactions.repository';
 import { ChallengesModule } from 'src/modules/challenges/challenges.module';
 
@@ -8,5 +8,6 @@ import { ChallengesModule } from 'src/modules/challenges/challenges.module';
   imports: [ChallengesModule],
   controllers: [ReactionsController],
   providers: [ReactionsService, ReactionsRepository],
+  exports: [ReactionsService, ReactionsRepository],
 })
 export class ReactionsModule {}

@@ -1,41 +1,55 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Query,
   Req,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
-import { CreateCommentDto } from '../../comments/dtos/create-comment.dto';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { PaginationDto } from '../../comments/dtos/pagination.dto';
-import { CommentsService } from '../../comments/comments.service';
+
 import { SQL } from 'drizzle-orm';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { CommentsService } from 'src/modules/shared-modules/comments/comments.service';
+import { CreateCommentDto } from 'src/modules/shared-modules/comments/dtos/create-comment.dto';
+import { PaginationDto } from 'src/modules/shared-modules/comments/dtos/pagination.dto';
+import { ForumService } from '../publications/forum.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly forumService: ForumService,
+  ) {}
+
   private publicationType: SQL<'forum_publication' | 'post' | 'comment'> =
-    'post' as unknown as SQL<'forum_publication' | 'post' | 'comment'>;
-  @Post(':postId/comment')
-  createComment(
-    @Param('postId') postId: string,
+    'forum_publication' as unknown as SQL<
+      'forum_publication' | 'post' | 'comment'
+    >;
+  @Post(':publicationId/comment')
+  async createComment(
+    @Param('publicationId') publicationId: string,
     @Body() dto: CreateCommentDto,
     @Req() req,
   ) {
     const userId = req.user.id;
     const publicationType = this.publicationType;
-    return this.commentsService.createComment(postId, userId, {
+
+    const publication = await this.forumService.getPublication(publicationId);
+    if (!publication) {
+      throw new NotFoundException('Publication not found');
+    }
+    return this.commentsService.createComment(publicationId, userId, {
       content: dto.content,
       publicationType,
     });
   }
 
-  @Post(':postId/comments/:commentId/reply')
+  @Post(':publicationId/comments/:commentId/reply')
   createReply(
     @Param('commentId') commentId: string,
     @Body() dto: CreateCommentDto,
@@ -48,15 +62,15 @@ export class CommentsController {
     });
   }
 
-  @Get(':postId/comments')
+  @Get(':publicationId/comments')
   getComments(
-    @Param('postId') postId: string,
+    @Param('publicationId') publicationId: string,
     @Query() pagination: PaginationDto,
   ) {
-    return this.commentsService.getCommentsByPostId(postId, pagination);
+    return this.commentsService.getCommentsByPostId(publicationId, pagination);
   }
 
-  @Get(':postId/comments/:commentId/replies')
+  @Get(':publicationId/comments/:commentId/replies')
   getReplies(
     @Param('commentId') commentId: string,
     @Query() pagination: PaginationDto,
@@ -64,7 +78,7 @@ export class CommentsController {
     return this.commentsService.getRepliesByCommentId(commentId, pagination);
   }
 
-  @Delete(':postId/comments/:commentId')
+  @Delete(':publicationId/comments/:commentId')
   async deleteComment(@Param('commentId') commentId: string, @Req() req) {
     const userId = req.user.id;
     await this.commentsService.deleteComment(
@@ -75,7 +89,7 @@ export class CommentsController {
     return { message: 'Comment deleted successfully' };
   }
 
-  @Delete(':postId/comments/:commentId/replies/:replyId')
+  @Delete(':publicationId/comments/:commentId/replies/:replyId')
   async deleteReply(@Param('replyId') replyId: string, @Req() req) {
     const userId = req.user.id;
     await this.commentsService.deleteReply(replyId, userId);
