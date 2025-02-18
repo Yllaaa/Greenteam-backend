@@ -14,7 +14,7 @@ export class FriendRequestsRepository {
         return await this.drizzleService.db.insert(friendRequests).values(req).returning();
     }
 
-    async getReceivedRequests(userId: string) {
+    async getReceivedRequests(userId: string, offset: number, limit: number) {
         return await this.drizzleService.db.query.friendRequests.findMany({
             where: eq(friendRequests.receiverId, userId),
             columns: {
@@ -29,7 +29,9 @@ export class FriendRequestsRepository {
                         avatar: true
                     }
                 }
-            }
+            },
+            offset: offset,
+            limit: limit
         });
     }
 

@@ -17,8 +17,8 @@ export class FriendRequestsService {
         return await this.friendRequestsRepository.postRequest({ senderId: userId, receiverId: friendId });
     }
 
-    async getFriendRequests(userId: string) {
-        return await this.friendRequestsRepository.getReceivedRequests(userId);
+    async getFriendRequests(userId: string, offset: number, limit: number) {
+        return await this.friendRequestsRepository.getReceivedRequests(userId, offset, limit);
     }
 
     async acceptFriendRequest(userId: string, reqId: string) {

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { FriendRequestsService } from './friend-requests.service';
 import { IdParamDto } from './dto/id-param.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Controller('friend-requests')
 @UseGuards(JwtAuthGuard)
@@ -17,8 +18,10 @@ export class FriendRequestsController {
     }
 
     @Get()
-    async getFriendRequests(@Req() req) {
-        return await this.friendRequestsService.getFriendRequests(req.user.id);
+    async getFriendRequests(@Query() pagination: PaginationDto, @Req() req) {
+        pagination.offset ||= 0
+        pagination.limit ||= 10
+        return await this.friendRequestsService.getFriendRequests(req.user.id, pagination.offset, pagination.limit);
     }
 
     @Post(':id/accept')

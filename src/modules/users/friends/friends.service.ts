@@ -7,8 +7,8 @@ export class FriendsService {
         private readonly friendsRepository: FriendsRepository
     ) { }
 
-    async getFriends(userId: string) {
-        return await this.friendsRepository.getFriends(userId);
+    async getFriends(userId: string, offset: number, limit: number) {
+        return await this.friendsRepository.getFriends(userId, offset, limit);
     }
 
     async deleteFriend(userId: string, friendId: string) {

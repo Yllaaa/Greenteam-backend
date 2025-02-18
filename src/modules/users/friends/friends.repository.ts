@@ -14,23 +14,25 @@ export class FriendsRepository {
         return await this.drizzleService.db.insert(friends).values(friendship).returning();
     }
 
-    async getFriends(userId: string) {
+    async getFriends(userId: string, offset: number, limit: number) {
         return await union(
             this.drizzleService.db.select({
                 id: users.id,
                 fullName: users.fullName,
-                avatar: users.avatar
+                avatar: users.avatar,
+                since: friends.since
             }).from(friends)
                 .where(eq(friends.userId, userId))
                 .innerJoin(users, eq(friends.friendId, users.id)),
             this.drizzleService.db.select({
                 id: users.id,
                 fullName: users.fullName,
-                avatar: users.avatar
+                avatar: users.avatar,
+                since: friends.since
             }).from(friends)
                 .where(eq(friends.friendId, userId))
                 .innerJoin(users, eq(friends.userId, users.id))
-        )
+        ).offset(offset).limit(limit)
     }
 
     async deleteFriend(userId: string, friendId: string) {

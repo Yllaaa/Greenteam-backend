@@ -15,7 +15,8 @@ export const friendRequests = pgTable('friend_requests', {
 export const friends = pgTable('friends', {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull().references(() => users.id),
-    friendId: uuid('friend_id').notNull().references(() => users.id)
+    friendId: uuid('friend_id').notNull().references(() => users.id),
+    since: timestamp('since').defaultNow().notNull(),
 });
 
 
