@@ -14,7 +14,7 @@ export class FriendsController {
     }
 
     @Delete(':id/delete')
-    async deleteFriend(@Param('id') friendId: IdParamDto, @Req() req) {
+    async deleteFriend(@Param() friendId: IdParamDto, @Req() req) {
         return await this.friendsService.deleteFriend(friendId.id, req.user.id);
     }
 }
