@@ -13,7 +13,6 @@ export class FriendsController {
     async getFriends(@Query() pagination: PaginationDto, @Req() req) {
         pagination.offset ||= 0
         pagination.limit ||= 10
-        console.log(pagination)
         return await this.friendsService.getFriends(req.user.id, pagination.offset, pagination.limit);
     }
 
