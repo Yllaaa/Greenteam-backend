@@ -53,3 +53,5 @@ export const usersRelations = relations(users, ({ many }) => ({
   forumPublications: many(forumPublications),
   doPost: many(usersDoPosts),
 }));
+
+export * from './friends/friends'
