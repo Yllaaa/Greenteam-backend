@@ -3,7 +3,7 @@ import { FriendRequestsService } from './friend-requests.service';
 import { IdParamDto } from './dto/id-param.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 
-@Controller('friendReq-requests')
+@Controller('friend-requests')
 @UseGuards(JwtAuthGuard)
 export class FriendRequestsController {
     constructor(

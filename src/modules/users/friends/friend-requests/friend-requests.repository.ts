@@ -38,7 +38,7 @@ export class FriendRequestsRepository {
             .set({
                 status: status
             })
-            .where(and(eq(friendRequests.receiverId, userId), eq(friendRequests.id, reqId)))
+            .where(and(eq(friendRequests.receiverId, userId), eq(friendRequests.id, reqId), eq(friendRequests.status, 'pending')))
             .returning();
     }
 

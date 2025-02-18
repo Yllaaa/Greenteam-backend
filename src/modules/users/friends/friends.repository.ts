@@ -9,6 +9,11 @@ export class FriendsRepository {
     constructor(
         private readonly drizzleService: DrizzleService
     ) { }
+
+    async addFriendship(friendship: typeof friends.$inferInsert) {
+        return await this.drizzleService.db.insert(friends).values(friendship).returning();
+    }
+
     async getFriends(userId: string) {
         return await union(
             this.drizzleService.db.select({
