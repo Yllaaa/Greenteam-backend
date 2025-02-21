@@ -14,6 +14,7 @@ import {
 import { posts } from '../posts/posts';
 import { publicationsComments, usersDoPosts } from '../schema';
 import { forumPublications } from '../forums/forums';
+import { conversations, messages } from '../chat/chat';
 
 export const userStatus = pgEnum('USER_STATUS', [
   'ACTIVE',
@@ -52,6 +53,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   publicationsComments: many(publicationsComments),
   forumPublications: many(forumPublications),
   doPost: many(usersDoPosts),
+  conversations: many(conversations),
+  messages: many(messages),
 }));
 
-export * from './friends/friends'
+export * from './friends/friends';

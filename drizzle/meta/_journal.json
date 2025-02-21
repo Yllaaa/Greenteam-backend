@@ -29,6 +29,13 @@
       "when": 1739747201173,
       "tag": "0003_cold_mockingbird",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1740148055014,
+      "tag": "0004_brown_secret_warriors",
+      "breakpoints": true
     }
   ]
 }
