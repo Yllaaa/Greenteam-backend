@@ -28,6 +28,8 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.4",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.15",
+    "@nestjs/websockets": "^10.4.15",
     "@types/pg": "^8.11.10",
     "argon2": "^0.41.1",
     "class-transformer": "^0.5.1",
