@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, asc } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -48,12 +48,13 @@ export const messages = pgTable(
     senderType: messageSenderType('sender_type').notNull(),
     content: text('content').notNull(),
     mediaUrl: varchar('media_url'),
-    sentAt: timestamp('created_at').defaultNow().notNull(),
+    sentAt: timestamp('sent_at').defaultNow().notNull(),
     seenAt: timestamp('seen_at'),
   },
   (table) => [
     index('message_conversation_idx').on(table.conversationId),
     index('message_sender_idx').on(table.senderId, table.senderType),
+    index('messages_sent_at_id_index').on(table.sentAt, table.id),
   ],
 );
 

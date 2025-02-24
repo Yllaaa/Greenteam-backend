@@ -1,11 +1,7 @@
-// src/chat/presence/presence.service.ts
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
-
-export interface Sender {
-  type: 'user' | 'page';
-  id: string;
-}
+import { Sender } from '../chat/chat.gateway';
+import { SQL } from 'drizzle-orm';
 
 @Injectable()
 export class PresenceService {
@@ -16,7 +12,7 @@ export class PresenceService {
   }
 
   handleUserConnected(sender: Sender, socketId: string, server: Server) {
-    if (sender.type !== 'user') {
+    if (sender.type !== ('user' as unknown as SQL<'user' | 'page'>)) {
       return;
     }
     const key = `user:${sender.id}`;
@@ -31,7 +27,7 @@ export class PresenceService {
   }
 
   handleUserDisconnected(Sender: Sender, socketId: string, server: Server) {
-    if (Sender.type !== 'user') {
+    if (Sender.type !== ('user' as unknown as SQL<'user' | 'page'>)) {
       return;
     }
     const key = `user:${Sender.id}`;

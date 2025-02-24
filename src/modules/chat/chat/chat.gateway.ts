@@ -16,9 +16,12 @@ import { WsJwtAuthGuard } from './guards/ws-jwt-auth.guard';
 import { MessagesService } from '../messages/messages.service';
 import { PresenceService } from '../presence/presence.service';
 import { ConversationsService } from '../conversations/conversations.service';
+import { SQL } from 'drizzle-orm';
+
+export type SenderType = SQL<'user' | 'page'>;
 
 export interface Sender {
-  type: 'user' | 'page';
+  type: SenderType;
   id: string;
 }
 
@@ -27,7 +30,7 @@ export interface MessagePayload {
   content: string;
   recipient?: {
     id: string;
-    type: 'user' | 'page';
+    type: SenderType;
   };
 }
 
@@ -104,14 +107,14 @@ export class ChatGateway
     client.data.user = decoded;
     const pageId = client.handshake?.query?.pageId as string;
     return pageId
-      ? { type: 'page', id: pageId }
-      : { type: 'user', id: decoded.sub };
+      ? { type: 'page' as unknown as SQL<'user' | 'page'>, id: pageId }
+      : { type: 'user' as unknown as SQL<'user' | 'page'>, id: decoded.sub };
   }
 
   private async setupClientConnection(client: Socket, sender: Sender) {
     client.data.sender = sender;
 
-    if (sender.type === 'user') {
+    if (sender.type === ('user' as unknown as SQL<'user' | 'page'>)) {
       if (!this.userSockets.has(sender.id)) {
         this.userSockets.set(sender.id, new Set());
       }
@@ -124,7 +127,10 @@ export class ChatGateway
       );
 
       const conversations =
-        await this.conversationsService.getUserConversations(sender.id);
+        await this.conversationsService.getUserConversations(
+          sender.id,
+          sender.type,
+        );
       conversations.forEach((conv) => {
         client.join(`conversation_${conv.id}`);
       });
@@ -149,7 +155,6 @@ export class ChatGateway
         conversation = await this.conversationsService.getConversation(
           payload.conversationId,
         );
-        console.log('conversation', conversation);
         if (!conversation) {
           throw new WsException('Conversation not found');
         }
