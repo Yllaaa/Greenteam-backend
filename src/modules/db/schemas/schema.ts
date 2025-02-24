@@ -8,6 +8,5 @@ export * from './common/media';
 export * from './events/events';
 
 export * from './pages/pages';
-
+export * from './chat/chat';
 export * from './challenges/challenges';
-

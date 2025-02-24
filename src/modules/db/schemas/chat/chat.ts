@@ -1,60 +1,60 @@
 import { relations } from 'drizzle-orm';
 import {
   pgTable,
-  serial,
   text,
-  integer,
   timestamp,
   varchar,
   index,
+  uuid,
+  pgEnum,
 } from 'drizzle-orm/pg-core';
 import { pages, users } from '../schema';
+
+export const messageSenderType = pgEnum('message_sender_type', [
+  'user',
+  'page',
+]);
 
 export const conversations = pgTable(
   'conversations',
   {
-    id: serial('id').primaryKey(),
-    participantAId: integer('participant_a_id').notNull(),
-    participantAType: text('participant_a_type').notNull(),
-    participantBId: integer('participant_b_id').notNull(),
-    participantBType: text('participant_b_type').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    participantAId: uuid('participant_a_id').notNull(),
+    participantAType: messageSenderType('participant_a_type').notNull(),
+    participantBId: uuid('participant_b_id').notNull(),
+    participantBType: messageSenderType('participant_b_type').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => ({
-    participantAIndex: index('conversation_participant_a_idx').on(
+  (table) => [
+    index('conversation_participant_a_idx').on(
       table.participantAId,
       table.participantAType,
     ),
-    participantBIndex: index('conversation_participant_b_idx').on(
+    index('conversation_participant_b_idx').on(
       table.participantBId,
       table.participantBType,
     ),
-  }),
+  ],
 );
 
 export const messages = pgTable(
   'chat_messages',
   {
-    id: serial('id').primaryKey(),
-    conversationId: integer('conversation_id')
+    id: uuid('id').defaultRandom().primaryKey(),
+    conversationId: uuid('conversation_id')
       .notNull()
-      .references(() => conversations.id, { onDelete: 'cascade' }),
-    senderId: integer('sender_id').notNull(),
-    senderType: text('sender_type').notNull(),
+      .references(() => conversations.id),
+    senderId: uuid('sender_id').notNull(),
+    senderType: messageSenderType('sender_type').notNull(),
     content: text('content').notNull(),
     mediaUrl: varchar('media_url'),
     sentAt: timestamp('created_at').defaultNow().notNull(),
     seenAt: timestamp('seen_at'),
   },
-  (table) => ({
-    conversationIndex: index('message_conversation_idx').on(
-      table.conversationId,
-    ),
-    senderIndex: index('message_sender_idx').on(
-      table.senderId,
-      table.senderType,
-    ),
-  }),
+  (table) => [
+    index('message_conversation_idx').on(table.conversationId),
+    index('message_sender_idx').on(table.senderId, table.senderType),
+  ],
 );
 
 export const conversationRelations = relations(
