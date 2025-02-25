@@ -5,11 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { verify } from 'jsonwebtoken';
-
+import { JwtPayload, verify } from 'jsonwebtoken';
+import { DrizzleService } from 'src/modules/db/drizzle.service';
+import { users } from 'src/modules/db/schemas/schema';
+import { eq } from 'drizzle-orm';
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(private readonly drizzleService: DrizzleService) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient();
     const authHeader = client.handshake?.headers?.authorization;
     if (!authHeader) {
@@ -20,7 +23,8 @@ export class WsJwtAuthGuard implements CanActivate {
       if (!process.env.JWT_SECRET) {
         throw new UnauthorizedException('JWT secret is not defined');
       }
-      const decoded = verify(token, process.env.JWT_SECRET);
+      const decoded = verify(token, process.env.JWT_SECRET) as JwtPayload;
+
       client.data.user = decoded;
       return true;
     } catch (error) {

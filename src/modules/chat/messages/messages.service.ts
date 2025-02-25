@@ -51,6 +51,13 @@ export class MessagesService {
     return formattedMessages;
   }
 
+  async markMessagesAsSeen(conversationId: string, participantsId: string) {
+    return await this.messagesRepository.markMessagesAsSeen(
+      conversationId,
+      participantsId,
+    );
+  }
+
   formatMessages(messages: Message[], participantId: string) {
     return messages.map((message) => {
       const isSentByParticipant = message.senderId === participantId;

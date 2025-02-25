@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import { messages } from 'src/modules/db/schemas/chat/chat';
 import { Sender } from '../chat/chat.gateway';
-import { and, or, eq, gt, asc } from 'drizzle-orm';
+import { and, or, eq, gt, asc, isNull, sql, desc } from 'drizzle-orm';
 import { GetMessagesDto } from './dtos/get-messages.dto';
 @Injectable()
 export class MessagesRepository {
@@ -17,7 +17,15 @@ export class MessagesRepository {
         senderType: sender.type,
         content,
       })
-      .returning();
+      .returning({
+        id: messages.id,
+        conversationId: messages.conversationId,
+        senderType: messages.senderType,
+        content: messages.content,
+        mediaUrl: messages.mediaUrl,
+        sentAt: messages.sentAt,
+        seenAt: messages.seenAt,
+      });
     return message;
   }
 
@@ -62,5 +70,31 @@ export class MessagesRepository {
       },
     });
     return messages as unknown as Message[];
+  }
+
+  async markMessagesAsSeen(conversationId: string, userId: string) {
+    const now = new Date();
+    await this.drizzleService.db
+      .update(messages)
+      .set({ seenAt: now })
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          isNull(messages.seenAt),
+          sql`(${messages.senderType} != 'user' OR ${messages.senderId} != ${userId})`,
+        ),
+      );
+    return await this.drizzleService.db
+      .select()
+      .from(messages)
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(
+            sql`DATE_TRUNC('second', ${messages.seenAt})`,
+            sql`DATE_TRUNC('second', ${sql.raw(now.toISOString())})`,
+          ),
+        ),
+      );
   }
 }
