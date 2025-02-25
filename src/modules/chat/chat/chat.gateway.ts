@@ -9,7 +9,7 @@ import {
   OnGatewayDisconnect,
   WsException,
 } from '@nestjs/websockets';
-import { UseGuards, Logger } from '@nestjs/common';
+import { UseGuards, Logger, UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { verify } from 'jsonwebtoken';
 import { WsJwtAuthGuard } from './guards/ws-jwt-auth.guard';
@@ -18,6 +18,7 @@ import { PresenceService } from '../presence/presence.service';
 import { ConversationsService } from '../conversations/conversations.service';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { SQL } from 'drizzle-orm';
+import { AllExceptionsSocketFilter } from '../filters/ws-exception.filter';
 
 export type SenderType = SQL<'user' | 'page'>;
 
@@ -40,6 +41,7 @@ export interface MarkAsSeenPayload {
 }
 
 @UseGuards(WsJwtAuthGuard)
+@UseFilters(AllExceptionsSocketFilter)
 @WebSocketGateway({
   namespace: '/api/v1/chat',
 })
@@ -156,6 +158,9 @@ export class ChatGateway
     try {
       const sender = client.data.sender;
       let conversation;
+      if (!payload.content) {
+        throw new WsException('message cannot be empty');
+      }
 
       if (payload.conversationId) {
         conversation = await this.conversationsService.getConversation(
