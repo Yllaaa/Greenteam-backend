@@ -84,16 +84,14 @@ export class MessagesRepository {
           sql`(${messages.senderType} != 'user' OR ${messages.senderId} != ${userId})`,
         ),
       );
+    const formattedDate = now.toISOString();
     return await this.drizzleService.db
       .select()
       .from(messages)
       .where(
         and(
           eq(messages.conversationId, conversationId),
-          eq(
-            sql`DATE_TRUNC('second', ${messages.seenAt})`,
-            sql`DATE_TRUNC('second', ${sql.raw(now.toISOString())})`,
-          ),
+          sql`${messages.seenAt}::timestamp::date = ${now}::timestamp::date`,
         ),
       );
   }
