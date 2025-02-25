@@ -9,14 +9,16 @@ import {
   OnGatewayDisconnect,
   WsException,
 } from '@nestjs/websockets';
-import { UseGuards, Logger } from '@nestjs/common';
+import { UseGuards, Logger, UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { verify } from 'jsonwebtoken';
 import { WsJwtAuthGuard } from './guards/ws-jwt-auth.guard';
 import { MessagesService } from '../messages/messages.service';
 import { PresenceService } from '../presence/presence.service';
 import { ConversationsService } from '../conversations/conversations.service';
+import { AuthService } from 'src/modules/auth/auth.service';
 import { SQL } from 'drizzle-orm';
+import { AllExceptionsSocketFilter } from '../filters/ws-exception.filter';
 
 export type SenderType = SQL<'user' | 'page'>;
 
@@ -34,10 +36,12 @@ export interface MessagePayload {
   };
 }
 
-interface SeenPayload {
+export interface MarkAsSeenPayload {
   conversationId: string;
 }
 
+@UseGuards(WsJwtAuthGuard)
+@UseFilters(AllExceptionsSocketFilter)
 @WebSocketGateway({
   namespace: '/api/v1/chat',
 })
@@ -52,6 +56,7 @@ export class ChatGateway
     private readonly messagesService: MessagesService,
     private readonly presenceService: PresenceService,
     private readonly conversationsService: ConversationsService,
+    private readonly authService: AuthService,
   ) {}
 
   afterInit(server: Server) {
@@ -104,7 +109,11 @@ export class ChatGateway
     }
 
     const decoded: any = verify(token, process.env.JWT_SECRET);
-    client.data.user = decoded;
+    const user = await this.authService.getUserById(decoded.sub);
+    if (!user) {
+      throw new WsException('User not found');
+    }
+    client.data.userFullData = user;
     const pageId = client.handshake?.query?.pageId as string;
     return pageId
       ? { type: 'page' as unknown as SQL<'user' | 'page'>, id: pageId }
@@ -141,7 +150,6 @@ export class ChatGateway
     );
   }
 
-  @UseGuards(WsJwtAuthGuard)
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
@@ -150,6 +158,9 @@ export class ChatGateway
     try {
       const sender = client.data.sender;
       let conversation;
+      if (!payload.content) {
+        throw new WsException('message cannot be empty');
+      }
 
       if (payload.conversationId) {
         conversation = await this.conversationsService.getConversation(
@@ -174,7 +185,6 @@ export class ChatGateway
             sender,
             payload.recipient,
           );
-        console.log('conversation', conversation);
         if (!conversation) {
           conversation = await this.conversationsService.createConversation(
             sender,
@@ -187,7 +197,6 @@ export class ChatGateway
         conversation.id,
         sender,
       );
-      console.log('isParticipant', isParticipant);
       if (!isParticipant) {
         throw new WsException('Not a participant in this conversation');
       }
@@ -197,11 +206,15 @@ export class ChatGateway
         sender,
         payload.content,
       );
-      console.log('message', message);
       this.server.to(`conversation_${conversation.id}`).emit('newMessage', {
         ...message,
-        sender,
-        timestamp: new Date(),
+        isReceived: true,
+        sender: {
+          id: sender.id,
+          name: client.data.userFullData.fullName,
+          avatar: client.data.userFullData.avatar,
+          username: client.data.userFullData.username,
+        },
       });
 
       return {
@@ -214,28 +227,48 @@ export class ChatGateway
       throw new WsException(error.message);
     }
   }
-
-  @UseGuards(WsJwtAuthGuard)
-  @SubscribeMessage('typing')
-  async handleTyping(
+  @SubscribeMessage('markMessagesSeen')
+  async handleMarkMessagesSeen(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { conversationId: string; isTyping: boolean },
+    @MessageBody() payload: MarkAsSeenPayload,
   ) {
-    const sender = client.data.sender;
+    try {
+      const sender = client.data.sender;
 
-    const isParticipant = await this.conversationsService.isParticipant(
-      payload.conversationId,
-      sender,
-    );
+      const conversation = await this.conversationsService.getConversation(
+        payload.conversationId,
+      );
+      if (!conversation) {
+        throw new WsException('Conversation not found');
+      }
 
-    if (isParticipant) {
-      this.server
-        .to(`conversation_${payload.conversationId}`)
-        .emit('userTyping', {
-          conversationId: payload.conversationId,
-          user: sender,
-          isTyping: payload.isTyping,
+      const isParticipant = await this.conversationsService.isParticipant(
+        conversation.id,
+        sender,
+      );
+      if (!isParticipant) {
+        throw new WsException('Not a participant in this conversation');
+      }
+
+      const updatedMessages = await this.messagesService.markMessagesAsSeen(
+        conversation.id,
+        sender.id,
+      );
+
+      if (updatedMessages.length > 0) {
+        this.server.to(`conversation_${conversation.id}`).emit('messagesSeen', {
+          conversationId: conversation.id,
+          messageIds: updatedMessages.map((msg) => msg.id),
         });
+      }
+
+      return {
+        success: true,
+        count: updatedMessages.length,
+      };
+    } catch (error) {
+      this.logger.error(`Mark messages seen error: ${error.message}`);
+      throw new WsException(error.message);
     }
   }
 }

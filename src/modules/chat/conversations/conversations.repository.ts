@@ -135,6 +135,10 @@ export class ConversationsRepository {
     return await this.drizzleService.db.query.conversations.findMany({
       columns: {
         id: true,
+        participantAId: true,
+        participantAType: true,
+        participantBId: true,
+        participantBType: true,
       },
       where: or(
         and(

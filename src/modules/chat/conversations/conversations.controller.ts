@@ -35,9 +35,17 @@ export class ConversationsController {
   async messagesController(
     @Param('conversationId') conversationId: string,
     @Query() query: GetMessagesDto,
+    @Req() req,
   ) {
+    const userId = req.user.id;
+    const participantId = query.pageId || userId;
+    const participantType = query.pageId
+      ? ('page' as unknown as SQL<'user' | 'page'>)
+      : ('user' as unknown as SQL<'user' | 'page'>);
+    const participant = { id: participantId, type: participantType };
     const messages = await this.messagesService.getMessages(
       conversationId,
+      participant,
       query.cursor,
       query.limit,
     );
@@ -51,7 +59,7 @@ export class ConversationsController {
         : null;
 
     return {
-      data: messages,
+      messages,
       nextCursor,
     };
   }

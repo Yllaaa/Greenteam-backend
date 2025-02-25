@@ -5,6 +5,7 @@ import {
   Min,
   ValidateNested,
   IsDate,
+  IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -28,4 +29,8 @@ export class GetMessagesDto {
   @Min(1)
   @Type(() => Number)
   limit?: number = 10;
+
+  @IsOptional()
+  @IsUUID()
+  pageId: string;
 }
