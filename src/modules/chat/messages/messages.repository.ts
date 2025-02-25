@@ -25,8 +25,8 @@ export class MessagesRepository {
     conversationId: string,
     cursor?: GetMessagesDto['cursor'],
     limit = 10,
-  ) {
-    return await this.drizzleService.db.query.messages.findMany({
+  ): Promise<Message[]> {
+    const messages = await this.drizzleService.db.query.messages.findMany({
       where: cursor
         ? (messages, { and, eq, gt, or }) =>
             and(
@@ -61,5 +61,6 @@ export class MessagesRepository {
         },
       },
     });
+    return messages as unknown as Message[];
   }
 }

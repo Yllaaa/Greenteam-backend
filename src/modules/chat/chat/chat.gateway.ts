@@ -174,7 +174,6 @@ export class ChatGateway
             sender,
             payload.recipient,
           );
-        console.log('conversation', conversation);
         if (!conversation) {
           conversation = await this.conversationsService.createConversation(
             sender,
@@ -187,7 +186,6 @@ export class ChatGateway
         conversation.id,
         sender,
       );
-      console.log('isParticipant', isParticipant);
       if (!isParticipant) {
         throw new WsException('Not a participant in this conversation');
       }
@@ -197,7 +195,6 @@ export class ChatGateway
         sender,
         payload.content,
       );
-      console.log('message', message);
       this.server.to(`conversation_${conversation.id}`).emit('newMessage', {
         ...message,
         sender,
