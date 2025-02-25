@@ -41,7 +41,6 @@ export interface MarkAsSeenPayload {
 }
 
 @UseGuards(WsJwtAuthGuard)
-@UseFilters(AllExceptionsSocketFilter)
 @WebSocketGateway({
   namespace: '/api/v1/chat',
 })
