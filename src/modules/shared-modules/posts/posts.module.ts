@@ -16,6 +16,7 @@ const postsRoutes = [
 @Module({
   providers: [PostsService, PostsRepository],
   controllers: [PostsController],
+  exports: [PostsService, PostsRepository],
   imports: [
     PostCommentsModule,
     PostReactionsModule,

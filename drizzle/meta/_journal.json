@@ -5,55 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1739297153996,
-      "tag": "0000_handy_toad",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1739377352914,
-      "tag": "0001_organic_mandroid",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1739403581192,
-      "tag": "0002_shocking_paper_doll",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1739539171249,
-      "tag": "0003_slim_bruce_banner",
-
-      "when": 1739747201173,
-      "tag": "0003_cold_mockingbird",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1739776071351,
-      "tag": "0004_romantic_ronan",
-      "when": 1740148055014,
-      "tag": "0004_brown_secret_warriors",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1740162487573,
-      "tag": "0005_acoustic_warbird",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1740420348005,
-      "tag": "0006_conscious_zuras",
+      "when": 1740588343432,
+      "tag": "0000_left_the_call",
       "breakpoints": true
     }
   ]
