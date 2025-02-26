@@ -19,7 +19,7 @@ export class GroupPostsController {
         private readonly groupPostsService: GroupPostsService,
     ) { }
 
-    @Post(':groupId/publish-group-post')
+    @Post(':groupId/publish-post')
     async createGroupPost(
         @Body() createPostDto: CreatePostDto,
         @Req() req,
