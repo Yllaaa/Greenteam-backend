@@ -98,6 +98,10 @@ export class AuthService {
     return user;
   }
 
+  async getUserById(userId: string) {
+    return await this.authRepository.getUserById(userId);
+  }
+
   async googleLogin(profile: any) {
     let user = await this.authRepository.getUserByEmail(profile.email);
 

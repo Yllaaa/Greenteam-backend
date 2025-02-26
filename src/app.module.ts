@@ -11,6 +11,8 @@ import { UsersModule } from './modules/users/users.module';
 import { SharedModulesModule } from './modules/shared-modules/shared-modules.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { GroupsModule } from './modules/groups/groups.module';
+import { ChallengesModule } from './modules/challenges/challenges.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Global()
 @Module({
@@ -27,6 +29,8 @@ import { GroupsModule } from './modules/groups/groups.module';
     SharedModulesModule,
     ForumModule,
     GroupsModule,
+    ChallengesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

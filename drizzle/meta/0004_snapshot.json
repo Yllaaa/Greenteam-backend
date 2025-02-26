@@ -1,6 +1,8 @@
 {
   "id": "74d307c1-3293-4984-a0bd-d19785061930",
   "prevId": "0965b7c2-9bb6-4ea8-a7df-0aebc9ce7a68",
+  "id": "3986fcf5-8fb2-4051-b386-842f065932ac",
+  "prevId": "21ba014a-26ec-4198-86c6-ed1be2995c3b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -161,6 +163,147 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+
+    "public.friend_requests": {
+      "name": "friend_requests",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "sender_id": {
+          "name": "sender_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "receiver_id": {
+          "name": "receiver_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "friend_request_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'pending'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "friend_requests_sender_id_Users_accounts_id_fk": {
+          "name": "friend_requests_sender_id_Users_accounts_id_fk",
+          "tableFrom": "friend_requests",
+          "tableTo": "Users_accounts",
+          "columnsFrom": [
+            "sender_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "friend_requests_receiver_id_Users_accounts_id_fk": {
+          "name": "friend_requests_receiver_id_Users_accounts_id_fk",
+          "tableFrom": "friend_requests",
+          "tableTo": "Users_accounts",
+          "columnsFrom": [
+            "receiver_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.friends": {
+      "name": "friends",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "friend_id": {
+          "name": "friend_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "since": {
+          "name": "since",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "friends_user_id_Users_accounts_id_fk": {
+          "name": "friends_user_id_Users_accounts_id_fk",
+          "tableFrom": "friends",
+          "tableTo": "Users_accounts",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "friends_friend_id_Users_accounts_id_fk": {
+          "name": "friends_friend_id_Users_accounts_id_fk",
+          "tableFrom": "friends",
+          "tableTo": "Users_accounts",
+          "columnsFrom": [
+            "friend_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -545,6 +688,7 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
+
         "publications_comments_user_id_Users_accounts_id_fk": {
           "name": "publications_comments_user_id_Users_accounts_id_fk",
           "tableFrom": "publications_comments",
@@ -1149,6 +1293,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+
     "public.pages": {
       "name": "pages",
       "schema": "",
@@ -1545,6 +1690,7 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+
     }
   },
   "enums": {
@@ -1555,6 +1701,16 @@
         "ACTIVE",
         "DEACTIVATED",
         "BANNED"
+      ]
+    },
+
+    "public.friend_request_status": {
+      "name": "friend_request_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "accepted",
+        "declined"
       ]
     },
     "public.creator_type": {
@@ -1658,6 +1814,7 @@
         "PRIVATE"
       ]
     },
+
     "public.PageCategory": {
       "name": "PageCategory",
       "schema": "public",

@@ -1,5 +1,6 @@
 {
   "id": "0965b7c2-9bb6-4ea8-a7df-0aebc9ce7a68",
+  "id": "21ba014a-26ec-4198-86c6-ed1be2995c3b",
   "prevId": "ff4dcb4b-07a9-49ed-8b45-f5e57704f83d",
   "version": "7",
   "dialect": "postgresql",
@@ -1591,6 +1592,7 @@
         "PRIVATE"
       ]
     },
+
     "public.PageCategory": {
       "name": "PageCategory",
       "schema": "public",

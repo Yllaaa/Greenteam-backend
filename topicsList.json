@@ -1,0 +1,172 @@
+[
+  {
+    "id": 1,
+    "name": "Food and health",
+    "parentId": null
+  },
+  {
+    "id": 2,
+    "name": "Knowledge and values",
+    "parentId": null
+  },
+  {
+    "id": 3,
+    "name": "Physical and mental exercise",
+    "parentId": null
+  },
+  {
+    "id": 4,
+    "name": "Community and Nature",
+    "parentId": null
+  },
+  {
+    "id": 5,
+    "name": "Art",
+    "parentId": null
+  },
+  {
+    "id": 6,
+    "name": "Ecotechnics and bioconstruction",
+    "parentId": null
+  },
+  {
+    "id": 7,
+    "name": "Cultivate",
+    "parentId": 1
+  },
+  {
+    "id": 8,
+    "name": "Cook",
+    "parentId": 1
+  },
+  {
+    "id": 9,
+    "name": "Keep",
+    "parentId": 1
+  },
+  {
+    "id": 10,
+    "name": "Natural Medicine",
+    "parentId": 1
+  },
+  {
+    "id": 11,
+    "name": "Nutrition",
+    "parentId": 1
+  },
+  {
+    "id": 12,
+    "name": "Hygiene",
+    "parentId": 1
+  },
+  {
+    "id": 13,
+    "name": "Philosophy",
+    "parentId": 2
+  },
+  {
+    "id": 14,
+    "name": "Astronomy",
+    "parentId": 2
+  },
+  {
+    "id": 15,
+    "name": "Biology",
+    "parentId": 2
+  },
+  {
+    "id": 16,
+    "name": "Geology",
+    "parentId": 2
+  },
+  {
+    "id": 17,
+    "name": "History",
+    "parentId": 2
+  },
+  {
+    "id": 18,
+    "name": "Psychology",
+    "parentId": 2
+  },
+  {
+    "id": 19,
+    "name": "Culture",
+    "parentId": 2
+  },
+  {
+    "id": 20,
+    "name": "Others",
+    "parentId": 2
+  },
+  {
+    "id": 21,
+    "name": "Sports and games",
+    "parentId": 3
+  },
+  {
+    "id": 22,
+    "name": "Active meditation",
+    "parentId": 3
+  },
+  {
+    "id": 23,
+    "name": "Passive meditation",
+    "parentId": 3
+  },
+  {
+    "id": 24,
+    "name": "Together",
+    "parentId": 4
+  },
+  {
+    "id": 25,
+    "name": "Nature",
+    "parentId": 4
+  },
+  {
+    "id": 26,
+    "name": "Volunteering",
+    "parentId": 4
+  },
+  {
+    "id": 27,
+    "name": "Ecotourism",
+    "parentId": 4
+  },
+  {
+    "id": 28,
+    "name": "Notifications",
+    "parentId": 4
+  },
+  {
+    "id": 29,
+    "name": "Crafts",
+    "parentId": 5
+  },
+  {
+    "id": 30,
+    "name": "Music",
+    "parentId": 5
+  },
+  {
+    "id": 31,
+    "name": "Show",
+    "parentId": 5
+  },
+  {
+    "id": 32,
+    "name": "EcoDesign / Permaculture",
+    "parentId": 6
+  },
+  {
+    "id": 33,
+    "name": "Water and energy",
+    "parentId": 6
+  },
+  {
+    "id": 34,
+    "name": "Durable tools",
+    "parentId": 6
+  }
+]

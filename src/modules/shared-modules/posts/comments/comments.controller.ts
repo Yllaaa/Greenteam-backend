@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -8,16 +9,18 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { CommentsService } from './comments.service';
-import { CreateCommentDto } from './dtos/create-comment.dto';
+import { CreateCommentDto } from '../../comments/dtos/create-comment.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { PaginationDto } from './dtos/pagination.dto';
+import { PaginationDto } from '../../comments/dtos/pagination.dto';
+import { CommentsService } from '../../comments/comments.service';
+import { SQL } from 'drizzle-orm';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-
+  private publicationType: SQL<'forum_publication' | 'post' | 'comment'> =
+    'post' as unknown as SQL<'forum_publication' | 'post' | 'comment'>;
   @Post(':postId/comment')
   createComment(
     @Param('postId') postId: string,
@@ -25,7 +28,11 @@ export class CommentsController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.createComment(postId, userId, dto);
+    const publicationType = this.publicationType;
+    return this.commentsService.createComment(postId, userId, {
+      content: dto.content,
+      publicationType,
+    });
   }
 
   @Post(':postId/comments/:commentId/reply')
@@ -35,22 +42,51 @@ export class CommentsController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.createCommentReply(commentId, userId, dto);
+    return this.commentsService.createCommentReply(commentId, userId, {
+      content: dto.content,
+      publicationType: this.publicationType,
+    });
   }
 
   @Get(':postId/comments')
   getComments(
     @Param('postId') postId: string,
     @Query() pagination: PaginationDto,
+    @Req() req,
   ) {
-    return this.commentsService.getCommentsByPostId(postId, pagination);
+    const userId = req.user.id;
+    return this.commentsService.getCommentsByPostId(postId, pagination, userId);
   }
 
   @Get(':postId/comments/:commentId/replies')
   getReplies(
     @Param('commentId') commentId: string,
     @Query() pagination: PaginationDto,
+    @Req() req,
   ) {
-    return this.commentsService.getRepliesByCommentId(commentId, pagination);
+    const userId = req.user.id;
+    return this.commentsService.getRepliesByCommentId(
+      commentId,
+      pagination,
+      userId,
+    );
+  }
+
+  @Delete(':postId/comments/:commentId')
+  async deleteComment(@Param('commentId') commentId: string, @Req() req) {
+    const userId = req.user.id;
+    await this.commentsService.deleteComment(
+      commentId,
+      userId,
+      this.publicationType,
+    );
+    return { message: 'Comment deleted successfully' };
+  }
+
+  @Delete(':postId/comments/:commentId/replies/:replyId')
+  async deleteReply(@Param('replyId') replyId: string, @Req() req) {
+    const userId = req.user.id;
+    await this.commentsService.deleteReply(replyId, userId);
+    return { message: 'Reply deleted successfully' };
   }
 }
