@@ -13,6 +13,7 @@ import { ForumModule } from './modules/forum/forum.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { FolloweesModule } from './modules/users/followees/followees.module';
 
 @Global()
 @Module({
@@ -31,6 +32,7 @@ import { ChatModule } from './modules/chat/chat.module';
     GroupsModule,
     ChallengesModule,
     ChatModule,
+    FolloweesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
