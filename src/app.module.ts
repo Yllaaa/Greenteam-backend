@@ -14,6 +14,7 @@ import { GroupsModule } from './modules/groups/groups.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { FolloweesModule } from './modules/users/followees/followees.module';
+import { SuggestionsModule } from './modules/suggestions/suggestions.module';
 
 @Global()
 @Module({
@@ -33,6 +34,7 @@ import { FolloweesModule } from './modules/users/followees/followees.module';
     ChallengesModule,
     ChatModule,
     FolloweesModule,
+    SuggestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
