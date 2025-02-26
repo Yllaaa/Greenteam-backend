@@ -12,7 +12,7 @@ import {
   check,
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
-import { publicationsComments, usersDoPosts } from '../schema';
+import { groupMembers, publicationsComments, usersDoPosts } from '../schema';
 import { forumPublications } from '../forums/forums';
 import { conversations, messages } from '../chat/chat';
 
@@ -53,6 +53,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   publicationsComments: many(publicationsComments),
   forumPublications: many(forumPublications),
   doPost: many(usersDoPosts),
+  groupMembers: many(groupMembers),
   conversations: many(conversations),
   messages: many(messages),
 }));
