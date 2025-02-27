@@ -25,20 +25,20 @@ export const greenChallenges = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     title: varchar('title', { length: 256 }).notNull(),
     description: text('description').notNull(),
-    topic: serial('topic')
+    topicId: serial('topic_id')
       .references(() => topics.id)
       .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' })
+    createdAt: timestamp('created_at')
       .default(sql`LOCALTIMESTAMP`)
       .notNull(),
-    expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    expiresAt: timestamp('expires_at'),
+    updatedAt: timestamp('updated_at')
       .default(sql`LOCALTIMESTAMP`)
       .notNull(),
   },
   (table) => {
     return {
-      topicIdx: index('green_challenges_topic_idx').on(table.topic),
+      topicIdx: index('green_challenges_topic_idx').on(table.topicId),
       expiresAtIdx: index('green_challenges_expires_at_idx').on(
         table.expiresAt,
       ),
@@ -53,7 +53,7 @@ export const greenChallengesRelations = relations(
   greenChallenges,
   ({ one }) => ({
     topic: one(topics, {
-      fields: [greenChallenges.topic],
+      fields: [greenChallenges.topicId],
       references: [topics.id],
     }),
   }),

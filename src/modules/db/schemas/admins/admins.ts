@@ -15,5 +15,5 @@ export const admins = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => [uniqueIndex('user_email_idx').on(table.email)],
+  (table) => [uniqueIndex('admin_email_idx').on(table.email)],
 );
