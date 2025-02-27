@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, exists, inArray, SQL, and, or, sql } from 'drizzle-orm';
+import { eq, exists, SQL, and, or, sql, getTableColumns } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   posts,
@@ -12,7 +12,7 @@ import {
 
 @Injectable()
 export class PostsRepository {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async findById(id: string) {
     const [post] = await this.drizzleService.db
@@ -247,6 +247,25 @@ export class PostsRepository {
         comments: true,
       },
     });
+  }
+
+  async getLikedPosts(userId: string, offset: number, limit: number) {
+    const likedPosts = this.drizzleService.db.select()
+      .from(publicationsReactions)
+      .where(and(eq(publicationsReactions.userId, userId), eq(publicationsReactions.reactionType, 'like')))
+      .offset(offset)
+      .limit(limit).as('liked_posts');
+    return await this.drizzleService.db.select({
+      ...getTableColumns(posts),
+      category: topics.name,
+      likes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like'THEN 1 END)`.as('like_count'),
+      dislikes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike'THEN 1 END)`.as('dislike_count'),
+    })
+      .from(likedPosts)
+      .innerJoin(posts, eq(likedPosts.reactionableId, posts.id))
+      .innerJoin(topics, eq(posts.mainTopicId, topics.id))
+      .innerJoin(publicationsReactions, eq(likedPosts.reactionableId, publicationsReactions.reactionableId))
+      .groupBy(posts.id)
   }
 
   private readonly commentCountQuery = sql<number>`

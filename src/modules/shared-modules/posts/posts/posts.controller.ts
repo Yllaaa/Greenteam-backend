@@ -12,10 +12,11 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { GetPostsDto } from './dto/get-posts.dto';
+import { PaginationDto } from './dto/pagination.dto';
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(private readonly postsService: PostsService) { }
 
   @Post('publish-post')
   async createPost(@Body() createPostDto: CreatePostDto, @Req() req) {
@@ -27,5 +28,13 @@ export class PostsController {
   async getPosts(@Query() topic: GetPostsDto, @Req() req) {
     const userId = req.user.id;
     return this.postsService.getPosts(topic, userId);
+  }
+
+  @Get('liked-posts')
+  async getLikedPosts(@Query() pagination: PaginationDto, @Req() req) {
+    const userId = req.user.id;
+    pagination.offset ||= 0;
+    pagination.limit ||= 10;
+    return this.postsService.getLikedPosts(userId, pagination.offset, pagination.limit);
   }
 }

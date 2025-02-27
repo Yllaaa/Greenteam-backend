@@ -16,7 +16,7 @@ export class PostsService {
     private readonly postsRepository: PostsRepository,
     private readonly commentRepository: CommentsRepository,
     private readonly repliesRepository: RepliesRepository,
-  ) {}
+  ) { }
   async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
     const post = await this.postsRepository.createPost(
       dto.content,
@@ -52,5 +52,9 @@ export class PostsService {
       },
       userId,
     );
+  }
+
+  async getLikedPosts(userId: string, offset: number, limit: number) {
+    return await this.postsRepository.getLikedPosts(userId, offset, limit);
   }
 }
