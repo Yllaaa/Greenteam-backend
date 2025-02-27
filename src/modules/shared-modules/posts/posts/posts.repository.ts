@@ -260,11 +260,13 @@ export class PostsRepository {
       category: topics.name,
       likes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like'THEN 1 END)`.as('like_count'),
       dislikes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike'THEN 1 END)`.as('dislike_count'),
+      comments: sql<number>`COUNT(DISTINCT ${publicationsComments.id})`.as('comment_count')
     })
       .from(likedPosts)
       .innerJoin(posts, eq(likedPosts.reactionableId, posts.id))
       .innerJoin(topics, eq(posts.mainTopicId, topics.id))
       .innerJoin(publicationsReactions, eq(likedPosts.reactionableId, publicationsReactions.reactionableId))
+      .innerJoin(publicationsComments, eq(likedPosts.reactionableId, publicationsComments.publicationId))
       .groupBy(posts.id)
   }
 
