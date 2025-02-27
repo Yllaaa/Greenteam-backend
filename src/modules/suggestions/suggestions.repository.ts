@@ -11,21 +11,34 @@ export class SuggestionsRepository {
     ) { }
 
     async getPagesSuggestions(userId: string, offset: number, limit: number) {
-        return await except(
+        const pagesSuggestions = except(
             this.drizzleService.db.select().from(pages),
             this.drizzleService.db.select({ ...getTableColumns(pages) }).from(pages)
                 .innerJoin(pagesFollowers, eq(pages.id, pagesFollowers.page_id))
                 .where(eq(pagesFollowers.user_id, userId))
-        ).offset(offset).limit(limit)
+        ).offset(offset).limit(limit).as('pagesSuggestions')
+        return await this.drizzleService.db.select({
+            name: pagesSuggestions.name,
+            description: pagesSuggestions.description,
+            cover: pagesSuggestions.cover,
+            followers: this.drizzleService.db.$count(pagesFollowers, eq(pagesFollowers.page_id, pagesSuggestions.id)).as('followers')
+        }).from(pagesSuggestions)
     }
 
     async getGroupsSuggestions(userId: string, offset: number, limit: number) {
-        return await except(
+        const groupsSuggestions = except(
             this.drizzleService.db.select().from(groups),
             this.drizzleService.db.select({ ...getTableColumns(groups) }).from(groups)
                 .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
                 .where(eq(groupMembers.userId, userId))
-        ).offset(offset).limit(limit)
+        ).offset(offset).limit(limit).as('groupsSuggestions')
+
+        return await this.drizzleService.db.select({
+            name: groupsSuggestions.name,
+            description: groupsSuggestions.description,
+            cover: groupsSuggestions.cover,
+            members: this.drizzleService.db.$count(groupMembers, eq(groupMembers.groupId, groupsSuggestions.id)).as('members')
+        }).from(groupsSuggestions)
     }
 
     async getFolloweesSuggestions(userId: string, offset: number, limit: number) {
