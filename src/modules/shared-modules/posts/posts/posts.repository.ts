@@ -255,18 +255,31 @@ export class PostsRepository {
       .where(and(eq(publicationsReactions.userId, userId), eq(publicationsReactions.reactionType, 'like')))
       .offset(offset)
       .limit(limit).as('liked_posts');
+    const postsLikes = this.drizzleService.db.select({
+      reactionableId: publicationsReactions.reactionableId,
+      likes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like'THEN 1 END)`.as('like_count'),
+      dislikes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike'THEN 1 END)`.as('dislike_count'),
+    }).from(publicationsReactions)
+      .groupBy(publicationsReactions.reactionableId)
+      .as('posts_likes');
+    const postsComments = this.drizzleService.db.select({
+      reactionableId: publicationsReactions.reactionableId,
+      comments: sql<number>`COUNT(DISTINCT ${publicationsComments.id})`.as('comment_count'),
+    }).from(publicationsComments)
+      .groupBy(publicationsComments.publicationId)
+      .as('posts_comments');
     return await this.drizzleService.db.select({
       ...getTableColumns(posts),
       category: topics.name,
-      likes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like'THEN 1 END)`.as('like_count'),
-      dislikes: sql<number>`COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike'THEN 1 END)`.as('dislike_count'),
-      comments: sql<number>`COUNT(DISTINCT ${publicationsComments.id})`.as('comment_count')
+      likes: sql`COALESCE(${postsLikes.likes}, 0)`.as('like_count'),
+      dislikes: sql`COALESCE(${postsLikes.dislikes}, 0)`.as('dislike_count'),
+      comments: sql`COALESCE(${postsComments.comments}, 0)`.as('comment_count'),
     })
       .from(likedPosts)
-      .innerJoin(posts, eq(likedPosts.reactionableId, posts.id))
-      .innerJoin(topics, eq(posts.mainTopicId, topics.id))
-      .innerJoin(publicationsReactions, eq(likedPosts.reactionableId, publicationsReactions.reactionableId))
-      .innerJoin(publicationsComments, eq(likedPosts.reactionableId, publicationsComments.publicationId))
+      .leftJoin(posts, eq(likedPosts.reactionableId, posts.id))
+      .leftJoin(topics, eq(posts.mainTopicId, topics.id))
+      .leftJoin(postsLikes, eq(likedPosts.reactionableId, postsLikes.reactionableId))
+      .leftJoin(postsComments, eq(likedPosts.reactionableId, postsComments.reactionableId))
       .groupBy(posts.id)
   }
 
