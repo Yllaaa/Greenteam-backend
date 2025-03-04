@@ -12,6 +12,10 @@ import { UsersModule } from './modules/users/users.module';
 import { SharedModulesModule } from './modules/shared-modules/shared-modules.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { BullModule } from '@nestjs/bullmq';
+import { GroupsModule } from './modules/groups/groups.module';
+import { ChallengesModule } from './modules/challenges/challenges.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { PointingSystemModule } from './modules/pointing-system/pointing-system.module';
 
 @Global()
 @Module({
@@ -34,6 +38,10 @@ import { BullModule } from '@nestjs/bullmq';
       },
     }),
     JobsModule,
+    GroupsModule,
+    ChallengesModule,
+    ChatModule,
+    PointingSystemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

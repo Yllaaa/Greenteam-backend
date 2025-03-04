@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, primaryKey, text, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey, text, uniqueIndex, uuid, varchar, serial } from "drizzle-orm/pg-core";
 import { topics, users } from "../schema";
 import { relations } from "drizzle-orm";
 
@@ -12,7 +12,7 @@ export const pages = pgTable('pages', {
     slug: varchar().notNull(),
     avatar: varchar().notNull(),
     cover: varchar().notNull(),
-    topic_id: uuid().references(() => topics.id),
+    topic_id: serial().references(() => topics.id),
     category: pageCategory().notNull(),
     page_info_id: uuid()
 }, (table) => [

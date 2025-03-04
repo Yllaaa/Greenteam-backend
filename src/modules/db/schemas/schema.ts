@@ -6,8 +6,11 @@ export * from './posts/enums';
 export * from './forums/forums';
 export * from './common/media';
 export * from './events/events';
-
+export * from './groups/groups';
 export * from './pages/pages';
-
 export * from './challenges/challenges';
-
+export * from './groups/group-members/group-members';
+export * from './chat/chat';
+export * from './challenges/challenges';
+export * from './admins/admins';
+export * from './points/points';
