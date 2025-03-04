@@ -6,5 +6,6 @@ import { PointingSystemRepository } from './pointing-system.repository';
 @Module({
   controllers: [PointingSystemController],
   providers: [PointingSystemService, PointingSystemRepository],
+  exports: [PointingSystemService, PointingSystemRepository],
 })
 export class PointingSystemModule {}
