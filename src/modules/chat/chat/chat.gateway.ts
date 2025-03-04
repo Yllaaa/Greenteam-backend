@@ -43,6 +43,11 @@ export interface MarkAsSeenPayload {
 @UseGuards(WsJwtAuthGuard)
 @WebSocketGateway({
   namespace: '/api/v1/chat',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
 })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
