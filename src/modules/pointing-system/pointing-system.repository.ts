@@ -35,7 +35,8 @@ export class PointingSystemRepository {
           set: {
             points: sql`${userPoints.points} + ${sql.placeholder('points')}`,
           },
-        });
+        })
+        .execute({ points: points });
     });
   }
 }

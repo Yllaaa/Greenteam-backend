@@ -69,23 +69,6 @@ export class PostsRepository {
             avatar: true,
           },
         },
-        mainTopic: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
-        subTopics: {
-          columns: {},
-          with: {
-            topic: {
-              columns: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
       },
     });
   }

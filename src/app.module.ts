@@ -36,6 +36,6 @@ import { PointingSystemModule } from './modules/pointing-system/pointing-system.
   ],
   controllers: [AppController],
   providers: [AppService],
-  exports: [DrizzleModule],
+  exports: [DrizzleModule, PointingSystemModule],
 })
-export class AppModule { }
+export class AppModule {}
