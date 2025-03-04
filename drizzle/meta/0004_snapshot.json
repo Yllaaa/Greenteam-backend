@@ -1,4 +1,5 @@
 {
+  "id": "499e6d97-5dfb-43ac-9ba2-c39f7d13fbeb",
   "id": "32401e2c-3160-4ae9-9bf7-443b070013db",
   "prevId": "b241f0ee-5871-4d9e-81eb-2cd22fb7075e",
   "version": "7",
@@ -341,6 +342,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -364,6 +372,19 @@
           "tableTo": "topics",
           "columnsFrom": [
             "main_topic_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "posts_group_id_groups_id_fk": {
+          "name": "posts_group_id_groups_id_fk",
+          "tableFrom": "posts",
+          "tableTo": "groups",
+          "columnsFrom": [
+            "group_id"
           ],
           "columnsTo": [
             "id"
@@ -2213,6 +2234,7 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+
     },
     "public.points_history": {
       "name": "points_history",
@@ -2577,6 +2599,7 @@
         "user",
         "page"
       ]
+
     },
     "public.action": {
       "name": "action",

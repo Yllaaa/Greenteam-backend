@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { users } from "../users/users";
 import { topics } from "../topics/topics";
+import { posts } from "../schema";
 import { groupMembers } from "../schema";
 
 export const privacy = pgEnum("privacy", ["PUBLIC", "PRIVATE"]);
@@ -45,4 +46,5 @@ export const groupsRelations = relations(groups, ({ one, many }) => ({
     references: [topics.id],
   }),
   members: many(groupMembers),
+  posts : many(posts)
 }));
