@@ -28,6 +28,7 @@ export class PostsRepository {
     creatorId: string,
     creatorType: SQL<'user' | 'page' | 'group_member'>,
     userId: string,
+    groupId?: string,
   ) {
     const [post] = await this.drizzleService.db
       .insert(posts)
@@ -36,6 +37,7 @@ export class PostsRepository {
         mainTopicId: Number(mainTopicId),
         creatorId: creatorId ?? userId,
         creatorType,
+        groupId,
       })
       .returning({
         id: posts.id,
@@ -86,6 +88,12 @@ export class PostsRepository {
             },
           },
         },
+        group: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
   }
@@ -94,6 +102,7 @@ export class PostsRepository {
     filters?: {
       mainTopicId?: number;
       subTopicId?: number;
+      groupId?: string;
     },
     pagination?: {
       limit?: number;
@@ -101,7 +110,7 @@ export class PostsRepository {
     },
     currentUserId?: string,
   ) {
-    const { mainTopicId, subTopicId } = filters || {};
+    const { mainTopicId, subTopicId, groupId } = filters || {};
     const { limit = 10, page = 0 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
 
@@ -147,6 +156,7 @@ export class PostsRepository {
           id: posts.id,
           content: posts.content,
           createdAt: posts.createdAt,
+          groupId: posts.groupId,
         },
         author: {
           id: users.id,
@@ -188,6 +198,7 @@ export class PostsRepository {
         posts.id,
         posts.content,
         posts.createdAt,
+        posts.groupId,
         users.id,
         users.fullName,
         users.avatar,
@@ -222,6 +233,10 @@ export class PostsRepository {
       );
     }
 
+    if (groupId) {
+      conditions.push(eq(posts.groupId, groupId));
+    }
+
     if (conditions.length > 0) {
       queryBuilder.where(or(...conditions));
     }
@@ -245,6 +260,48 @@ export class PostsRepository {
           },
         },
         comments: true,
+      },
+    });
+  }
+
+
+  async getGroupPosts(groupId: string, pagination?: { limit?: number; page?: number }) {
+    const { limit = 10, page = 1 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+
+    return await this.drizzleService.db.query.posts.findMany({
+      where: eq(posts.groupId, groupId),
+      limit: limit,
+      offset: offset,
+      orderBy: (posts, { desc }) => [desc(posts.createdAt)],
+      with: {
+        user_creator: {
+          columns: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        mainTopic: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+        subTopics: {
+          columns: {},
+          with: {
+            topic: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        comments: true,
+        reactions: true,
       },
     });
   }

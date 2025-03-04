@@ -33,12 +33,13 @@ export class GroupPostsController {
         return this.groupPostsService.createPost(createPostDto, groupId, groupMemberId);
     }
 
-    @Get(':groupId/get-posts')
+    @Get(':groupId/posts')
     async getGroupPosts(
-        @Req() req,
+        @Param('groupId') groupId: string,
         @Query() getPostDto: GetPostsDto,
+        @Req() req,
     ) {
         const userId: string = req.user.id;
-        return this.postsService.getPosts(getPostDto, userId);
+        return this.groupPostsService.getGroupPosts(groupId, userId, getPostDto);
     }
 }
