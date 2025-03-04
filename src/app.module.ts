@@ -1,4 +1,4 @@
-import { JobsModule } from './modules/common/jobs/jobs.module';
+import { BullMQModule } from './modules/common/queus/bullMQ.module';
 import { Global, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -37,7 +37,7 @@ import { PointingSystemModule } from './modules/pointing-system/pointing-system.
         port: (process.env.REDIS_PORT || 6379) as number,
       },
     }),
-    JobsModule,
+    BullMQModule,
     GroupsModule,
     ChallengesModule,
     ChatModule,
