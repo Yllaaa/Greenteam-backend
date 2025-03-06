@@ -49,7 +49,10 @@ export class MessagesRepository {
             )
         : (messages, { eq }) => eq(messages.conversationId, conversationId),
       limit,
-      orderBy: (messages, { asc }) => [asc(messages.sentAt), asc(messages.id)],
+      orderBy: (messages, { desc }) => [
+        desc(messages.sentAt),
+        desc(messages.id),
+      ],
       with: {
         senderUser: {
           columns: {
