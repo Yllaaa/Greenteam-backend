@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { SQL, and, eq, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  forumPublications,
+  posts,
   publicationsComments,
   publicationsReactions,
   users,
@@ -54,6 +56,12 @@ export class CommentsRepository {
               fullName: true,
               username: true,
               avatar: true,
+            },
+          },
+          post: {
+            columns: {
+              id: true,
+              mainTopicId: true,
             },
           },
         },
@@ -152,5 +160,29 @@ export class CommentsRepository {
           eq(publicationsComments.userId, userId),
         ),
       );
+  }
+
+  async getPostById(postId: string) {
+    return this.drizzleService.db.query.posts.findFirst({
+      columns: {
+        id: true,
+        mainTopicId: true,
+        content: true,
+        createdAt: true,
+      },
+      where: eq(posts.id, postId),
+    });
+  }
+
+  async getForumPublicationById(publicationId: string) {
+    return this.drizzleService.db.query.forumPublications.findFirst({
+      columns: {
+        id: true,
+        mainTopicId: true,
+        content: true,
+        createdAt: true,
+      },
+      where: eq(forumPublications.id, publicationId),
+    });
   }
 }
