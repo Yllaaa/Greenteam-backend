@@ -57,4 +57,9 @@ export class GetGroupDtos  {
   @IsInt()
   @Min(1)
   page?: number = 1;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  topicId?: number;
 }

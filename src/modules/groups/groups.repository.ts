@@ -12,15 +12,21 @@ export class GroupsRepository {
     return await this.drizzle.db.insert(groups).values(data).returning();
   }
 
-  async getAllGroups(pagination: { limit: number; page: number }) {
+  async getAllGroups(pagination: { limit: number; page: number }, topicId?: number) {
     const limit = pagination?.limit || 10;
     const offset = Math.max(0, (pagination.page - 1) * limit);
-    const groupsList = await this.drizzle.db
+    
+    const groupsList = this.drizzle.db
       .select()
       .from(groups)
       .limit(limit)
       .offset(offset);
-    return groupsList;
+    
+    if (topicId) {
+      groupsList.where(eq(groups.topicId, topicId));
+    }
+    
+    return await groupsList;
   }
 
 
