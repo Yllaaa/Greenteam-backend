@@ -7,8 +7,18 @@ import { BullModule } from '@nestjs/bullmq';
 @Module({
   imports: [
     MailJobModule,
+
     BullModule.registerQueue({
       name: 'pointsQueue',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
     }),
   ],
   controllers: [],
