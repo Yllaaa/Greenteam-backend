@@ -1,4 +1,4 @@
-import { BullMQModule } from './modules/common/queus/bullMQ.module';
+import { BullMQModule } from './modules/common/queues/bullMQ.module';
 import { Global, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -45,6 +45,6 @@ import { PointingSystemModule } from './modules/pointing-system/pointing-system.
   ],
   controllers: [AppController],
   providers: [AppService],
-  exports: [DrizzleModule, PointingSystemModule],
+  exports: [DrizzleModule, PointingSystemModule, BullMQModule],
 })
 export class AppModule {}

@@ -9,11 +9,13 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
 import { Action } from 'src/modules/pointing-system/pointing-system.repository';
+import { QueuesService } from 'src/modules/common/queues/queues.service';
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly pointingSystemService: PointingSystemService,
+    private readonly queuesService: QueuesService,
   ) {}
   async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
     const { content, mainTopicId, creatorId, creatorType, subtopicIds } = dto;
@@ -34,10 +36,12 @@ export class PostsService {
       );
     }
     const action: Action = { id: newPost.id, type: 'post' };
+
     const topicsToAward = subtopicIds.length ? subtopicIds : [mainTopicId];
+
     await Promise.all(
       topicsToAward.map((topicId) =>
-        this.pointingSystemService.awardPoints(userId, topicId, action, 10),
+        this.queuesService.addPointsJob(userId, topicId, action),
       ),
     );
 
