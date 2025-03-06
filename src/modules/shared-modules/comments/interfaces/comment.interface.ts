@@ -10,6 +10,11 @@ interface CommentPost {
   mainTopicId: number;
 }
 
+interface CommentForumPublication {
+  id: string;
+  mainTopicId: number;
+}
+
 interface Comment {
   id: string;
   content: string;
@@ -17,5 +22,6 @@ interface Comment {
   publicationId: string;
   createdAt: Date;
   author: CommentAuthor;
-  post: CommentPost;
+  post?: CommentPost;
+  forumPublication?: CommentForumPublication;
 }

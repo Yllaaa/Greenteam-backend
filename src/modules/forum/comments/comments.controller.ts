@@ -26,10 +26,8 @@ export class CommentsController {
     private readonly forumService: ForumService,
   ) {}
 
-  private publicationType: SQL<'forum_publication' | 'post' | 'comment'> =
-    'forum_publication' as unknown as SQL<
-      'forum_publication' | 'post' | 'comment'
-    >;
+  private publicationType: SQL<'forum_publication' | 'post'> =
+    'forum_publication' as unknown as SQL<'forum_publication' | 'post'>;
   @Post(':publicationId/comment')
   async createComment(
     @Param('publicationId') publicationId: string,

@@ -12,12 +12,17 @@ export class ReactionsRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
   async addReaction(userId: string, dto: CreateReactionDto) {
-    return this.drizzleService.db.insert(publicationsReactions).values({
-      userId,
-      reactionableType: dto.reactionableType,
-      reactionableId: dto.reactionableId,
-      reactionType: dto.reactionType,
-    });
+    return this.drizzleService.db
+      .insert(publicationsReactions)
+      .values({
+        userId,
+        reactionableType: dto.reactionableType,
+        reactionableId: dto.reactionableId,
+        reactionType: dto.reactionType,
+      })
+      .returning({
+        id: publicationsReactions.id,
+      });
   }
 
   async findUserReaction(
@@ -32,6 +37,20 @@ export class ReactionsRepository {
         eq(publicationsReactions.reactionableId, reactionableId),
         ne(publicationsReactions.reactionType, 'do'),
       ),
+      with: {
+        post: {
+          columns: {
+            id: true,
+            mainTopicId: true,
+          },
+        },
+        forumPublication: {
+          columns: {
+            id: true,
+            mainTopicId: true,
+          },
+        },
+      },
     });
   }
 

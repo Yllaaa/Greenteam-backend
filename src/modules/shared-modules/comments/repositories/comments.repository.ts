@@ -34,38 +34,56 @@ export class CommentsRepository {
 
   async findById(
     id: string,
-    publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
+    publicationType: SQL<'forum_publication' | 'post'>,
   ): Promise<Comment | null> {
-    const comment =
-      await this.drizzleService.db.query.publicationsComments.findFirst({
-        where: and(
-          eq(publicationsComments.id, id),
-          eq(publicationsComments.publicationType, publicationType),
-        ),
-        columns: {
-          id: true,
-          content: true,
-          mediaUrl: true,
-          publicationId: true,
-          createdAt: true,
-        },
-        with: {
-          author: {
-            columns: {
-              id: true,
-              fullName: true,
-              username: true,
-              avatar: true,
-            },
+    const query = {
+      where: and(
+        eq(publicationsComments.id, id),
+        eq(publicationsComments.publicationType, publicationType),
+      ),
+      columns: {
+        id: true,
+        content: true,
+        mediaUrl: true,
+        publicationId: true,
+        createdAt: true,
+      },
+      with: {
+        author: {
+          columns: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatar: true,
           },
+        },
+        ...(publicationType ===
+          ('post' as unknown as SQL<
+            'forum_publication' | 'post' | 'comment'
+          >) && {
           post: {
             columns: {
               id: true,
               mainTopicId: true,
             },
           },
-        },
-      });
+        }),
+        ...(publicationType ===
+          ('forum_publication' as unknown as SQL<
+            'forum_publication' | 'post' | 'comment'
+          >) && {
+          forumPublication: {
+            columns: {
+              id: true,
+              mainTopicId: true,
+            },
+          },
+        }),
+      },
+    };
+
+    const comment =
+      await this.drizzleService.db.query.publicationsComments.findFirst(query);
 
     return comment as Comment;
   }

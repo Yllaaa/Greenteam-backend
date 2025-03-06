@@ -4,13 +4,9 @@ import {
   forumPublications,
   publicationsComments,
   publicationsReactions,
-  topics,
   users,
 } from '../../db/schemas/schema';
-import {
-  CreateForumPublicationDto,
-  ForumSection,
-} from './dtos/create-forumPublication.dto';
+import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
 import { and, desc, eq, isNull, or, SQL, sql } from 'drizzle-orm';
 
 @Injectable()

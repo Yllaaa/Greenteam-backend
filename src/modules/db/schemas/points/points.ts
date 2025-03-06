@@ -15,6 +15,7 @@ import { relations, sql } from 'drizzle-orm';
 // 'comment' = 3 points
 // 'like' = 1 points
 // 'dislike' = 1 points
+// 'sign' = 1 points
 // 'challenge' = 10 points (if the user create a post about it)
 // 'forum_publication' = 5 points,
 
@@ -23,6 +24,8 @@ export const actionEnum = pgEnum('action', [
   'comment',
   'like',
   'dislike',
+  'sign',
+  'do',
   'challenge',
   'forum_publication',
 ]);

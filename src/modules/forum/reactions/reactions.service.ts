@@ -3,9 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateReactionDto } from 'src/modules/shared-modules/posts/reactions/dtos/create-reaction.dto';
+import {
+  CreateReactionDto,
+  ReactionableTypeEnum,
+} from 'src/modules/shared-modules/posts/reactions/dtos/create-reaction.dto';
 import { ReactionsRepository } from 'src/modules/shared-modules/reactions/reactions.repository';
 import { ForumService } from '../publications/forum.service';
+import { QueuesService } from 'src/modules/common/queues/queues.service';
+import { Action } from 'src/modules/pointing-system/pointing-system.repository';
 
 @Injectable()
 export class ReactionsService {
@@ -23,6 +28,7 @@ export class ReactionsService {
   constructor(
     private readonly reactionsRepository: ReactionsRepository,
     private readonly forumService: ForumService,
+    private readonly queuesService: QueuesService,
   ) {}
 
   async toggleReaction(userId: string, dto: CreateReactionDto) {
@@ -32,29 +38,46 @@ export class ReactionsService {
       );
     }
 
-    if (dto.reactionableType === 'forum_publication') {
-      await this.validateForumPublicationReaction(dto);
+    let topicId: number | null = null;
+    let publication: {
+      id: string;
+      status: 'draft' | 'published' | 'hidden' | null;
+      createdAt: Date;
+      content: string;
+      mainTopicId: number;
+      mediaUrl: string | null;
+      headline: string;
+      authorId: string;
+      section: 'doubt' | 'dream' | 'need';
+    } | null = null;
+
+    const isForumPublication =
+      dto.reactionableType === ReactionableTypeEnum.FORUM_PUBLICATION;
+
+    if (isForumPublication) {
+      publication = await this.forumService.getPublication(dto.reactionableId);
+      if (!publication) {
+        throw new NotFoundException('Publication not found');
+      }
+
+      if (!this.isValidForumReaction(publication.section, dto.reactionType)) {
+        throw new BadRequestException(
+          `Invalid reaction type "${dto.reactionType}" for forum section: ${publication.section}.`,
+        );
+      }
+
+      topicId = publication.mainTopicId;
     }
 
-    return this.processReaction(userId, dto);
+    return this.processReaction(userId, dto, topicId, isForumPublication);
   }
 
-  private async validateForumPublicationReaction(dto: CreateReactionDto) {
-    const publication = await this.forumService.getPublication(
-      dto.reactionableId,
-    );
-    if (!publication) {
-      throw new NotFoundException('Publication not found');
-    }
-
-    if (!this.isValidForumReaction(publication.section, dto.reactionType)) {
-      throw new BadRequestException(
-        `Invalid reaction type "${dto.reactionType}" for forum section: ${publication.section}.`,
-      );
-    }
-  }
-
-  private async processReaction(userId: string, dto: CreateReactionDto) {
+  private async processReaction(
+    userId: string,
+    dto: CreateReactionDto,
+    topicId: number | null,
+    isForumPublication: boolean,
+  ) {
     const existingReaction = await this.reactionsRepository.findUserReaction(
       userId,
       dto.reactionableType,
@@ -68,8 +91,17 @@ export class ReactionsService {
           dto.reactionableType,
           dto.reactionableId,
         );
+        const action: Action = {
+          id: existingReaction.id,
+          type: dto.reactionType,
+        };
+        if (isForumPublication && topicId) {
+          this.queuesService.removePointsJob(userId, topicId, action);
+        }
+
         return { action: 'removed' };
       }
+
       const [updated] = await this.reactionsRepository.updateReaction(
         userId,
         dto,
@@ -77,7 +109,12 @@ export class ReactionsService {
       return { action: 'updated', type: updated.reactionType };
     }
 
-    await this.reactionsRepository.addReaction(userId, dto);
+    const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
+    const action: Action = { id: reaction.id, type: dto.reactionType };
+    if (isForumPublication && topicId) {
+      this.queuesService.addPointsJob(userId, topicId, action);
+    }
+
     return { action: 'added' };
   }
 
