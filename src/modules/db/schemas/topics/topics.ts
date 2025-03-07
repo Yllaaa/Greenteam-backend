@@ -10,6 +10,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
 import { relations } from 'drizzle-orm';
+import { userPoints } from '../schema';
 
 export const topics = pgTable(
   'topics',
@@ -40,6 +41,7 @@ export const topicsRelations = relations(topics, ({ many, one }) => ({
     references: [topics.id],
   }),
   children: many(topics),
+  userPoints: many(userPoints),
 }));
 
 export const postSubTopicsRelations = relations(postSubTopics, ({ one }) => ({
