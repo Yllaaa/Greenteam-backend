@@ -5,7 +5,10 @@ import {
   ReactionableTypeEnum,
 } from './dtos/create-reaction.dto';
 import { ChallengesService } from 'src/modules/challenges/challenges.service';
-
+import { QueuesService } from 'src/modules/common/queues/queues.service';
+import { PostsService } from '../posts/posts.service';
+import { Action } from 'src/modules/pointing-system/pointing-system.repository';
+import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
 @Injectable()
 export class ReactionsService {
   private readonly allowedReactions = {
@@ -17,9 +20,16 @@ export class ReactionsService {
   constructor(
     private readonly reactionsRepository: ReactionsRepository,
     private readonly challengesService: ChallengesService,
+    private readonly queuesService: QueuesService,
+    private readonly postsService: PostsService,
+    private readonly pointingSystemService: PointingSystemService,
   ) {}
 
   async toggleReaction(userId: string, dto: CreateReactionDto) {
+    const topicId =
+      dto.reactionableType === ReactionableTypeEnum.POST
+        ? (await this.postsService.getPostById(dto.reactionableId)).mainTopicId
+        : undefined;
     if (!this.isReactionValid(dto.reactionableType, dto.reactionType)) {
       throw new BadRequestException(
         `Invalid reaction type "${dto.reactionType}" for ${dto.reactionableType}.`,
@@ -27,11 +37,15 @@ export class ReactionsService {
     }
 
     return dto.reactionType === 'do'
-      ? this.handleDoReaction(userId, dto)
-      : this.handleStandardReaction(userId, dto);
+      ? this.handleDoReaction(userId, dto, topicId)
+      : this.handleStandardReaction(userId, dto, topicId);
   }
 
-  private async handleDoReaction(userId: string, dto: CreateReactionDto) {
+  private async handleDoReaction(
+    userId: string,
+    dto: CreateReactionDto,
+    topicId?: number,
+  ) {
     const existingDoReaction =
       await this.reactionsRepository.findUserDoReaction(
         userId,
@@ -51,18 +65,35 @@ export class ReactionsService {
           dto.reactionableId,
         ),
       ]);
+
+      if (topicId) {
+        const action: Action = { id: existingDoReaction.id, type: 'do' };
+        this.queuesService.removePointsJob(userId, topicId, action);
+      }
+
       return { action: 'removed' };
     }
 
+    const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
+
     await Promise.all([
-      this.reactionsRepository.addReaction(userId, dto),
+      reaction,
       this.challengesService.createDoPostChallenge(userId, dto.reactionableId),
     ]);
+
+    if (topicId) {
+      const action: Action = { id: reaction.id, type: 'do' };
+      this.queuesService.addPointsJob(userId, topicId, action);
+    }
 
     return { action: 'added' };
   }
 
-  private async handleStandardReaction(userId: string, dto: CreateReactionDto) {
+  private async handleStandardReaction(
+    userId: string,
+    dto: CreateReactionDto,
+    topicId?: number,
+  ) {
     const existingReaction = await this.reactionsRepository.findUserReaction(
       userId,
       dto.reactionableType,
@@ -76,6 +107,13 @@ export class ReactionsService {
           dto.reactionableType,
           dto.reactionableId,
         );
+        if (dto.reactionableType === ReactionableTypeEnum.POST && topicId) {
+          const action: Action = {
+            id: existingReaction.id,
+            type: dto.reactionType,
+          };
+          this.pointingSystemService.removeAward(userId, topicId, action);
+        }
         return { action: 'removed' };
       } else {
         const [updated] = await this.reactionsRepository.updateReaction(
@@ -86,12 +124,16 @@ export class ReactionsService {
       }
     }
 
-    await this.reactionsRepository.addReaction(userId, dto);
+    const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
+    if (dto.reactionableType == ReactionableTypeEnum.POST && topicId) {
+      const action: Action = { id: reaction.id, type: dto.reactionType };
+      await this.pointingSystemService.awardPoints(userId, topicId, action);
+    }
     return { action: 'added' };
   }
 
   private isReactionValid(
-    reactionableType: string,
+    reactionableType: ReactionableTypeEnum,
     reactionType: string,
   ): boolean {
     return (
