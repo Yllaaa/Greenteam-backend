@@ -100,3 +100,30 @@ export const publicationsReactions = pgTable(
     index('likeable_idx').on(table.reactionableType, table.reactionableId),
   ],
 );
+
+export const publicationsReactionsRelations = relations(
+  publicationsReactions,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [publicationsReactions.userId],
+      references: [users.id],
+    }),
+    post: one(posts, {
+      fields: [publicationsReactions.reactionableId],
+      references: [posts.id],
+    }),
+
+    comment: one(publicationsComments, {
+      fields: [publicationsReactions.reactionableId],
+      references: [publicationsComments.id],
+    }),
+    reply: one(commentsReplies, {
+      fields: [publicationsReactions.reactionableId],
+      references: [commentsReplies.id],
+    }),
+    forumPublication: one(forumPublications, {
+      fields: [publicationsReactions.reactionableId],
+      references: [forumPublications.id],
+    }),
+  }),
+);

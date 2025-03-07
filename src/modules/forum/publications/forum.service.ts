@@ -4,17 +4,31 @@ import {
   CreateForumPublicationDto,
   ForumSection,
 } from './dtos/create-forumPublication.dto';
+import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { SQL } from 'drizzle-orm';
+import { Action } from 'src/modules/pointing-system/pointing-system.repository';
 
 @Injectable()
 export class ForumService {
-  constructor(private readonly forumRepository: ForumRepository) {}
+  constructor(
+    private readonly forumRepository: ForumRepository,
+    private readonly queuesService: QueuesService,
+  ) {}
   async createPublication(dto: CreateForumPublicationDto, authorId: string) {
     const topic = await this.forumRepository.findTopicById(dto.mainTopicId);
     if (!topic) {
       throw new NotFoundException('Topic not found');
     }
-    return this.forumRepository.createPublication(dto, authorId);
+    const newPublication = await this.forumRepository.createPublication(
+      dto,
+      authorId,
+    );
+    const action: Action = {
+      id: newPublication.id,
+      type: 'forum_publication',
+    };
+    this.queuesService.addPointsJob(authorId, dto.mainTopicId, action);
+    return newPublication;
   }
 
   async getPublications(

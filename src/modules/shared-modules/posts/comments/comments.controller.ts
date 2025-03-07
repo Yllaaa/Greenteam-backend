@@ -19,8 +19,9 @@ import { SQL } from 'drizzle-orm';
 @Controller('')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-  private publicationType: SQL<'forum_publication' | 'post' | 'comment'> =
-    'post' as unknown as SQL<'forum_publication' | 'post' | 'comment'>;
+  private publicationType: SQL<'forum_publication' | 'post'> =
+    'post' as unknown as SQL<'forum_publication' | 'post'>;
+
   @Post(':postId/comment')
   createComment(
     @Param('postId') postId: string,

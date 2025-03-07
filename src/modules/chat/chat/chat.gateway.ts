@@ -150,11 +150,11 @@ export class ChatGateway
       }
       this.userSockets.get(sender.id)?.add(client.id);
 
-      await this.presenceService.handleUserConnected(
-        sender,
-        client.id,
-        this.server,
-      );
+      // await this.presenceService.handleUserConnected(
+      //   sender,
+      //   client.id,
+      //   this.server,
+      // );
 
       const conversations =
         await this.conversationsService.getUserConversations(

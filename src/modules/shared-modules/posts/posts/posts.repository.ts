@@ -61,39 +61,7 @@ export class PostsRepository {
         id: true,
         content: true,
         createdAt: true,
-      },
-      with: {
-        user_creator: {
-          columns: {
-            id: true,
-            fullName: true,
-            username: true,
-            avatar: true,
-          },
-        },
-        mainTopic: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
-        subTopics: {
-          columns: {},
-          with: {
-            topic: {
-              columns: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        group: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
+        mainTopicId: true,
       },
     });
   }
@@ -264,8 +232,10 @@ export class PostsRepository {
     });
   }
 
-
-  async getGroupPosts(groupId: string, pagination?: { limit?: number; page?: number }) {
+  async getGroupPosts(
+    groupId: string,
+    pagination?: { limit?: number; page?: number },
+  ) {
     const { limit = 10, page = 1 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
 

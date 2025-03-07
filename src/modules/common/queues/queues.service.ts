@@ -15,15 +15,35 @@ export class QueuesService {
         topicId,
         action,
       },
-      { attempts: 5, backoff: 1000 },
+      {
+        attempts: 5,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
     );
   }
 
   async removePointsJob(userId: string, topicId: number, action: Action) {
-    await this.pointsQueue.add('removeAward', {
-      userId,
-      topicId,
-      action,
-    });
+    await this.pointsQueue.add(
+      'removeAward',
+      {
+        userId,
+        topicId,
+        action,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
   }
 }

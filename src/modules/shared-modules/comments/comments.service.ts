@@ -20,16 +20,14 @@ export class CommentsService {
     userId: string,
     commentDto: {
       content: string;
-      publicationType: SQL<'forum_publication' | 'post' | 'comment'>;
+      publicationType: SQL<'forum_publication' | 'post'>;
     },
   ): Promise<Comment> {
     let topicId: number;
 
     if (
       commentDto.publicationType ===
-      ('forum_publication' as unknown as SQL<
-        'forum_publication' | 'post' | 'comment'
-      >)
+      ('forum_publication' as unknown as SQL<'forum_publication' | 'post'>)
     ) {
       const publication =
         await this.commentsRepository.getForumPublicationById(publicationId);
@@ -113,7 +111,7 @@ export class CommentsService {
   async deleteComment(
     commentId: string,
     userId: string,
-    publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
+    publicationType: SQL<'forum_publication' | 'post'>,
   ) {
     const comment = await this.commentsRepository.findById(
       commentId,
@@ -132,10 +130,18 @@ export class CommentsService {
       commentId,
       userId,
     );
-    await this.queuesService.removePointsJob(userId, comment.post.mainTopicId, {
+
+    const action: Action = {
       id: commentId,
       type: 'comment',
-    });
+    };
+
+    const topicId =
+      comment.post?.mainTopicId || comment.forumPublication?.mainTopicId;
+
+    if (topicId) {
+      this.queuesService.removePointsJob(userId, topicId, action);
+    }
 
     return deletedComment;
   }

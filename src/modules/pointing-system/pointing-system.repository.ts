@@ -13,6 +13,8 @@ const POINTS_MAP: Record<ActionType, number> = {
   comment: 3,
   like: 1,
   dislike: 1,
+  sign: 1,
+  do: 1,
   challenge: 10,
   forum_publication: 5,
 };
