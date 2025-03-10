@@ -1,2 +1,0 @@
-ALTER TABLE "events" ADD COLUMN "group_id" uuid;--> statement-breakpoint
-ALTER TABLE "events" ADD CONSTRAINT "events_group_id_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."groups"("id") ON DELETE no action ON UPDATE no action;
