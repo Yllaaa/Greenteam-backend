@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { SQL, and, eq, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  forumPublications,
+  posts,
   publicationsComments,
   publicationsReactions,
   users,
@@ -32,32 +34,56 @@ export class CommentsRepository {
 
   async findById(
     id: string,
-    publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
+    publicationType: SQL<'forum_publication' | 'post'>,
   ): Promise<Comment | null> {
-    const comment =
-      await this.drizzleService.db.query.publicationsComments.findFirst({
-        where: and(
-          eq(publicationsComments.id, id),
-          eq(publicationsComments.publicationType, publicationType),
-        ),
-        columns: {
-          id: true,
-          content: true,
-          mediaUrl: true,
-          publicationId: true,
-          createdAt: true,
-        },
-        with: {
-          author: {
-            columns: {
-              id: true,
-              fullName: true,
-              username: true,
-              avatar: true,
-            },
+    const query = {
+      where: and(
+        eq(publicationsComments.id, id),
+        eq(publicationsComments.publicationType, publicationType),
+      ),
+      columns: {
+        id: true,
+        content: true,
+        mediaUrl: true,
+        publicationId: true,
+        createdAt: true,
+      },
+      with: {
+        author: {
+          columns: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatar: true,
           },
         },
-      });
+        ...(publicationType ===
+          ('post' as unknown as SQL<
+            'forum_publication' | 'post' | 'comment'
+          >) && {
+          post: {
+            columns: {
+              id: true,
+              mainTopicId: true,
+            },
+          },
+        }),
+        ...(publicationType ===
+          ('forum_publication' as unknown as SQL<
+            'forum_publication' | 'post' | 'comment'
+          >) && {
+          forumPublication: {
+            columns: {
+              id: true,
+              mainTopicId: true,
+            },
+          },
+        }),
+      },
+    };
+
+    const comment =
+      await this.drizzleService.db.query.publicationsComments.findFirst(query);
 
     return comment as Comment;
   }
@@ -152,5 +178,29 @@ export class CommentsRepository {
           eq(publicationsComments.userId, userId),
         ),
       );
+  }
+
+  async getPostById(postId: string) {
+    return this.drizzleService.db.query.posts.findFirst({
+      columns: {
+        id: true,
+        mainTopicId: true,
+        content: true,
+        createdAt: true,
+      },
+      where: eq(posts.id, postId),
+    });
+  }
+
+  async getForumPublicationById(publicationId: string) {
+    return this.drizzleService.db.query.forumPublications.findFirst({
+      columns: {
+        id: true,
+        mainTopicId: true,
+        content: true,
+        createdAt: true,
+      },
+      where: eq(forumPublications.id, publicationId),
+    });
   }
 }

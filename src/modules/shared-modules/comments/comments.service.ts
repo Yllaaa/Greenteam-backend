@@ -1,13 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SQL } from 'drizzle-orm';
-import { CreateCommentDto } from 'src/modules/shared-modules/comments/dtos/create-comment.dto';
+import { Action } from 'src/modules/pointing-system/pointing-system.repository';
 import { CommentsRepository } from 'src/modules/shared-modules/comments/repositories/comments.repository';
 import { RepliesRepository } from 'src/modules/shared-modules/comments/repositories/replies.repository';
+import { QueuesService } from 'src/modules/common/queues/queues.service';
+import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
+
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentsRepository: CommentsRepository,
     private readonly repliesRepository: RepliesRepository,
+    private readonly queuesService: QueuesService,
+    private readonly pointingSystemService: PointingSystemService,
   ) {}
 
   async createComment(
@@ -15,9 +20,28 @@ export class CommentsService {
     userId: string,
     commentDto: {
       content: string;
-      publicationType: SQL<'forum_publication' | 'post' | 'comment'>;
+      publicationType: SQL<'forum_publication' | 'post'>;
     },
   ): Promise<Comment> {
+    let topicId: number;
+
+    if (
+      commentDto.publicationType ===
+      ('forum_publication' as unknown as SQL<'forum_publication' | 'post'>)
+    ) {
+      const publication =
+        await this.commentsRepository.getForumPublicationById(publicationId);
+      if (!publication) {
+        throw new NotFoundException('Publication not found');
+      }
+      topicId = publication.mainTopicId;
+    } else {
+      const post = await this.commentsRepository.getPostById(publicationId);
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+      topicId = post.mainTopicId;
+    }
     const newComment = await this.commentsRepository.createComment(
       { userId, content: commentDto.content, publicationId },
       commentDto.publicationType,
@@ -26,6 +50,11 @@ export class CommentsService {
       newComment.id,
       commentDto.publicationType,
     );
+    const action: Action = {
+      id: newComment.id,
+      type: 'comment',
+    };
+    this.queuesService.addPointsJob(userId, topicId, action);
     return comment as Comment;
   }
 
@@ -82,7 +111,7 @@ export class CommentsService {
   async deleteComment(
     commentId: string,
     userId: string,
-    publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
+    publicationType: SQL<'forum_publication' | 'post'>,
   ) {
     const comment = await this.commentsRepository.findById(
       commentId,
@@ -97,7 +126,24 @@ export class CommentsService {
       throw new NotFoundException('You are not allowed to delete this comment');
     }
 
-    return this.commentsRepository.deleteComment(commentId, userId);
+    const deletedComment = await this.commentsRepository.deleteComment(
+      commentId,
+      userId,
+    );
+
+    const action: Action = {
+      id: commentId,
+      type: 'comment',
+    };
+
+    const topicId =
+      comment.post?.mainTopicId || comment.forumPublication?.mainTopicId;
+
+    if (topicId) {
+      this.queuesService.removePointsJob(userId, topicId, action);
+    }
+
+    return deletedComment;
   }
 
   async deleteReply(id: string, userId: string) {

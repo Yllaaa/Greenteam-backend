@@ -5,6 +5,16 @@ interface CommentAuthor {
   avatar: string | null;
 }
 
+interface CommentPost {
+  id: string;
+  mainTopicId: number;
+}
+
+interface CommentForumPublication {
+  id: string;
+  mainTopicId: number;
+}
+
 interface Comment {
   id: string;
   content: string;
@@ -12,4 +22,6 @@ interface Comment {
   publicationId: string;
   createdAt: Date;
   author: CommentAuthor;
+  post?: CommentPost;
+  forumPublication?: CommentForumPublication;
 }

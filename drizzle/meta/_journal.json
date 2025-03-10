@@ -42,6 +42,15 @@
       "version": "7",
       "when": 1741566133022,
       "tag": "0005_legal_warhawk",
+      "when": 1741276174659,
+      "tag": "0005_clumsy_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1741297091952,
+      "tag": "0006_common_punisher",
       "breakpoints": true
     }
   ]

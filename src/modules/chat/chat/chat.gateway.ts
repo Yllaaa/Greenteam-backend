@@ -47,6 +47,7 @@ export interface MarkAsSeenPayload {
     origin: '*',
     methods: ['GET', 'POST'],
     credentials: true,
+    allowedHeaders: ['authorization'],
   },
 })
 export class ChatGateway
@@ -101,27 +102,43 @@ export class ChatGateway
     }
   }
 
-  private async authenticateClient(client: Socket): Promise<Sender> {
-    const authHeader = client.handshake?.headers?.authorization;
-    if (!authHeader) {
-      throw new WsException('No authorization header');
-    }
+  async authenticateClient(client: Socket): Promise<Sender> {
+    try {
+      const authHeader = client.handshake?.headers?.authorization;
+      const authQuery = client.handshake?.query?.token as string;
+      const authAuth = client.handshake?.auth?.token;
+      const token = authHeader?.startsWith('Bearer ')
+        ? authHeader.split(' ')[1]
+        : authQuery || authAuth;
 
-    const token = authHeader.split(' ')[1];
-    if (!process.env.JWT_SECRET) {
-      throw new WsException('JWT configuration error');
-    }
+      if (!token) {
+        throw new WsException('No authentication token provided');
+      }
 
-    const decoded: any = verify(token, process.env.JWT_SECRET);
-    const user = await this.authService.getUserById(decoded.sub);
-    if (!user) {
-      throw new WsException('User not found');
+      if (!process.env.JWT_SECRET) {
+        throw new WsException('JWT configuration error');
+      }
+
+      const decoded = verify(token, process.env.JWT_SECRET) as { sub: string };
+      if (!decoded?.sub) {
+        throw new WsException('Invalid token');
+      }
+
+      const user = await this.authService.getUserById(decoded.sub);
+      if (!user) {
+        throw new WsException('User not found');
+      }
+
+      client.data.userFullData = user;
+
+      const pageId = client.handshake?.query?.pageId as string;
+      return pageId
+        ? { type: 'page' as unknown as SQL<'user' | 'page'>, id: pageId }
+        : { type: 'user' as unknown as SQL<'user' | 'page'>, id: decoded.sub };
+    } catch (error) {
+      console.error('WebSocket Auth Error:', error);
+      throw new WsException('Authentication failed');
     }
-    client.data.userFullData = user;
-    const pageId = client.handshake?.query?.pageId as string;
-    return pageId
-      ? { type: 'page' as unknown as SQL<'user' | 'page'>, id: pageId }
-      : { type: 'user' as unknown as SQL<'user' | 'page'>, id: decoded.sub };
   }
 
   private async setupClientConnection(client: Socket, sender: Sender) {
@@ -133,11 +150,11 @@ export class ChatGateway
       }
       this.userSockets.get(sender.id)?.add(client.id);
 
-      await this.presenceService.handleUserConnected(
-        sender,
-        client.id,
-        this.server,
-      );
+      // await this.presenceService.handleUserConnected(
+      //   sender,
+      //   client.id,
+      //   this.server,
+      // );
 
       const conversations =
         await this.conversationsService.getUserConversations(

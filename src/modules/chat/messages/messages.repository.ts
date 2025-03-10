@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import { messages } from 'src/modules/db/schemas/chat/chat';
 import { Sender } from '../chat/chat.gateway';
-import { and, or, eq, gt, asc, isNull, sql, desc } from 'drizzle-orm';
+import { and, or, eq, gt, asc, isNull, sql, desc, lt } from 'drizzle-orm';
 import { GetMessagesDto } from './dtos/get-messages.dto';
 @Injectable()
 export class MessagesRepository {
@@ -35,21 +35,24 @@ export class MessagesRepository {
     limit = 10,
   ): Promise<Message[]> {
     const messages = await this.drizzleService.db.query.messages.findMany({
-      where: cursor
-        ? (messages, { and, eq, gt, or }) =>
-            and(
+      where: (messages, { and, eq, lt }) =>
+        cursor
+          ? and(
               eq(messages.conversationId, conversationId),
               or(
-                gt(messages.sentAt, cursor.sentAt),
+                lt(messages.sentAt, cursor.sentAt),
                 and(
                   eq(messages.sentAt, cursor.sentAt),
-                  gt(messages.id, cursor.id),
+                  lt(messages.id, cursor.id),
                 ),
               ),
             )
-        : (messages, { eq }) => eq(messages.conversationId, conversationId),
+          : eq(messages.conversationId, conversationId),
       limit,
-      orderBy: (messages, { asc }) => [asc(messages.sentAt), asc(messages.id)],
+      orderBy: (messages, { desc }) => [
+        desc(messages.sentAt),
+        desc(messages.id),
+      ],
       with: {
         senderUser: {
           columns: {
