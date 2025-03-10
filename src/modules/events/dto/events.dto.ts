@@ -40,4 +40,8 @@ export class EventsDto {
 
   @IsInt()
   topicId: number;
+
+  @IsUUID()
+  @IsOptional()
+  groupId?: string;
 }

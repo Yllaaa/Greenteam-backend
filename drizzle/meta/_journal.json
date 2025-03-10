@@ -33,10 +33,15 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1740742512633,
-      "tag": "0004_clammy_landau",
       "when": 1740697291748,
       "tag": "0004_points-schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1741566133022,
+      "tag": "0005_legal_warhawk",
       "breakpoints": true
     }
   ]

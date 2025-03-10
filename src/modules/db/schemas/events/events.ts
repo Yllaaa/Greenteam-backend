@@ -10,7 +10,7 @@ import {
   timestamp,
   serial,
 } from 'drizzle-orm/pg-core';
-import { creatorTypeEnum, topics, users } from '../schema';
+import { creatorTypeEnum, topics, users, groups } from '../schema';
 import { relations } from 'drizzle-orm';
 
 export const EventCategory = pgEnum('Event Category', [
@@ -34,6 +34,7 @@ export const events = pgTable('events', {
   topicId: serial('topic_id')
     .notNull()
     .references(() => topics.id),
+  groupId: uuid('group_id').references(() => groups.id),
   createdAt: timestamp().notNull().defaultNow(),
 });
 
@@ -46,6 +47,10 @@ export const events_relations = relations(events, ({ one, many }) => ({
   topic: one(topics, {
     fields: [events.topicId],
     references: [topics.id],
+  }),
+  group: one(groups, {
+    fields: [events.groupId],
+    references: [groups.id],
   }),
 }));
 
