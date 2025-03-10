@@ -8,7 +8,7 @@ export class GroupsService {
 
   async createGroup(data: InsertGroupDto) {
     // TODO: should check for topic exist and user exist 
-    
+
     // const owner = await this.UsersRepository.findById(data.ownerId);
     // if (!owner) {
     //   throw new NotFoundException(`User with ID ${data.ownerId} not found`);
@@ -21,8 +21,8 @@ export class GroupsService {
     return this.groupsRepository.createGroup(data);
   }
 
-  async getAllGroups(pagination: { limit: number; page: number }) {
-    return this.groupsRepository.getAllGroups(pagination);
+  async getAllGroups(pagination: { limit: number; page: number }, topicId?: number) {
+    return this.groupsRepository.getAllGroups(pagination, topicId);
   }
 
   async getGroupById(groupId: string) {

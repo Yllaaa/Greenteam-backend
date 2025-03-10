@@ -15,10 +15,11 @@ export class GroupsController {
 
     @Get()
     async getGroups(@Query() query: GetGroupDtos) {
-        return this.groupsService.getAllGroups(
-            { limit: query.limit ?? 10, page: query.page ?? 1 },
-        );
-    }
+    return this.groupsService.getAllGroups(
+        { limit: query.limit ?? 10, page: query.page ?? 1 },
+        query.topicId
+    );
+}
 
     @Get(':id')
     async getGroupById(@Param('id') groupId: string) {

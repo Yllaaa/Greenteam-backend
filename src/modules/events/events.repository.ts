@@ -1,28 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import { events, usersJoinedEvent } from '../db/schemas/schema';
-import { and, asc, eq, sql, SQL } from 'drizzle-orm';
+import { and, asc, eq, isNull, sql, SQL } from 'drizzle-orm';
 import { EventsDto } from './dto/events.dto';
 
 @Injectable()
 export class EventsRepository {
-  constructor(readonly drizzleService: DrizzleService) {}
+  constructor(readonly drizzleService: DrizzleService) { }
 
   async createEvent(event: EventsDto) {
+    const eventValues = {
+      creatorId: event.creatorId,
+      creatorType: event.creatorType,
+      title: event.title,
+      description: event.description,
+      location: event.location,
+      category: event.category,
+      topicId: event.topicId,
+      priority: 0,
+      startDate: event.startDate,
+      endDate: event.endDate,
+    };
+
+    if (event.groupId) {
+      Object.assign(eventValues, { groupId: event.groupId });
+    }
+
     const newEvent = await this.drizzleService.db
       .insert(events)
-      .values({
-        creatorId: event.creatorId,
-        creatorType: event.creatorType,
-        title: event.title,
-        description: event.description,
-        location: event.location,
-        category: event.category,
-        topicId: event.topicId,
-        priority: 0,
-        startDate: event.startDate,
-        endDate: event.endDate,
-      })
+      .values(eventValues)
       .returning();
     return newEvent[0];
   }
@@ -36,7 +42,9 @@ export class EventsRepository {
     return await this.drizzleService.db.query.events.findMany({
       offset: offset,
       limit: limit,
-      where: category ? eq(events.category, category) : undefined,
+      where: category 
+        ? and(eq(events.category, category), isNull(events.groupId)) 
+        : isNull(events.groupId),
       orderBy: [asc(events.priority), asc(events.startDate)],
     });
   }
@@ -62,6 +70,7 @@ export class EventsRepository {
             bio: true,
           },
         },
+        group: true,
       },
     });
   }

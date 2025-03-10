@@ -1,4 +1,5 @@
 {
+  "id": "e50b34d7-fe77-4fc5-86e4-0a7a5841e14d",
   "id": "ad9decef-defd-4c09-b016-d12e93ab7fa9",
   "prevId": "32401e2c-3160-4ae9-9bf7-443b070013db",
   "version": "7",
@@ -1090,6 +1091,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp",
@@ -1112,6 +1119,20 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "events_group_id_groups_id_fk": {
+          "name": "events_group_id_groups_id_fk",
+          "tableFrom": "events",
+          "tableTo": "groups",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+
         }
       },
       "compositePrimaryKeys": {},
@@ -2605,6 +2626,7 @@
         "comment",
         "like",
         "dislike",
+
         "sign",
         "challenge",
         "forum_publication"
