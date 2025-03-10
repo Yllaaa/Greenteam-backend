@@ -26,4 +26,10 @@ export class ScoreController {
     const userId = req.user.id;
     return this.scoreService.getSubTopicsScore(userId, topicId);
   }
+
+  @Get('user-stats')
+  async getUserStats(@Req() req) {
+    const userId = req.user.id;
+    return this.scoreService.getUserStats(userId);
+  }
 }

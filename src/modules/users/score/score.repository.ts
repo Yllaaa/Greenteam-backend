@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { sql } from 'drizzle-orm';
+import { sql, eq, and, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
-import { topics, userPoints } from 'src/modules/db/schemas/schema';
+import {
+  forumPublications,
+  posts,
+  publicationsComments,
+  publicationsReactions,
+  topics,
+  userPoints,
+  users,
+} from 'src/modules/db/schemas/schema';
 
 @Injectable()
 export class ScoreRepository {
@@ -60,26 +68,51 @@ export class ScoreRepository {
   }
 
   async getSubTopicsScore(userId: string, topicId: number) {
-    const result = await this.drizzleService.db.execute(sql`
-      WITH user_topic_points AS (
-          SELECT 
-              topic_id, 
-              SUM(points) AS total_points
-          FROM user_points
-          WHERE user_id = ${userId}
-          GROUP BY topic_id
-      )
-      
-      SELECT 
-          t.id AS "topicId",
-          t.name AS "topicName",
-          COALESCE(utp.total_points, 0) AS "totalPoints"
-      FROM topics t
-      LEFT JOIN user_topic_points utp ON t.id = utp.topic_id
-      WHERE t.parent_id = ${topicId} 
-      ORDER BY utp.total_points DESC NULLS LAST;
-    `);
+    const subQuery = this.drizzleService.db
+      .select({
+        topicId: userPoints.topicId,
+        totalPoints: sql<number>`sum(${userPoints.points})`.as('total_points'),
+      })
+      .from(userPoints)
+      .where(eq(userPoints.userId, userId))
+      .groupBy(userPoints.topicId)
+      .as('user_topic_points');
 
-    return result.rows;
+    return await this.drizzleService.db
+      .select({
+        topicId: topics.id,
+        topicName: topics.name,
+        totalPoints: sql<number>`coalesce(${subQuery.totalPoints}, 0)`.as(
+          'total_points',
+        ),
+      })
+      .from(topics)
+      .leftJoin(subQuery, eq(topics.id, subQuery.topicId))
+      .where(eq(topics.parentId, topicId))
+      .orderBy(desc(subQuery.totalPoints));
+  }
+  async getUserStats(userId: string) {
+    const userStats = await this.drizzleService.db.query.users.findFirst({
+      columns: {},
+      where: (users, { eq }) => eq(users.id, userId),
+      extras: {
+        postsCount: sql<number>`(
+          select count(*) from (
+            select id from ${posts} where ${posts.creatorId} = ${userId}
+            union all
+            select id from ${forumPublications} where ${forumPublications.authorId} = ${userId}
+          ) as combined_posts
+        )`.as('posts_count'),
+        commentsCount: sql<number>`(
+          select count(*) from ${publicationsComments} 
+          where ${publicationsComments.userId} = ${userId}
+        )`.as('comments_count'),
+        reactionsCount: sql<number>`(
+          select count(*) from ${publicationsReactions} 
+          where ${publicationsReactions.userId} = ${userId}
+        )`.as('reactions_count'),
+      },
+    });
+    return userStats;
   }
 }
