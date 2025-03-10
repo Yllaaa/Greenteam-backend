@@ -1,1 +1,0 @@
-ALTER TYPE "public"."action" ADD VALUE 'sign' BEFORE 'challenge';

@@ -5,52 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1740588343432,
-      "tag": "0000_left_the_call",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1740590841453,
-      "tag": "0001_tearful_sauron",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1740604464741,
-      "tag": "0002_dashing_the_anarchist",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1740605063282,
-      "tag": "0003_sparkling_natasha_romanoff",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1740697291748,
-      "tag": "0004_points-schema",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1741566133022,
-      "tag": "0005_legal_warhawk",
-      "when": 1741276174659,
-      "tag": "0005_clumsy_synch",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1741297091952,
-      "tag": "0006_common_punisher",
+      "when": 1741620772150,
+      "tag": "0000_slow_mattie_franklin",
       "breakpoints": true
     }
   ]
