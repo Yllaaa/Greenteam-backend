@@ -20,4 +20,16 @@ export class ScoreController {
     const userId = req.user.id;
     return this.scoreService.getMainTopicsScore(userId);
   }
+
+  @Get('sub-topics/:topicId')
+  async getSubTopicsScore(@Req() req, @Param('topicId') topicId: number) {
+    const userId = req.user.id;
+    return this.scoreService.getSubTopicsScore(userId, topicId);
+  }
+
+  @Get('user-stats')
+  async getUserStats(@Req() req) {
+    const userId = req.user.id;
+    return this.scoreService.getUserStats(userId);
+  }
 }

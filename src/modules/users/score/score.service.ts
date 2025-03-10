@@ -6,4 +6,12 @@ export class ScoreService {
   async getMainTopicsScore(userId: string) {
     return this.scoreRepository.getMainTopicsScore(userId);
   }
+
+  async getSubTopicsScore(userId: string, topicId: number) {
+    return this.scoreRepository.getSubTopicsScore(userId, topicId);
+  }
+
+  async getUserStats(userId: string) {
+    return this.scoreRepository.getUserStats(userId);
+  }
 }
