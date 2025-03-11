@@ -14,13 +14,14 @@ import { SQL } from 'drizzle-orm';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { CommentsService } from 'src/modules/shared-modules/comments/comments.service';
 import { CreateCommentDto } from 'src/modules/shared-modules/comments/dtos/create-comment.dto';
+import { PaginationDto } from 'src/modules/shared-modules/comments/dtos/pagination.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class EventCommentsController {
   constructor(private readonly commentsService: CommentsService) {}
   private publicationType: SQL<'forum_publication' | 'post' | 'event'> =
-    'post' as unknown as SQL<'forum_publication' | 'post' | 'event'>;
+    'event' as unknown as SQL<'forum_publication' | 'post' | 'event'>;
 
   @Post(':eventId/comment')
   createComment(
@@ -36,7 +37,7 @@ export class EventCommentsController {
     });
   }
 
-  @Post(':postId/comments/:commentId/reply')
+  @Post(':eventId/comments/:commentId/reply')
   createReply(
     @Param('commentId') commentId: string,
     @Body() dto: CreateCommentDto,
@@ -49,17 +50,21 @@ export class EventCommentsController {
     });
   }
 
-  @Get(':postId/comments')
+  @Get(':eventId/comments')
   getComments(
-    @Param('postId') postId: string,
+    @Param('eventId') eventId: string,
     @Query() pagination: PaginationDto,
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.getCommentsByPostId(postId, pagination, userId);
+    return this.commentsService.getCommentsByPostId(
+      eventId,
+      pagination,
+      userId,
+    );
   }
 
-  @Get(':postId/comments/:commentId/replies')
+  @Get(':eventId/comments/:commentId/replies')
   getReplies(
     @Param('commentId') commentId: string,
     @Query() pagination: PaginationDto,
@@ -73,7 +78,7 @@ export class EventCommentsController {
     );
   }
 
-  @Delete(':postId/comments/:commentId')
+  @Delete(':eventId/comments/:commentId')
   async deleteComment(@Param('commentId') commentId: string, @Req() req) {
     const userId = req.user.id;
     await this.commentsService.deleteComment(
@@ -84,7 +89,7 @@ export class EventCommentsController {
     return { message: 'Comment deleted successfully' };
   }
 
-  @Delete(':postId/comments/:commentId/replies/:replyId')
+  @Delete(':eventId/comments/:commentId/replies/:replyId')
   async deleteReply(@Param('replyId') replyId: string, @Req() req) {
     const userId = req.user.id;
     await this.commentsService.deleteReply(replyId, userId);

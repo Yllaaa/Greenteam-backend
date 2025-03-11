@@ -15,10 +15,9 @@ import {
 import { EventsDto } from '../events/dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from '../events/dto/getEvents.dto';
-import { Response } from 'express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
-@Controller('events')
+@Controller('')
 @UseGuards(JwtAuthGuard)
 export class EventsController {
   constructor(readonly eventsService: EventsService) {}

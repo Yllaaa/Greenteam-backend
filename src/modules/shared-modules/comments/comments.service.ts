@@ -12,7 +12,6 @@ export class CommentsService {
     private readonly commentsRepository: CommentsRepository,
     private readonly repliesRepository: RepliesRepository,
     private readonly queuesService: QueuesService,
-    private readonly pointingSystemService: PointingSystemService,
   ) {}
 
   async createComment(
@@ -37,12 +36,21 @@ export class CommentsService {
         throw new NotFoundException('Publication not found');
       }
       topicId = publication.mainTopicId;
-    } else {
+    } else if (
+      commentDto.publicationType ===
+      ('post' as unknown as SQL<'forum_publication' | 'post' | 'event'>)
+    ) {
       const post = await this.commentsRepository.getPostById(publicationId);
       if (!post) {
         throw new NotFoundException('Post not found');
       }
       topicId = post.mainTopicId;
+    } else {
+      const event = await this.commentsRepository.getEventById(publicationId);
+      if (!event) {
+        throw new NotFoundException('Event not found');
+      }
+      topicId = event.topicId;
     }
     const newComment = await this.commentsRepository.createComment(
       { userId, content: commentDto.content, publicationId },
@@ -113,7 +121,7 @@ export class CommentsService {
   async deleteComment(
     commentId: string,
     userId: string,
-    publicationType: SQL<'forum_publication' | 'post'>,
+    publicationType: SQL<'forum_publication' | 'post' | 'event'>,
   ) {
     const comment = await this.commentsRepository.findById(
       commentId,
