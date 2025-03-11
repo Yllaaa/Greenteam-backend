@@ -3,6 +3,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 export const publicationTypeEnum = pgEnum('publication_type', [
   'post',
   'forum_publication',
+  'event',
 ]);
 
 export const visibilityLevelEnum = pgEnum('visibility_level', [

@@ -229,7 +229,6 @@ export class ChatGateway
       );
       this.server.to(`conversation_${conversation.id}`).emit('newMessage', {
         ...message,
-        isReceived: true,
         sender: {
           id: sender.id,
           name: client.data.userFullData.fullName,

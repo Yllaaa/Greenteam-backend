@@ -28,4 +28,10 @@ export class PostsController {
     const userId = req.user.id;
     return this.postsService.getPosts(topic, userId);
   }
+
+  @Get(':id')
+  async getPost(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    return this.postsService.getPostInDetails(id, userId);
+  }
 }

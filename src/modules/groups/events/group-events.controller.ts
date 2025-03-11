@@ -5,18 +5,19 @@ import {
   Param,
   Post,
   Query,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GroupEventsService } from './group-events.service';
-import { EventsDto } from '../../events/dto/events.dto';
-import { GetEventsDto } from 'src/modules/events/dto/getEvents.dto';
+import { EventsDto } from '../../events/events/dto/events.dto';
+import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 
 @Controller('groups/')
 @UseGuards(JwtAuthGuard)
 export class GroupEventsController {
-  constructor(private readonly groupEventsService: GroupEventsService) { }
+  constructor(private readonly groupEventsService: GroupEventsService) {}
 
   @Post(':groupId/create-event')
   async createGroupEvent(
@@ -25,7 +26,11 @@ export class GroupEventsController {
     @Request() req,
   ) {
     const groupMemberId = req.user.id;
-    return this.groupEventsService.createGroupEvent(groupId, groupMemberId, eventData);
+    return this.groupEventsService.createGroupEvent(
+      groupId,
+      groupMemberId,
+      eventData,
+    );
   }
 
   @Get(':groupId/events')
@@ -45,8 +50,14 @@ export class GroupEventsController {
   async getGroupEventDetails(
     @Param('groupId') groupId: string,
     @Param('eventId') eventId: string,
+    @Req() req,
   ) {
-    return this.groupEventsService.getGroupEventDetails(groupId, eventId);
+    const userId = req.user.id;
+    return this.groupEventsService.getGroupEventDetails(
+      groupId,
+      eventId,
+      userId,
+    );
   }
 
   @Post(':groupId/:eventId/join')

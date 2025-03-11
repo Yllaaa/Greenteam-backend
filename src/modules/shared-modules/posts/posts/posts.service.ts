@@ -14,7 +14,6 @@ import { QueuesService } from 'src/modules/common/queues/queues.service';
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
-    private readonly pointingSystemService: PointingSystemService,
     private readonly queuesService: QueuesService,
   ) {}
   async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
@@ -65,6 +64,14 @@ export class PostsService {
       },
       userId,
     );
+  }
+
+  async getPostInDetails(postId: string, userId: string) {
+    const [post] = await this.postsRepository.getPostInDetails(postId, userId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
   }
 
   async getPostById(postId: string) {

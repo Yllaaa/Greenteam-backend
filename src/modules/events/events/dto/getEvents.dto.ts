@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsIn, IsNumber, IsOptional, Min } from 'class-validator';
+import { SQL } from 'drizzle-orm';
 import { EventCategory } from 'src/modules/db/schemas/schema';
 
 export class GetEventsDto {
@@ -17,5 +18,5 @@ export class GetEventsDto {
 
   @IsIn(EventCategory.enumValues)
   @IsOptional()
-  category: string;
+  category: SQL<'social' | 'volunteering&work' | 'talks&workshops'>;
 }

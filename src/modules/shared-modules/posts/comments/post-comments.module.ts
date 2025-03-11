@@ -11,7 +11,6 @@ import { CommentsModule } from '../../comments/comments.module';
   imports: [CommentsModule],
   providers: [
     PostCommentsService,
-
     CommentsRepository,
     RepliesRepository,
     PostsRepository,

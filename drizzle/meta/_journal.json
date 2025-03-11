@@ -8,6 +8,34 @@
       "when": 1741620772150,
       "tag": "0000_slow_mattie_franklin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741693555713,
+      "tag": "0001_foamy_lady_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741694146209,
+      "tag": "0002_regular_red_wolf",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1741694712528,
+      "tag": "0003_high_dragon_lord",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1741700089800,
+      "tag": "0004_goofy_ken_ellis",
+      "breakpoints": true
     }
   ]
 }

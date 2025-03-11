@@ -21,6 +21,7 @@ export class MessagesRepository {
         id: messages.id,
         conversationId: messages.conversationId,
         senderType: messages.senderType,
+        senderId: messages.senderId,
         content: messages.content,
         mediaUrl: messages.mediaUrl,
         sentAt: messages.sentAt,

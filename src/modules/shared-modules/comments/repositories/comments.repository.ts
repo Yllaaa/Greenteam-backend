@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SQL, and, eq, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  events,
   forumPublications,
   posts,
   publicationsComments,
@@ -18,7 +19,7 @@ export class CommentsRepository {
       userId: string;
       publicationId: string;
     },
-    publicationType: SQL<'forum_publication' | 'post' | 'comment'>,
+    publicationType: SQL<'forum_publication' | 'post' | 'comment' | 'event'>,
   ) {
     const comment = await this.drizzleService.db
       .insert(publicationsComments)
@@ -34,7 +35,7 @@ export class CommentsRepository {
 
   async findById(
     id: string,
-    publicationType: SQL<'forum_publication' | 'post'>,
+    publicationType: SQL<'forum_publication' | 'post' | 'comment' | 'event'>,
   ): Promise<Comment | null> {
     const query = {
       where: and(
@@ -201,6 +202,16 @@ export class CommentsRepository {
         createdAt: true,
       },
       where: eq(forumPublications.id, publicationId),
+    });
+  }
+
+  async getEventById(eventId: string) {
+    return await this.drizzleService.db.query.events.findFirst({
+      where: eq(events.id, eventId),
+      columns: {
+        id: true,
+        topicId: true,
+      },
     });
   }
 }

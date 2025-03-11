@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -11,13 +12,12 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { EventsDto } from './dto/events.dto';
+import { EventsDto } from '../events/dto/events.dto';
 import { EventsService } from './events.service';
-import { GetEventsDto } from './dto/getEvents.dto';
-import { Response } from 'express';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetEventsDto } from '../events/dto/getEvents.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
-@Controller('events')
+@Controller('')
 @UseGuards(JwtAuthGuard)
 export class EventsController {
   constructor(readonly eventsService: EventsService) {}
@@ -29,17 +29,23 @@ export class EventsController {
   }
 
   @Get('')
-  async getEvents(@Query() eventDto: GetEventsDto) {
+  async getEvents(@Query() eventDto: GetEventsDto, @Req() req) {
+    const userId = req.user.id;
+    const pagination = {
+      page: eventDto.page || 1,
+      limit: eventDto.limit || 10,
+    };
     return await this.eventsService.getEvents(
+      pagination,
       eventDto.category,
-      eventDto.page,
-      eventDto.limit,
+      userId,
     );
   }
 
   @Get('/:id')
-  async getEventDetail(@Param('id') id: string) {
-    return await this.eventsService.getEventDetails(id);
+  async getEventDetail(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    return await this.eventsService.getEventDetails(id, userId);
   }
 
   @Post('/:id/join')
@@ -48,5 +54,13 @@ export class EventsController {
 
     await this.eventsService.addUserJoinedEvent(id, userId);
     return { message: 'User joined event' };
+  }
+
+  @Delete('/:id/leave')
+  async leaveEvent(@Param('id') id, @Req() req) {
+    const userId = req.user.id;
+
+    await this.eventsService.removeUserJoinedEvent(id, userId);
+    return { message: 'User left event' };
   }
 }
