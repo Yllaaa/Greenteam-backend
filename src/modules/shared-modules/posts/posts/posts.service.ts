@@ -14,7 +14,6 @@ import { QueuesService } from 'src/modules/common/queues/queues.service';
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
-    private readonly pointingSystemService: PointingSystemService,
     private readonly queuesService: QueuesService,
   ) {}
   async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
