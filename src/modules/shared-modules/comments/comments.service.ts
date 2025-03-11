@@ -20,14 +20,16 @@ export class CommentsService {
     userId: string,
     commentDto: {
       content: string;
-      publicationType: SQL<'forum_publication' | 'post'>;
+      publicationType: SQL<'forum_publication' | 'post' | 'event'>;
     },
   ): Promise<Comment> {
     let topicId: number;
 
     if (
       commentDto.publicationType ===
-      ('forum_publication' as unknown as SQL<'forum_publication' | 'post'>)
+      ('forum_publication' as unknown as SQL<
+        'forum_publication' | 'post' | 'event'
+      >)
     ) {
       const publication =
         await this.commentsRepository.getForumPublicationById(publicationId);

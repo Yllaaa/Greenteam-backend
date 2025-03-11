@@ -10,25 +10,33 @@ import {
   timestamp,
   serial,
 } from 'drizzle-orm/pg-core';
-import { creatorTypeEnum, topics, users, groups } from '../schema';
+import { creatorTypeEnum, topics, users, groups, pages } from '../schema';
 import { relations } from 'drizzle-orm';
 
-export const EventCategory = pgEnum('Event Category', [
+export const EventCategory = pgEnum('event_category', [
   'social',
   'volunteering&work',
   'talks&workshops',
 ]);
 
+export const EventHostedBy = pgEnum('event_hosted_by', [
+  'Global',
+  'Greenteam',
+  'user',
+  'page',
+]);
+
 export const events = pgTable('events', {
   id: uuid().primaryKey().defaultRandom(),
-  creatorId: uuid('creator_id').notNull(),
-  creatorType: creatorTypeEnum('creator_type').notNull(),
+  creatorId: uuid('creator_id'),
+  creatorType: creatorTypeEnum('creator_type'),
   title: varchar().notNull(),
   description: text(),
   location: varchar().notNull(),
   startDate: timestamp('start_date'),
   endDate: timestamp('end_date'),
   category: EventCategory(),
+  hostedBy: EventHostedBy(),
   poster: varchar(),
   priority: smallint().notNull().default(0),
   topicId: serial('topic_id')
@@ -43,6 +51,10 @@ export const events_relations = relations(events, ({ one, many }) => ({
   userCreator: one(users, {
     fields: [events.creatorId],
     references: [users.id],
+  }),
+  pageCreator: one(pages, {
+    fields: [events.creatorId],
+    references: [pages.id],
   }),
   topic: one(topics, {
     fields: [events.topicId],
