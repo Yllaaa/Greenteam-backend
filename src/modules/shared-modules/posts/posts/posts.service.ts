@@ -67,6 +67,14 @@ export class PostsService {
     );
   }
 
+  async getPostInDetails(postId: string, userId: string) {
+    const [post] = await this.postsRepository.getPostInDetails(postId, userId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
+  }
+
   async getPostById(postId: string) {
     const post = await this.postsRepository.getPostById(postId);
     if (!post) {

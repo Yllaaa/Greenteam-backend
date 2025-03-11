@@ -66,6 +66,108 @@ export class PostsRepository {
     });
   }
 
+  async getPostInDetails(postId: string, currentUserId: string) {
+    const reactionsAggregation = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        likeCount: sql<number>`
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+      `.as('like_count'),
+        dislikeCount: sql<number>`
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+      `.as('dislike_count'),
+      })
+      .from(publicationsReactions)
+      .groupBy(publicationsReactions.reactionableId)
+      .as('reactions_agg');
+
+    const userReaction = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        userReactionType: sql<string | null>`
+        CASE 
+          WHEN ${publicationsReactions.reactionType} IN ('like', 'dislike') 
+          THEN ${publicationsReactions.reactionType}
+          ELSE NULL
+        END
+      `.as('user_reaction_type'),
+        hasDoReaction: sql<boolean>`
+        ${publicationsReactions.reactionType} = 'do'
+      `.as('has_do_reaction'),
+      })
+      .from(publicationsReactions)
+      .where(
+        currentUserId
+          ? eq(publicationsReactions.userId, currentUserId)
+          : sql`1=1`,
+      )
+      .as('user_reaction');
+
+    const queryBuilder = this.drizzleService.db
+      .select({
+        post: {
+          id: posts.id,
+          content: posts.content,
+          createdAt: posts.createdAt,
+          groupId: posts.groupId,
+        },
+        author: {
+          id: users.id,
+          fullName: users.fullName,
+          avatar: users.avatar,
+          username: users.username,
+        },
+        commentCount: this.commentCountQuery,
+        likeCount:
+          sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
+            'like_count',
+          ),
+        dislikeCount:
+          sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as(
+            'dislike_count',
+          ),
+        userReactionType: sql<
+          string | null
+        >`COALESCE(${userReaction.userReactionType}, NULL)`.as(
+          'user_reaction_type',
+        ),
+        hasDoReaction:
+          sql<boolean>`COALESCE(${userReaction.hasDoReaction}, false)`.as(
+            'has_do_reaction',
+          ),
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(
+        publicationsComments,
+        eq(posts.id, publicationsComments.publicationId),
+      )
+      .leftJoin(
+        reactionsAggregation,
+        eq(posts.id, reactionsAggregation.reactionableId),
+      )
+      .leftJoin(userReaction, eq(posts.id, userReaction.reactionableId))
+      .groupBy(
+        posts.id,
+        posts.content,
+        posts.createdAt,
+        posts.groupId,
+        users.id,
+        users.fullName,
+        users.avatar,
+        users.username,
+        reactionsAggregation.likeCount,
+        reactionsAggregation.dislikeCount,
+        userReaction.userReactionType,
+        userReaction.hasDoReaction,
+      )
+      .orderBy(posts.createdAt)
+      .where(eq(posts.id, postId));
+
+    const data = await queryBuilder.execute();
+    return data;
+  }
+
   async getFilteredPosts(
     filters?: {
       mainTopicId?: number;
@@ -279,20 +381,4 @@ export class PostsRepository {
   private readonly commentCountQuery = sql<number>`
   COUNT(DISTINCT ${publicationsComments.id})
 `.as('comment_count');
-
-  private readonly reactionCountQueries = {
-    like: sql<number>`
-    COUNT(CASE 
-      WHEN ${publicationsReactions.reactionType} = 'like' 
-      THEN 1 
-    END)
-  `.as('like_count'),
-
-    dislike: sql<number>`
-    COUNT(CASE 
-      WHEN ${publicationsReactions.reactionType} = 'dislike' 
-      THEN 1 
-    END)
-  `.as('dislike_count'),
-  };
 }
