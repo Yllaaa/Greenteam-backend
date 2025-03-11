@@ -112,7 +112,7 @@ export class ReactionsService {
             id: existingReaction.id,
             type: dto.reactionType,
           };
-          this.pointingSystemService.removeAward(userId, topicId, action);
+          this.queuesService.removePointsJob(userId, topicId, action);
         }
         return { action: 'removed' };
       } else {
@@ -127,7 +127,7 @@ export class ReactionsService {
     const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
     if (dto.reactionableType == ReactionableTypeEnum.POST && topicId) {
       const action: Action = { id: reaction.id, type: dto.reactionType };
-      await this.pointingSystemService.awardPoints(userId, topicId, action);
+      await this.queuesService.addPointsJob(userId, topicId, action);
     }
     return { action: 'added' };
   }
