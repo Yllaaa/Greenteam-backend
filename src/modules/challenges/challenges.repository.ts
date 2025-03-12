@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
-import { usersDoPosts, usersGreenChallenges } from '../db/schemas/schema';
-import { and, eq } from 'drizzle-orm';
+import {
+  greenChallenges,
+  posts,
+  topics,
+  users,
+  usersDoPosts,
+  usersGreenChallenges,
+} from '../db/schemas/schema';
+import { and, desc, eq, inArray, or, SQL, sql } from 'drizzle-orm';
 @Injectable()
 export class ChallengesRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
@@ -12,40 +19,43 @@ export class ChallengesRepository {
       postId,
     });
   }
+
   async getUsersDoPosts(
     userId: string,
     pagination: { page: number; limit: number },
+    topicId?: number,
   ) {
     const { page = 1, limit = 10 } = pagination;
     const offset = Math.max(0, (page - 1) * limit);
-    return await this.drizzleService.db.query.usersDoPosts.findMany({
-      where: and(
-        eq(usersDoPosts.userId, userId),
-        eq(usersDoPosts.status, 'pending'),
-      ),
-      columns: {},
-      with: {
+
+    return await this.drizzleService.db
+      .select({
         post: {
-          columns: {
-            id: true,
-            content: true,
-            createdAt: true,
-          },
-          with: {
-            user_creator: {
-              columns: {
-                id: true,
-                fullName: true,
-                avatar: true,
-                username: true,
-              },
-            },
-          },
+          id: posts.id,
+          content: posts.content,
+          createdAt: posts.createdAt,
+          mainTopicId: posts.mainTopicId,
         },
-      },
-      limit,
-      offset,
-    });
+        creator: {
+          id: users.id,
+          name: users.fullName,
+          avatar: users.avatar,
+          username: users.username,
+        },
+      })
+      .from(usersDoPosts)
+      .innerJoin(posts, eq(posts.id, usersDoPosts.postId))
+      .innerJoin(users, eq(users.id, posts.creatorId))
+      .where(
+        and(
+          eq(usersDoPosts.userId, userId),
+          eq(usersDoPosts.status, 'pending'),
+          topicId ? eq(posts.mainTopicId, topicId) : undefined,
+        ),
+      )
+      .orderBy(desc(usersDoPosts.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   async deleteDoPostChallenge(userId: string, postId: string) {
@@ -56,10 +66,14 @@ export class ChallengesRepository {
       );
   }
 
-  async getGreenChallenges(pagination: { page: number; limit: number }) {
+  async getGreenChallenges(
+    pagination: { page: number; limit: number },
+    userId: string,
+  ) {
     const { page = 1, limit = 10 } = pagination;
     const offset = Math.max(0, (page - 1) * limit);
     const now = new Date();
+
     return await this.drizzleService.db.query.greenChallenges.findMany({
       columns: {
         id: true,
@@ -67,7 +81,15 @@ export class ChallengesRepository {
         description: true,
         expiresAt: true,
       },
-      where: (challenges, { gt }) => gt(challenges.expiresAt, now),
+      where: (challenges, { and, gt, notExists }) =>
+        and(
+          gt(challenges.expiresAt, now),
+          notExists(
+            this.drizzleService.db.select().from(usersGreenChallenges)
+              .where(sql`${usersGreenChallenges.challengeId} = ${challenges.id} 
+                    AND ${usersGreenChallenges.userId} = ${userId}`),
+          ),
+        ),
       orderBy: (challenges, { desc }) => [desc(challenges.createdAt)],
       with: {
         topic: {
@@ -82,6 +104,59 @@ export class ChallengesRepository {
     });
   }
 
+  async getUserGreenChallengesToDoList(
+    userId: string,
+    pagination: { page: number; limit: number },
+    topicId?: number,
+  ) {
+    const { page = 1, limit = 10 } = pagination;
+    const offset = Math.max(0, (page - 1) * limit);
+
+    const topicIds = topicId
+      ? await this.drizzleService.db
+          .select({ id: topics.id })
+          .from(topics)
+          .where(or(eq(topics.id, topicId), eq(topics.parentId, topicId)))
+          .then((results) => results.map((topic) => topic.id))
+      : undefined;
+
+    return await this.drizzleService.db
+      .select({
+        userChallenge: {
+          id: usersGreenChallenges.id,
+          challengeId: usersGreenChallenges.challengeId,
+          createdAt: usersGreenChallenges.createdAt,
+          status: usersGreenChallenges.status,
+        },
+        challenge: {
+          id: greenChallenges.id,
+          title: greenChallenges.title,
+          description: greenChallenges.description,
+          expiresAt: greenChallenges.expiresAt,
+        },
+        topic: {
+          id: topics.id,
+          name: topics.name,
+        },
+      })
+      .from(usersGreenChallenges)
+      .innerJoin(
+        greenChallenges,
+        eq(greenChallenges.id, usersGreenChallenges.challengeId),
+      )
+      .innerJoin(topics, eq(topics.id, greenChallenges.topicId))
+      .where(
+        and(
+          eq(usersGreenChallenges.userId, userId),
+          eq(usersGreenChallenges.status, 'pending'),
+          topicIds ? inArray(topics.id, topicIds) : undefined,
+        ),
+      )
+      .orderBy(desc(usersGreenChallenges.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
   async findGreenChallengeById(challengeId: string) {
     return this.drizzleService.db.query.greenChallenges.findFirst({
       where: eq(usersGreenChallenges.id, challengeId),
@@ -90,27 +165,58 @@ export class ChallengesRepository {
         title: true,
         description: true,
         expiresAt: true,
+        topicId: true,
       },
     });
   }
-  async findUserGreenChallenge(userId: string, challengeId: string) {
-    return this.drizzleService.db.query.usersGreenChallenges.findFirst({
-      where: and(
-        eq(usersGreenChallenges.userId, userId),
-        eq(usersGreenChallenges.challengeId, challengeId),
-      ),
-      columns: {
-        id: true,
-        userId: true,
-        challengeId: true,
-      },
-    });
+  async findUserGreenChallenge(
+    userId: string,
+    challengeId: string,
+  ): Promise<UserGreenChallenge | null> {
+    const userChallenge =
+      await this.drizzleService.db.query.usersGreenChallenges.findFirst({
+        where: and(
+          eq(usersGreenChallenges.userId, userId),
+          eq(usersGreenChallenges.challengeId, challengeId),
+        ),
+        columns: {
+          id: true,
+          userId: true,
+          challengeId: true,
+          status: true,
+        },
+        with: {
+          challenge: {
+            columns: {
+              id: true,
+              topicId: true,
+            },
+          },
+        },
+      });
+    return userChallenge as UserGreenChallenge;
   }
 
-  async addGreenChallengeToUser(userId: string, challengeId: string) {
+  async addGreenChallengeToUser(
+    userId: string,
+    challengeId: string,
+    status?: SQL<'pending' | 'done' | 'rejected'>,
+  ) {
     return await this.drizzleService.db.insert(usersGreenChallenges).values({
       userId,
       challengeId,
+      status: status || 'pending',
     });
+  }
+  async markGreenChallengeAsDone(userId: string, challengeId: string) {
+    return await this.drizzleService.db
+      .update(usersGreenChallenges)
+      .set({ status: 'done' })
+      .where(
+        and(
+          eq(usersGreenChallenges.userId, userId),
+          eq(usersGreenChallenges.challengeId, challengeId),
+        ),
+      );
   }
 }
