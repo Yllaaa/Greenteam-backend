@@ -10,26 +10,73 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChallengesService } from './challenges.service';
-import { Pagination } from './dtos/get-do-posts.dto';
+import { UserChallengesDto } from './dtos/get-do-posts.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('challenges')
 export class ChallengesController {
   constructor(private readonly challengesService: ChallengesService) {}
 
   @Get('do-posts')
-  async getUserDoPosts(@Query() pagination: Pagination, @Req() req) {
+  async getUserDoPosts(
+    @Query() userChallengesDto: UserChallengesDto,
+    @Req() req,
+  ) {
     const userId = req.user.id;
-    return this.challengesService.getUsersDoPosts(userId, pagination);
+    return this.challengesService.getUsersDoPosts(
+      userId,
+      userChallengesDto,
+      userChallengesDto.topicId,
+    );
   }
 
   @Get('green-challenges')
-  async getGreenChallenges(@Query() pagination: Pagination) {
-    return this.challengesService.getGreenChallenges(pagination);
+  async getGreenChallenges(
+    @Query() userChallengesDto: UserChallengesDto,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.challengesService.getGreenChallenges(
+      { limit: userChallengesDto.limit, page: userChallengesDto.page },
+      userId,
+    );
+  }
+
+  @Get('green-challenges/todo-list')
+  async getGreenChallengesToDoList(
+    @Query() userChallengesDto: UserChallengesDto,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.challengesService.getGreenChallengesToDoList(
+      userId,
+      { page: userChallengesDto.page, limit: userChallengesDto.limit },
+      userChallengesDto.topicId,
+    );
   }
 
   @Post('green-challenges/:id/add-to-do')
   async addGreenChallengeToUser(@Req() req, @Param('id') challengeId: string) {
     const userId = req.user.id;
-    return this.challengesService.addGreenChallengeToUser(userId, challengeId);
+    return this.challengesService.addGreenChallengeToDo(userId, challengeId);
+  }
+
+  @Post('green-challenges/:id/mark-as-done')
+  async markGreenChallengeAsDone(@Req() req, @Param('id') challengeId: string) {
+    const userId = req.user.id;
+    return this.challengesService.markGreenChallengeAsDone(userId, challengeId);
+  }
+
+  @Post('green-challenges/:id/done-with-post')
+  async createDoPostChallenge(
+    @Req() req,
+    @Param('id') challengeId: string,
+    @Body() content: string,
+  ) {
+    const userId = req.user.id;
+    return this.challengesService.postAboutCompletedGreenChallenge(
+      userId,
+      challengeId,
+      content,
+    );
   }
 }

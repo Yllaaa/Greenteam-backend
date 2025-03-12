@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min } from 'class-validator';
 
-export class Pagination {
+export class UserChallengesDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
@@ -11,4 +11,8 @@ export class Pagination {
   @IsInt()
   @Min(1)
   limit: number = 5;
+
+  @IsOptional()
+  @Type(() => Number)
+  topicId?: number;
 }
