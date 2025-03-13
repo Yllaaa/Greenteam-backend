@@ -19,7 +19,10 @@ export class MailService {
 
   async sendVerificationEmail(email: string, token: string) {
     const verificationUrl = `${process.env.APP_URL}/en/verification/?key=${token}`;
-
+    console.log(process.env.SMTP_EMAIL, process.env.SMTP_PASSWORD);
+    console.log(verificationUrl);
+    console.log(process.env.MAIL_PORT, process.env.MAIL_HOST);
+    console.log('sending to' + email);
     const mailOptions = {
       from: '"Greenteam" <noreply@greenteam.com>',
       to: email,
@@ -45,6 +48,7 @@ export class MailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
+      console.log('email sent');
     } catch (error) {
       console.error('Error sending email:', error);
       throw new Error('Failed to send verification email');
