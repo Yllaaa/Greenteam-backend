@@ -219,4 +219,14 @@ export class ChallengesRepository {
         ),
       );
   }
+
+  async getParentTopic(topicId: number) {
+    return await this.drizzleService.db.query.topics.findFirst({
+      where: eq(topics.parentId, topicId),
+      columns: {
+        id: true,
+        name: true,
+      },
+    });
+  }
 }
