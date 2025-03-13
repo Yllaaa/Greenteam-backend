@@ -36,6 +36,13 @@
       "when": 1741700089800,
       "tag": "0004_goofy_ken_ellis",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1741834857874,
+      "tag": "0005_fearless_crusher_hogan",
+      "breakpoints": true
     }
   ]
 }

@@ -16,10 +16,15 @@ import { GroupsModule } from './modules/groups/groups.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { PointingSystemModule } from './modules/pointing-system/pointing-system.module';
-
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path/posix';
 @Global()
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/',
+    }),
     DrizzleModule,
     AuthModule,
     ConfigModule.forRoot({
