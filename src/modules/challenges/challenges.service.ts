@@ -120,10 +120,16 @@ export class ChallengesService {
         challengeId,
       );
     }
+
+    const parentTopic = await this.challengesRepository.getParentTopic(
+      challenge.topicId,
+    );
+    const topicId = parentTopic?.id || challenge.topicId;
+
     await this.postsService.createPost(
       {
         content,
-        mainTopicId: challenge.topicId,
+        mainTopicId: topicId,
         creatorId: userId,
         creatorType: creatorType,
         subtopicIds: [],
