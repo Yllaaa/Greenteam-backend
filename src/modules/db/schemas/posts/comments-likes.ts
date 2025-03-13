@@ -92,12 +92,12 @@ export const publicationsReactions = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('user_like_idx').on(
+    uniqueIndex('user_reaction_idx').on(
       table.userId,
-      table.reactionableType,
+      table.reactionType,
       table.reactionableId,
     ),
-    index('likeable_idx').on(table.reactionableType, table.reactionableId),
+    index('reactionable_idx').on(table.reactionableType, table.reactionableId),
   ],
 );
 
