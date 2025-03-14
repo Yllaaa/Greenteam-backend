@@ -36,7 +36,6 @@ export class AuthRepository {
         bio: true,
       },
     });
-
     return user as unknown as User;
   }
 

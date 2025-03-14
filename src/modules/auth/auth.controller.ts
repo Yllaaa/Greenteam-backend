@@ -51,7 +51,9 @@ export class AuthController {
 
   @Get('google/login')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth() {}
+  async googleAuth() {
+    console.log(`${process.env.API_URL}/api/v1/auth/google/callback`);
+  }
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
@@ -60,7 +62,7 @@ export class AuthController {
     const response = await this.authService.googleLogin(user);
     this.setAuthCookie(res, response?.accessToken);
 
-    res.redirect(`${process.env.APP_URL}`);
+    res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
   }
 
   @Get('verify/:token')

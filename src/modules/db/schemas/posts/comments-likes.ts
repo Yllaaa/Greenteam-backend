@@ -15,15 +15,13 @@ import {
   reactionableTypeEnum,
   reactionTypeEnum,
 } from './enums';
-import { users } from '../schema';
+import { forumPublications, users } from '../schema';
 
 export const publicationsComments = pgTable(
   'publications_comments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    publicationId: uuid('publications_id')
-      .references(() => posts.id, { onDelete: 'cascade' })
-      .notNull(),
+    publicationId: uuid('publications_id').notNull(),
     publicationType: publicationTypeEnum('publication_type').notNull(),
     userId: uuid('user_id')
       .notNull()
@@ -56,6 +54,10 @@ export const commentsRelations = relations(
     post: one(posts, {
       fields: [publicationsComments.publicationId],
       references: [posts.id],
+    }),
+    forumPublication: one(forumPublications, {
+      fields: [publicationsComments.publicationId],
+      references: [forumPublications.id],
     }),
     author: one(users, {
       fields: [publicationsComments.userId],
@@ -90,11 +92,38 @@ export const publicationsReactions = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('user_like_idx').on(
+    uniqueIndex('user_reaction_idx').on(
       table.userId,
-      table.reactionableType,
+      table.reactionType,
       table.reactionableId,
     ),
-    index('likeable_idx').on(table.reactionableType, table.reactionableId),
+    index('reactionable_idx').on(table.reactionableType, table.reactionableId),
   ],
+);
+
+export const publicationsReactionsRelations = relations(
+  publicationsReactions,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [publicationsReactions.userId],
+      references: [users.id],
+    }),
+    post: one(posts, {
+      fields: [publicationsReactions.reactionableId],
+      references: [posts.id],
+    }),
+
+    comment: one(publicationsComments, {
+      fields: [publicationsReactions.reactionableId],
+      references: [publicationsComments.id],
+    }),
+    reply: one(commentsReplies, {
+      fields: [publicationsReactions.reactionableId],
+      references: [commentsReplies.id],
+    }),
+    forumPublication: one(forumPublications, {
+      fields: [publicationsReactions.reactionableId],
+      references: [forumPublications.id],
+    }),
+  }),
 );

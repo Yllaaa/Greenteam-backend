@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.greenTeam.app",
+      "sha256_cert_fingerprints": [
+        "F3:D7:F7:71:0A:05:8D:B8:65:45:E6:0A:C0:34:CA:27:25:B9:41:32:51:88:84:5A:98:5C:90:1A:12:53:8D:63"
+      ]
+    }
+  }
+]

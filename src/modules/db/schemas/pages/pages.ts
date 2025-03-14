@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, primaryKey, serial, text, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey, text, uniqueIndex, uuid, varchar, serial } from "drizzle-orm/pg-core";
 import { topics, users } from "../schema";
 import { relations } from "drizzle-orm";
 

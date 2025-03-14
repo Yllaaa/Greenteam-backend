@@ -27,5 +27,6 @@ export class CreatePostDto {
 
   @IsArray()
   @IsInt({ each: true })
+  @IsOptional()
   subtopicIds: number[];
 }

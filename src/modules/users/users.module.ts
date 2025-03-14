@@ -2,8 +2,22 @@ import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { UsersRepository } from './users.repository';
+import { FriendsModule } from './friends/friends.module';
+import { RouterModule } from '@nestjs/core';
+import { ScoreModule } from './score/score.module';
 
+const usersRoutes = [
+  { path: '/user', module: FriendsModule },
+  { path: 'score', module: ScoreModule },
+];
 @Module({
+  imports: [
+    FriendsModule,
+    RouterModule.register([
+      { path: '/users', module: FriendsModule, children: usersRoutes },
+    ]),
+    ScoreModule,
+  ],
   providers: [UsersService, UsersRepository],
   controllers: [UsersController],
 })

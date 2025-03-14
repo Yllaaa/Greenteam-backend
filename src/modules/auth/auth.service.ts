@@ -98,6 +98,10 @@ export class AuthService {
     return user;
   }
 
+  async getUserById(userId: string) {
+    return await this.authRepository.getUserById(userId);
+  }
+
   async googleLogin(profile: any) {
     let user = await this.authRepository.getUserByEmail(profile.email);
 
@@ -189,16 +193,6 @@ export class AuthService {
 
   // forgot password
 
-  private generateResetToken(): { rawToken: string; hashedToken: string } {
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(rawToken)
-      .digest('hex');
-
-    return { rawToken, hashedToken };
-  }
-
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.authRepository.getUserByEmail(
       forgotPasswordDto.email,
@@ -267,5 +261,15 @@ export class AuthService {
       message: 'Password has been reset successfully',
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  private generateResetToken(): { rawToken: string; hashedToken: string } {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+
+    return { rawToken, hashedToken };
   }
 }
