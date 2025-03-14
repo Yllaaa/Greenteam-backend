@@ -14,7 +14,10 @@ export const pages = pgTable('pages', {
     cover: varchar().notNull(),
     topic_id: serial().references(() => topics.id),
     category: pageCategory().notNull(),
-    page_info_id: uuid()
+    page_info_id: uuid(),
+    why: varchar().notNull(),
+    how: varchar().notNull(),
+    what: varchar().notNull()
 }, (table) => [
     uniqueIndex('page_owner').on(table.owner_id)
 ])
