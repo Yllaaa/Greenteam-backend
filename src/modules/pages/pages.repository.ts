@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
-import { pages, pagesContacts, pagesFollowers } from '../db/schemas/schema';
-import { eq } from 'drizzle-orm';
+import { events, pages, pagesContacts, pagesFollowers, posts } from '../db/schemas/schema';
+import { eq, and, count } from 'drizzle-orm';
 
 @Injectable()
 export class PagesRepository {
@@ -9,12 +9,12 @@ export class PagesRepository {
         private readonly drizzleService: DrizzleService
     ) { }
 
-    async createPage(page: any){
-        return await this.drizzleService.db.insert(pages).values(page).returning()
+    async createPage(page: any) {
+        return await this.drizzleService.db.insert(pages).values(page).returning();
     }
 
-    async getPage(userId: string){
-        return await this.drizzleService.db.query.pages.findFirst({
+    async getPage(userId: string) {
+        const page = await this.drizzleService.db.query.pages.findFirst({
             where: eq(pages.owner_id, userId),
             with: {
                 owner: {
@@ -24,31 +24,141 @@ export class PagesRepository {
                     }
                 },
                 topic: true,
-                contacts: true
-            },
-            extras: {
-                followersCount: this.drizzleService.db.$count(pagesFollowers, eq(pagesFollowers.page_id, pages.id)).as('followersCount')
+                contacts: true,
+                followers: true
             }
-        })
+        });
+
+        if (!page) return null;
+
+        // Count followers separately
+        const followersCount = await this.drizzleService.db.select({ count: count() })
+            .from(pagesFollowers)
+            .where(eq(pagesFollowers.page_id, page.id))
+            .execute();
+
+        return {
+            ...page,
+            followersCount: followersCount[0]?.count || 0
+        };
     }
 
-    async getPageUserId(pageId: string){
+    async getPageUserId(pageId: string) {
         return await this.drizzleService.db.query.pages.findFirst({
             where: eq(pages.id, pageId),
             columns: {
                 owner_id: true
             }
-        })
+        });
     }
 
-    async addPageContact(contact: any){
-        return await this.drizzleService.db.insert(pagesContacts).values(contact).returning()
+    async addPageContact(contact: any) {
+        return await this.drizzleService.db.insert(pagesContacts).values(contact).returning();
     }
 
-    async addPageFollower(page_id: string, user_id: string){
+    async addPageFollower(page_id: string, user_id: string) {
         return await this.drizzleService.db.insert(pagesFollowers).values({
             page_id: page_id,
             user_id: user_id
-        }).returning()
+        }).returning();
+    }
+
+    async getPagePosts(pageId: string, limit: number = 10, offset: number = 0) {
+        return await this.drizzleService.db.query.posts.findMany({
+            where: and(
+                eq(posts.creatorId, pageId),
+                eq(posts.creatorType, 'page') 
+            ),
+            with: {
+                mainTopic: true,
+                subTopics: {
+                    with: {
+                        topic: true
+                    }
+                },
+                comments: {
+                    with: {
+                        author: {
+                            columns: {
+                                id: true,
+                                fullName: true,
+                                avatar: true
+                            }
+                        },
+                        reactions: true
+                    }
+                },
+                reactions: {
+                    with: {
+                        user: {
+                            columns: {
+                                id: true,
+                                fullName: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: (posts, { desc }) => [desc(posts.createdAt)],
+            limit: limit,
+            offset: offset
+        });
+    }
+
+    async getPageById(pageId: string) {
+        const page = await this.drizzleService.db.query.pages.findFirst({
+            where: eq(pages.id, pageId),
+            with: {
+                owner: {
+                    columns: {
+                        id: true,
+                        fullName: true,
+                        avatar: true
+                    }
+                },
+                topic: true,
+                contacts: true,
+                followers: true
+            }
+        });
+
+        if (!page) return null;
+
+        const followersCount = await this.drizzleService.db.select({ count: count() })
+            .from(pagesFollowers)
+            .where(eq(pagesFollowers.page_id, page.id))
+            .execute();
+
+        return {
+            ...page,
+            followersCount: followersCount[0]?.count || 0
+        };
+    }
+
+    async getPageEvents(pageId: string, limit: number = 10, offset: number = 0) {
+        return await this.drizzleService.db.query.events.findMany({
+            where: and(
+                eq(events.creatorId, pageId),
+                eq(events.creatorType, 'page')
+            ),
+            with: {
+                topic: true,
+                usersJoined: {
+                    with: {
+                        user: {
+                            columns: {
+                                id: true,
+                                fullName: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: (events, { desc }) => [desc(events.startDate)],
+            limit: limit,
+            offset: offset
+        });
     }
 }
