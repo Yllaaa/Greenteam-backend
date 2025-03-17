@@ -57,6 +57,13 @@
       "when": 1742203576140,
       "tag": "0007_equal_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1742246773228,
+      "tag": "0008_lowly_vertigo",
+      "breakpoints": true
     }
   ]
 }

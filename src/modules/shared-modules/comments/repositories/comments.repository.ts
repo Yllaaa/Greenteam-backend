@@ -254,7 +254,6 @@ export class CommentsRepository {
       where: eq(events.id, eventId),
       columns: {
         id: true,
-        topicId: true,
       },
     });
   }
