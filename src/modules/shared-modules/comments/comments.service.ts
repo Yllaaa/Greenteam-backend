@@ -68,16 +68,6 @@ export class CommentsService {
     return comment as Comment;
   }
 
-  async getCommentsByPublicationId(
-    publicationId: string,
-    pagination: { limit: number; page: number },
-  ) {
-    return this.commentsRepository.getCommentsByPublicationId(
-      publicationId,
-      pagination,
-    );
-  }
-
   async createCommentReply(commentId: string, userId: string, dto: any) {
     const comment = await this.commentsRepository.findById(
       commentId,
@@ -94,7 +84,7 @@ export class CommentsService {
     return reply;
   }
 
-  async getCommentsByPostId(
+  async getCommentsByPublicationId(
     postId: string,
     pagination: { limit: number; page: number },
     currentUserId: string,

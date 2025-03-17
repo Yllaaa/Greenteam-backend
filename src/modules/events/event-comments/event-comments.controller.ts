@@ -57,7 +57,7 @@ export class EventCommentsController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.getCommentsByPostId(
+    return this.commentsService.getCommentsByPublicationId(
       eventId,
       pagination,
       userId,
