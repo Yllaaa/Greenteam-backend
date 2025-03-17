@@ -39,9 +39,7 @@ export const events = pgTable('events', {
   hostedBy: EventHostedBy(),
   poster: varchar(),
   priority: smallint().notNull().default(0),
-  topicId: serial('topic_id')
-    .notNull()
-    .references(() => topics.id),
+
   groupId: uuid('group_id').references(() => groups.id),
   createdAt: timestamp().notNull().defaultNow(),
 });
@@ -56,10 +54,7 @@ export const events_relations = relations(events, ({ one, many }) => ({
     fields: [events.creatorId],
     references: [pages.id],
   }),
-  topic: one(topics, {
-    fields: [events.topicId],
-    references: [topics.id],
-  }),
+
   group: one(groups, {
     fields: [events.groupId],
     references: [groups.id],

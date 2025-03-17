@@ -21,7 +21,6 @@ export class EventsRepository {
       description: event.description,
       location: event.location,
       category: event.category,
-      topicId: event.topicId,
       priority: 0,
       startDate: event.startDate,
       endDate: event.endDate,
