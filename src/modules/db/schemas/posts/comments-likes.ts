@@ -21,7 +21,7 @@ export const publicationsComments = pgTable(
   'publications_comments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    publicationId: uuid('publications_id').notNull(),
+    publicationId: uuid('publication_id').notNull(),
     publicationType: publicationTypeEnum('publication_type').notNull(),
     userId: uuid('user_id')
       .notNull()
