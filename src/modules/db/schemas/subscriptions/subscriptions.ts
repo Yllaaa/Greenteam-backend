@@ -7,58 +7,67 @@ import {
   jsonb,
   timestamp,
   uuid,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { users } from '../schema';
 
-export const subscriptionTiers = pgTable('subscription_tiers', {
+export const subscriptionTiers = pgTable(
+  'subscription_tiers',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    price: integer('price').notNull(),
+    stripeProductId: text('stripe_product_id'),
+    stripePriceId: text('stripe_price_id'),
+  },
+  (table) => [index('subscription_tiers_name_idx').on(table.name)],
+);
+
+export const subscriptionBenefits = pgTable('subscription_benefits', {
   id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
-  price: integer('price').notNull(),
-  benefits: jsonb('benefits').notNull(),
+  benefit: text('benefit').notNull(),
 });
 
-export const usersSubscriptions = pgTable('users_subscriptions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('userId')
-    .notNull()
-    .references(() => users.id),
-  tierId: uuid('tierId')
-    .notNull()
-    .references(() => subscriptionTiers.id),
-  status: text('status').notNull(),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date'),
-  autoRenew: boolean('auto_renew').notNull(),
-  stripeSubscriptionId: text('stripe_subscription_id'),
-});
+export const subscriptionTierBenefits = pgTable(
+  'subscription_tier_benefits',
+  {
+    tierId: uuid('tier_id')
+      .notNull()
+      .references(() => subscriptionTiers.id, { onDelete: 'cascade' }),
+    benefitId: uuid('benefit_id')
+      .notNull()
+      .references(() => subscriptionBenefits.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    index('subscription_tier_benefits_tier_id_idx').on(table.tierId),
+    index('subscription_tier_benefits_benefit_id_idx').on(table.benefitId),
+  ],
+);
 
-export const subscriptionsPayments = pgTable('subscriptions_payments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  subscriptionId: uuid('subscriptionId')
-    .notNull()
-    .references(() => usersSubscriptions.id),
-  stripePaymentId: text('stripe_payment_id').notNull(),
-  status: text('status').notNull(),
-  amount: integer('amount').notNull(),
-  currency: text('currency').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-export const subscriptionsInvoice = pgTable('subscriptions_invoice', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  paymentId: uuid('payment_id')
-    .notNull()
-    .references(() => subscriptionsPayments.id),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id),
-  stripeInvoiceId: text('stripe_invoice_id').notNull(),
-  amount: integer('amount').notNull(),
-  currency: text('currency').notNull(),
-  pdfUrl: text('pdf_url'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+export const usersSubscriptions = pgTable(
+  'users_subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => users.id),
+    tierId: uuid('tierId')
+      .notNull()
+      .references(() => subscriptionTiers.id),
+    status: text('status').notNull(),
+    startDate: timestamp('start_date').notNull(),
+    endDate: timestamp('end_date'),
+    autoRenew: boolean('auto_renew').notNull(),
+    stripeSubscriptionId: text('stripe_subscription_id'),
+  },
+  (table) => [
+    index('users_subscriptions_user_id_idx').on(table.userId),
+    index('users_subscriptions_tier_id_idx').on(table.tierId),
+    index('users_subscriptions_status_idx').on(table.status),
+    index('users_subscriptions_stripe_id_idx').on(table.stripeSubscriptionId),
+  ],
+);
 
 export const usersSubscriptionsRelations = relations(
   usersSubscriptions,
@@ -70,26 +79,23 @@ export const usersSubscriptionsRelations = relations(
   }),
 );
 
-export const subscriptionsPaymentsRelations = relations(
-  subscriptionsPayments,
-  ({ one }) => ({
-    subscription: one(usersSubscriptions, {
-      fields: [subscriptionsPayments.subscriptionId],
-      references: [usersSubscriptions.id],
-    }),
+export const subscriptionTiersRelations = relations(
+  subscriptionTiers,
+  ({ many }) => ({
+    TierBenefits: many(subscriptionTierBenefits),
   }),
 );
 
-export const subscriptionsInvoiceRelations = relations(
-  subscriptionsInvoice,
+export const subscriptionTierBenefitsRelations = relations(
+  subscriptionTierBenefits,
   ({ one }) => ({
-    payment: one(subscriptionsPayments, {
-      fields: [subscriptionsInvoice.paymentId],
-      references: [subscriptionsPayments.id],
+    benefit: one(subscriptionBenefits, {
+      fields: [subscriptionTierBenefits.benefitId],
+      references: [subscriptionBenefits.id],
     }),
-    user: one(users, {
-      fields: [subscriptionsInvoice.userId],
-      references: [users.id],
+    tier: one(subscriptionTiers, {
+      fields: [subscriptionTierBenefits.tierId],
+      references: [subscriptionTiers.id],
     }),
   }),
 );

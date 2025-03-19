@@ -44,6 +44,7 @@ export const users = pgTable(
     status: userStatus().default('ACTIVE'),
     isEmailVerified: boolean('is_email_verified').default(false),
     verificationToken: varchar('verification_token', { length: 255 }),
+    stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
     joinedAt: timestamp('joined_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
