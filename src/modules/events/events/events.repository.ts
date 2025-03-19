@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
-import { events, usersJoinedEvent } from '../../db/schemas/schema';
+import {
+  events,
+  publicationsComments,
+  usersJoinedEvent,
+} from '../../db/schemas/schema';
 import { and, asc, eq, isNull, sql, SQL } from 'drizzle-orm';
 import { EventsDto } from '../events/dto/events.dto';
 import { EventResponse } from './interfaces/events.interface';
@@ -17,7 +21,6 @@ export class EventsRepository {
       description: event.description,
       location: event.location,
       category: event.category,
-      topicId: event.topicId,
       priority: 0,
       startDate: event.startDate,
       endDate: event.endDate,
@@ -109,6 +112,12 @@ export class EventsRepository {
             )
           )`.as('is_joined'),
         }),
+        commentsCount: sql<number>`(
+          SELECT COUNT(DISTINCT pc.id)::integer
+          FROM publications_comments pc
+          WHERE pc.publication_id = ${events.id}
+          AND pc.publication_type = 'event'
+        )`.as('comments_count'),
       },
       with: {
         userCreator: {

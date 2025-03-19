@@ -22,7 +22,7 @@ export class CommentsService {
       publicationType: SQL<'forum_publication' | 'post' | 'event'>;
     },
   ): Promise<Comment> {
-    let topicId: number;
+    let topicId: number | null;
 
     if (
       commentDto.publicationType ===
@@ -46,11 +46,7 @@ export class CommentsService {
       }
       topicId = post.mainTopicId;
     } else {
-      const event = await this.commentsRepository.getEventById(publicationId);
-      if (!event) {
-        throw new NotFoundException('Event not found');
-      }
-      topicId = event.topicId;
+      topicId = null;
     }
     const newComment = await this.commentsRepository.createComment(
       { userId, content: commentDto.content, publicationId },
@@ -64,18 +60,10 @@ export class CommentsService {
       id: newComment.id,
       type: 'comment',
     };
-    this.queuesService.addPointsJob(userId, topicId, action);
+    if (topicId) {
+      this.queuesService.addPointsJob(userId, topicId, action);
+    }
     return comment as Comment;
-  }
-
-  async getCommentsByPublicationId(
-    publicationId: string,
-    pagination: { limit: number; page: number },
-  ) {
-    return this.commentsRepository.getCommentsByPublicationId(
-      publicationId,
-      pagination,
-    );
   }
 
   async createCommentReply(commentId: string, userId: string, dto: any) {
@@ -94,7 +82,7 @@ export class CommentsService {
     return reply;
   }
 
-  async getCommentsByPostId(
+  async getCommentsByPublicationId(
     postId: string,
     pagination: { limit: number; page: number },
     currentUserId: string,

@@ -28,7 +28,6 @@ export class EventsGroupRepository {
       where: and(...conditions),
       orderBy: [asc(events.priority), asc(events.startDate)],
       with: {
-        topic: true,
         userCreator: {
           columns: {
             id: true,

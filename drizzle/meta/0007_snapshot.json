@@ -1,6 +1,6 @@
 {
-  "id": "df5927d5-2bac-4853-99ca-8c153b8ca18b",
-  "prevId": "64c15186-e542-472f-a22c-9f55afa7b3df",
+  "id": "1f86f2f3-2846-4f11-848a-298ca8be08d4",
+  "prevId": "7f5ddb8d-d6cd-4fbc-b306-cf0424a57918",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -627,8 +627,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "publications_id": {
-          "name": "publications_id",
+        "publication_id": {
+          "name": "publication_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -678,7 +678,7 @@
           "name": "comment_post_idx",
           "columns": [
             {
-              "expression": "publications_id",
+              "expression": "publication_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1386,24 +1386,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "why": {
-          "name": "why",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "how": {
-          "name": "how",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "what": {
-          "name": "what",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {

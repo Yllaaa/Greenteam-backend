@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { SQL, and, eq, sql, desc } from 'drizzle-orm';
+import { SQL, and, eq, sql, desc, exists } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  commentsReplies,
   events,
   forumPublications,
   posts,
@@ -91,29 +92,75 @@ export class CommentsRepository {
 
   async getCommentsByPublicationId(
     publicationId: string,
-    pagination: { limit: number; page: number },
+    pagination: { limit?: number; page?: number } = {},
     currentUserId?: string,
   ) {
-    const { limit = 10, page = 0 } = pagination || {};
-    const offset = Math.max(0, (page - 1) * limit);
+    const limit = Math.max(1, pagination.limit ?? 10);
+    const page = Math.max(1, pagination.page ?? 1);
+    const offset = (page - 1) * limit;
 
-    // Subquery for reaction counts
     const reactionCountSubquery = this.drizzleService.db
       .select({
         commentId: publicationsReactions.reactionableId,
         likeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
-        `.as('like_count'), // Adding alias
+            COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+          `.as('like_count'),
         dislikeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
-        `.as('dislike_count'), // Adding alias
+            COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+          `.as('dislike_count'),
       })
       .from(publicationsReactions)
-      .where(eq(publicationsReactions.reactionableType, 'comment'))
+      .where(
+        and(
+          eq(publicationsReactions.reactionableType, 'comment'),
+          exists(
+            this.drizzleService.db
+              .select({ id: publicationsComments.id })
+              .from(publicationsComments)
+              .where(
+                and(
+                  eq(
+                    publicationsComments.id,
+                    publicationsReactions.reactionableId,
+                  ),
+                  eq(publicationsComments.publicationId, publicationId),
+                ),
+              ),
+          ),
+        ),
+      )
       .groupBy(publicationsReactions.reactionableId)
       .as('reaction_counts');
 
-    return await this.drizzleService.db
+    const replyCountSubquery = this.drizzleService.db
+      .select({
+        commentId: commentsReplies.commentId,
+        replyCount:
+          sql<number>`COUNT(DISTINCT ${commentsReplies.id})::integer`.as(
+            'reply_count',
+          ),
+      })
+      .from(commentsReplies)
+      .groupBy(commentsReplies.commentId)
+      .as('reply_counts');
+
+    const userReactionSubquery = currentUserId
+      ? this.drizzleService.db
+          .select({
+            reactionableId: publicationsReactions.reactionableId,
+            reactionType: publicationsReactions.reactionType,
+          })
+          .from(publicationsReactions)
+          .where(
+            and(
+              eq(publicationsReactions.reactionableType, 'comment'),
+              eq(publicationsReactions.userId, currentUserId),
+            ),
+          )
+          .as('user_reactions')
+      : null;
+
+    const query = this.drizzleService.db
       .select({
         id: publicationsComments.id,
         publicationId: publicationsComments.publicationId,
@@ -126,21 +173,21 @@ export class CommentsRepository {
           username: users.username,
           avatar: users.avatar,
         },
-        likeCount:
-          sql<number>`COALESCE(${reactionCountSubquery.likeCount}, 0)`.as(
-            'like_count',
-          ),
+        likeCount: sql`COALESCE(${reactionCountSubquery.likeCount}, 0)`.as(
+          'like_count',
+        ),
         dislikeCount:
-          sql<number>`COALESCE(${reactionCountSubquery.dislikeCount}, 0)`.as(
+          sql`COALESCE(${reactionCountSubquery.dislikeCount}, 0)`.as(
             'dislike_count',
           ),
-        userReaction: sql<string | null>`
-          CASE 
-            WHEN ${publicationsReactions.userId} = ${currentUserId} 
-            THEN ${publicationsReactions.reactionType} 
-            ELSE NULL 
-          END
-        `.as('user_reaction'),
+        replyCount: sql`COALESCE(${replyCountSubquery.replyCount}, 0)`.as(
+          'reply_count',
+        ),
+        userReaction: userReactionSubquery
+          ? sql<string | null>`${userReactionSubquery.reactionType}`.as(
+              'user_reaction',
+            )
+          : sql<null>`NULL`.as('user_reaction'),
       })
       .from(publicationsComments)
       .leftJoin(users, eq(publicationsComments.userId, users.id))
@@ -149,22 +196,19 @@ export class CommentsRepository {
         eq(publicationsComments.id, reactionCountSubquery.commentId),
       )
       .leftJoin(
-        publicationsReactions,
-        and(
-          eq(publicationsComments.id, publicationsReactions.reactionableId),
-          eq(publicationsReactions.reactionableType, 'comment'),
-          eq(publicationsReactions.userId, currentUserId || ''),
-        ),
-      )
+        replyCountSubquery,
+        eq(publicationsComments.id, replyCountSubquery.commentId),
+      );
+
+    if (userReactionSubquery) {
+      query.leftJoin(
+        userReactionSubquery,
+        eq(publicationsComments.id, userReactionSubquery.reactionableId),
+      );
+    }
+
+    return await query
       .where(eq(publicationsComments.publicationId, publicationId))
-      .groupBy(
-        publicationsComments.id,
-        users.id,
-        reactionCountSubquery.likeCount,
-        reactionCountSubquery.dislikeCount,
-        publicationsReactions.reactionType,
-        publicationsReactions.userId,
-      )
       .orderBy(desc(publicationsComments.createdAt))
       .limit(limit)
       .offset(offset);
@@ -210,7 +254,6 @@ export class CommentsRepository {
       where: eq(events.id, eventId),
       columns: {
         id: true,
-        topicId: true,
       },
     });
   }

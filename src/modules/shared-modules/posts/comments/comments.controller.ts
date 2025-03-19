@@ -56,7 +56,11 @@ export class CommentsController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.commentsService.getCommentsByPostId(postId, pagination, userId);
+    return this.commentsService.getCommentsByPublicationId(
+      postId,
+      pagination,
+      userId,
+    );
   }
 
   @Get(':postId/comments/:commentId/replies')
