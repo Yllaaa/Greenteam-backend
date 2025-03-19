@@ -143,7 +143,6 @@ export class PagesRepository {
                 eq(events.creatorType, 'page')
             ),
             with: {
-                topic: true,
                 usersJoined: {
                     with: {
                         user: {

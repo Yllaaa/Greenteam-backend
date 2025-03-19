@@ -30,6 +30,7 @@
     "@nestjs/passport": "^11.0.4",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.4.15",
+    "@nestjs/schedule": "^5.0.1",
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/websockets": "^10.4.15",
     "@types/pg": "^8.11.10",
@@ -50,6 +51,7 @@
     "postgres": "^3.4.5",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "stripe": "^17.7.0",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
