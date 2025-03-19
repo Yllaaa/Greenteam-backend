@@ -58,14 +58,5 @@ export class PagesController {
     ) {
         const { limit, offset } = paginationQuery;
         return await this.pagesService.getPagePosts(pageId.id, limit, offset);
-    }
-
-    @Get(':id/profile')
-    async getPageProfile(
-        @Param() pageId: IdParamDto,
-        @Query() paginationQuery: PaginationQueryDto
-    ) {
-        const { limit, offset } = paginationQuery;
-        return await this.pagesService.getPageProfile(pageId.id, limit, offset);
-    }    
+    }  
 }
