@@ -64,6 +64,34 @@
       "when": 1742246773228,
       "tag": "0008_lowly_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1742306327781,
+      "tag": "0009_gorgeous_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1742308816956,
+      "tag": "0010_clammy_blizzard",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1742341150467,
+      "tag": "0011_smiling_true_believers",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1742342578802,
+      "tag": "0012_sparkling_chronomancer",
+      "breakpoints": true
     }
   ]
 }
