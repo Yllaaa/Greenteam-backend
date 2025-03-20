@@ -14,3 +14,4 @@ export * from './chat/chat';
 export * from './challenges/challenges';
 export * from './admins/admins';
 export * from './points/points';
+export * from './subscriptions/subscriptions';

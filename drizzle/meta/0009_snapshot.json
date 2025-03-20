@@ -1362,7 +1362,6 @@
           "primaryKey": false,
           "notNull": true
         },
-
         "why": {
           "name": "why",
           "type": "varchar",
@@ -1380,12 +1379,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
-        },
-        "page_info_id": {
-          "name": "page_info_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -2477,116 +2470,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.subscription_benefits": {
-      "name": "subscription_benefits",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "benefit": {
-          "name": "benefit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.subscription_tier_benefits": {
-      "name": "subscription_tier_benefits",
-      "schema": "",
-      "columns": {
-        "tier_id": {
-          "name": "tier_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "benefit_id": {
-          "name": "benefit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "subscription_tier_benefits_tier_id_idx": {
-          "name": "subscription_tier_benefits_tier_id_idx",
-          "columns": [
-            {
-              "expression": "tier_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "subscription_tier_benefits_benefit_id_idx": {
-          "name": "subscription_tier_benefits_benefit_id_idx",
-          "columns": [
-            {
-              "expression": "benefit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "subscription_tier_benefits_tier_id_subscription_tiers_id_fk": {
-          "name": "subscription_tier_benefits_tier_id_subscription_tiers_id_fk",
-          "tableFrom": "subscription_tier_benefits",
-          "tableTo": "subscription_tiers",
-          "columnsFrom": [
-            "tier_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "subscription_tier_benefits_benefit_id_subscription_benefits_id_fk": {
-          "name": "subscription_tier_benefits_benefit_id_subscription_benefits_id_fk",
-          "tableFrom": "subscription_tier_benefits",
-          "tableTo": "subscription_benefits",
-          "columnsFrom": [
-            "benefit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-
     "public.subscription_tiers": {
       "name": "subscription_tiers",
       "schema": "",
@@ -2617,23 +2500,7 @@
           "notNull": true
         }
       },
-      "indexes": {
-        "subscription_tiers_name_idx": {
-          "name": "subscription_tiers_name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -2696,38 +2563,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "subscriptions_invoice_payment_id_idx": {
-          "name": "subscriptions_invoice_payment_id_idx",
-          "columns": [
-            {
-              "expression": "payment_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "subscriptions_invoice_user_id_idx": {
-          "name": "subscriptions_invoice_user_id_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "subscriptions_invoice_payment_id_subscriptions_payments_id_fk": {
           "name": "subscriptions_invoice_payment_id_subscriptions_payments_id_fk",
@@ -2811,53 +2647,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "subscriptions_payments_subscription_id_idx": {
-          "name": "subscriptions_payments_subscription_id_idx",
-          "columns": [
-            {
-              "expression": "subscriptionId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "subscriptions_payments_stripe_id_idx": {
-          "name": "subscriptions_payments_stripe_id_idx",
-          "columns": [
-            {
-              "expression": "stripe_payment_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "subscriptions_payments_status_idx": {
-          "name": "subscriptions_payments_status_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "subscriptions_payments_subscriptionId_users_subscriptions_id_fk": {
           "name": "subscriptions_payments_subscriptionId_users_subscriptions_id_fk",
@@ -2933,68 +2723,7 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "users_subscriptions_user_id_idx": {
-          "name": "users_subscriptions_user_id_idx",
-          "columns": [
-            {
-              "expression": "userId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "users_subscriptions_tier_id_idx": {
-          "name": "users_subscriptions_tier_id_idx",
-          "columns": [
-            {
-              "expression": "tierId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "users_subscriptions_status_idx": {
-          "name": "users_subscriptions_status_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "users_subscriptions_stripe_id_idx": {
-          "name": "users_subscriptions_stripe_id_idx",
-          "columns": [
-            {
-              "expression": "stripe_subscription_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "users_subscriptions_userId_Users_accounts_id_fk": {
           "name": "users_subscriptions_userId_Users_accounts_id_fk",
