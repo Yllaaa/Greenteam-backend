@@ -9,6 +9,7 @@ import {
   Post,
   Logger,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,7 +30,7 @@ export class SubscriptionsController {
   }
 
   @Post('tiers/:tierId/subscribe')
-  async createSubscription(@Req() req, @Param('tierId') tierId: string) {
+  async createSubscription(@Req() req, @Param('tierId') tierId: number) {
     this.logger.log(`User ${req.user.id} is subscribing to tier ${tierId}`);
     return this.subscriptionsService.createSubscription(req.user.id, tierId);
   }
@@ -42,5 +43,12 @@ export class SubscriptionsController {
       throw new HttpException('User does not have an active subscription', 404);
     }
     return subscription;
+  }
+
+  // for testing only
+  @Delete('delete-my-subscription')
+  async deleteMySubscription(@Req() req) {
+    await this.subscriptionsService.deleteUserSubscription(req.user.id);
+    return 'Subscription deleted';
   }
 }

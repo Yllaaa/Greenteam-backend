@@ -8,14 +8,25 @@ import {
   timestamp,
   uuid,
   index,
+  pgEnum,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { users } from '../schema';
 
+export const subscriptionStatus = pgEnum('subscription_status', [
+  'active',
+  'canceled',
+  'expired',
+  'pending',
+  'failed',
+]);
+
+export type SubscriptionStatus = (typeof subscriptionStatus.enumValues)[number];
+
 export const subscriptionTiers = pgTable(
   'subscription_tiers',
   {
-    id: uuid('id').primaryKey().defaultRandom(),
+    id: serial('id').primaryKey(),
     name: text('name').notNull(),
     price: integer('price').notNull(),
     stripeProductId: text('stripe_product_id'),
@@ -32,7 +43,7 @@ export const subscriptionBenefits = pgTable('subscription_benefits', {
 export const subscriptionTierBenefits = pgTable(
   'subscription_tier_benefits',
   {
-    tierId: uuid('tier_id')
+    tierId: integer('tier_id')
       .notNull()
       .references(() => subscriptionTiers.id, { onDelete: 'cascade' }),
     benefitId: uuid('benefit_id')
@@ -49,13 +60,13 @@ export const usersSubscriptions = pgTable(
   'users_subscriptions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('userId')
+    userId: uuid('user_id')
       .notNull()
-      .references(() => users.id),
-    tierId: uuid('tierId')
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tierId: integer('tier_id')
       .notNull()
-      .references(() => subscriptionTiers.id),
-    status: text('status').notNull(),
+      .references(() => subscriptionTiers.id, { onDelete: 'cascade' }),
+    status: subscriptionStatus('status').notNull(),
     startDate: timestamp('start_date').notNull(),
     endDate: timestamp('end_date'),
     autoRenew: boolean('auto_renew').notNull(),

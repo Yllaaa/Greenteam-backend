@@ -11,7 +11,7 @@ export class StripeService {
     this.stripe = new Stripe(
       this.configService.get<string>('STRIPE_SECRET_KEY') || '',
       {
-        apiVersion: '2025-02-24.acacia',
+        apiVersion: '2020-08-27' as any,
       },
     );
   }
@@ -100,6 +100,7 @@ export class StripeService {
       if (!webhookSecret) {
         throw new Error('Stripe webhook secret is not defined');
       }
+
       return this.stripe.webhooks.constructEvent(
         payload,
         signature,

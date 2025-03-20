@@ -29,15 +29,12 @@ export class StripeController {
     if (!signature) {
       throw new BadRequestException('Missing stripe-signature header');
     }
-    this.logger.debug(`Received signature: ${signature}`);
 
     try {
       if (!req.rawBody) {
         throw new BadRequestException('Missing raw body in the request');
       }
-      this.logger.debug(
-        `Raw body: ${req.rawBody.toString().substring(0, 100)}...`,
-      );
+
       const event = this.stripeService.constructEvent(signature, req.rawBody);
       await this.stripeWebhookService.handleEvent(event);
       return { received: true };

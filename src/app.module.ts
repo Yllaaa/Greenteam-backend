@@ -42,6 +42,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
       connection: {
         host: process.env.REDIS_HOST,
         port: (process.env.REDIS_PORT || 6379) as number,
+        password: process.env.REDIS_PASSWORD,
       },
     }),
     BullMQModule,

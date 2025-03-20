@@ -11,6 +11,7 @@ import { SubscriptionsRepository } from './subscriptions.repository';
 import { PaymentsService } from '../payments/payments/payments.service';
 import { StripeService } from '../payments/stripe/stripe.service';
 import Stripe from 'stripe';
+import { SubscriptionStatus } from '../db/schemas/schema';
 @Injectable()
 export class SubscriptionsService {
   constructor(
@@ -30,7 +31,7 @@ export class SubscriptionsService {
     return formattedResponse;
   }
 
-  async createSubscription(userId: string, tierId: string) {
+  async createSubscription(userId: string, tierId: number) {
     const tier = await this.subscriptionsRepository.getTierById(tierId);
     if (!tier) {
       throw new NotFoundException('Subscription tier not found');
@@ -156,10 +157,20 @@ export class SubscriptionsService {
     );
   }
 
-  async updateSubscriptionStatus(subscriptionId: string, status: string) {
+  async updateSubscriptionStatus(
+    subscriptionId: string,
+    status: SubscriptionStatus,
+  ) {
     return await this.subscriptionsRepository.updateSubscriptionStatus(
       subscriptionId,
       status,
+    );
+  }
+
+  // for testing
+  async deleteUserSubscription(userId: string) {
+    return await this.subscriptionsRepository.softDeleteUserSubscription(
+      userId,
     );
   }
 }

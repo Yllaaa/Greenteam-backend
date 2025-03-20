@@ -7,7 +7,7 @@ interface TierBenefit {
 }
 
 interface SubscriptionTier {
-  id: string;
+  id: number;
   name: string;
   price: number;
   TierBenefits: TierBenefit[];
