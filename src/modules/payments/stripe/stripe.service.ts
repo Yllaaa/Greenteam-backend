@@ -11,7 +11,7 @@ export class StripeService {
     this.stripe = new Stripe(
       this.configService.get<string>('STRIPE_SECRET_KEY') || '',
       {
-        apiVersion: '2025-02-24.acacia',
+        apiVersion: '2020-08-27' as any,
       },
     );
   }
@@ -46,8 +46,8 @@ export class StripeService {
   async createPrice(
     productId: string,
     amount: number,
-    currency: string = 'usd',
-    interval: Stripe.PriceCreateParams.Recurring.Interval = 'month',
+    currency: string = 'eur',
+    interval: Stripe.PriceCreateParams.Recurring.Interval = 'year',
   ): Promise<Stripe.Price> {
     try {
       return this.stripe.prices.create({
@@ -100,6 +100,7 @@ export class StripeService {
       if (!webhookSecret) {
         throw new Error('Stripe webhook secret is not defined');
       }
+
       return this.stripe.webhooks.constructEvent(
         payload,
         signature,

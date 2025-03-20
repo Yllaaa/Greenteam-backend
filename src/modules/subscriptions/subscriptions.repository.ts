@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, lt } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
-import { subscriptionTiers, usersSubscriptions } from '../db/schemas/schema';
+import {
+  SubscriptionStatus,
+  subscriptionTiers,
+  usersSubscriptions,
+} from '../db/schemas/schema';
 import { subscriptionsInvoice } from '../db/schemas/subscriptions/payments';
 @Injectable()
 export class SubscriptionsRepository {
@@ -33,9 +37,9 @@ export class SubscriptionsRepository {
     return tiers as SubscriptionTier[];
   }
 
-  async getTierById(tierId: string) {
+  async getTierById(tierId: number) {
     return await this.drizzleService.db.query.subscriptionTiers.findFirst({
-      where: eq(usersSubscriptions.id, tierId),
+      where: eq(subscriptionTiers.id, tierId),
       columns: {
         id: true,
         name: true,
@@ -46,7 +50,7 @@ export class SubscriptionsRepository {
     });
   }
 
-  async getUserSubscription(userId: string) {
+  async getUserSubscriptionByUserId(userId: string) {
     return await this.drizzleService.db.query.usersSubscriptions.findFirst({
       where: and(
         eq(usersSubscriptions.userId, userId),
@@ -56,7 +60,7 @@ export class SubscriptionsRepository {
   }
 
   async updateTier(
-    tierId: string,
+    tierId: number,
     stripeProductId: string,
     stripePriceId: string,
   ) {
@@ -71,7 +75,7 @@ export class SubscriptionsRepository {
 
   async createSubscription(
     userId: string,
-    tierId: string,
+    tierId: number,
     stripeSubscriptionId: string,
   ) {
     const startDate = new Date();
@@ -94,6 +98,14 @@ export class SubscriptionsRepository {
         eq(usersSubscriptions.userId, userId),
         eq(usersSubscriptions.status, 'active'),
       ),
+      with: {
+        tier: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
   }
   async getSubscriptionByStripeId(stripeSubscriptionId: string) {
@@ -123,10 +135,30 @@ export class SubscriptionsRepository {
     });
   }
 
-  async updateSubscriptionStatus(subscriptionId: string, status: string) {
+  async updateSubscriptionStatus(
+    subscriptionId: string,
+    status: SubscriptionStatus,
+  ) {
     await this.drizzleService.db
       .update(usersSubscriptions)
       .set({ status })
       .where(eq(usersSubscriptions.id, subscriptionId));
+  }
+
+  async findExpiredSubscriptions(now: Date) {
+    return await this.drizzleService.db.query.usersSubscriptions.findMany({
+      where: and(
+        eq(usersSubscriptions.status, 'active'),
+        lt(usersSubscriptions.endDate, now),
+      ),
+    });
+  }
+
+  // for testing only
+  async softDeleteUserSubscription(userId: string) {
+    await this.drizzleService.db
+      .update(usersSubscriptions)
+      .set({ status: 'canceled' })
+      .where(eq(usersSubscriptions.userId, userId));
   }
 }

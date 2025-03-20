@@ -23,6 +23,7 @@ async function bootstrap() {
     express.json({
       verify: (req: any, res, buf) => {
         req.rawBody = buf;
+        req.rawBodyString = buf.toString();
       },
     }),
   );
