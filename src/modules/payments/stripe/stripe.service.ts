@@ -46,8 +46,8 @@ export class StripeService {
   async createPrice(
     productId: string,
     amount: number,
-    currency: string = 'usd',
-    interval: Stripe.PriceCreateParams.Recurring.Interval = 'month',
+    currency: string = 'eur',
+    interval: Stripe.PriceCreateParams.Recurring.Interval = 'year',
   ): Promise<Stripe.Price> {
     try {
       return this.stripe.prices.create({

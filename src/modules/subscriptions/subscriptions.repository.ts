@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, lt } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   SubscriptionStatus,
@@ -50,7 +50,7 @@ export class SubscriptionsRepository {
     });
   }
 
-  async getUserSubscription(userId: string) {
+  async getUserSubscriptionByUserId(userId: string) {
     return await this.drizzleService.db.query.usersSubscriptions.findFirst({
       where: and(
         eq(usersSubscriptions.userId, userId),
@@ -143,6 +143,15 @@ export class SubscriptionsRepository {
       .update(usersSubscriptions)
       .set({ status })
       .where(eq(usersSubscriptions.id, subscriptionId));
+  }
+
+  async findExpiredSubscriptions(now: Date) {
+    return await this.drizzleService.db.query.usersSubscriptions.findMany({
+      where: and(
+        eq(usersSubscriptions.status, 'active'),
+        lt(usersSubscriptions.endDate, now),
+      ),
+    });
   }
 
   // for testing only

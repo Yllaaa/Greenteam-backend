@@ -38,7 +38,7 @@ export class SubscriptionsService {
     }
 
     const existingSubscription =
-      await this.subscriptionsRepository.getUserSubscription(userId);
+      await this.subscriptionsRepository.getUserSubscriptionByUserId(userId);
     if (existingSubscription) {
       throw new ConflictException('User already has an active subscription');
     }
