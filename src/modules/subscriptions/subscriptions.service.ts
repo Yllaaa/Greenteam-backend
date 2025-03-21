@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   ConflictException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { SubscriptionsRepository } from './subscriptions.repository';
 import { PaymentsService } from '../payments/payments/payments.service';
@@ -31,86 +32,54 @@ export class SubscriptionsService {
     return formattedResponse;
   }
 
+  async getUserSubscriptionByUserId(userId: string) {
+    return await this.subscriptionsRepository.getUserSubscriptionByUserId(
+      userId,
+    );
+  }
+
   async createSubscription(userId: string, tierId: number) {
+    // 1. Validate tier and check if user can subscribe
     const tier = await this.subscriptionsRepository.getTierById(tierId);
     if (!tier) {
       throw new NotFoundException('Subscription tier not found');
     }
+    if (tier.name.toLowerCase() === 'basic') {
+      throw new BadRequestException('Cannot directly subscribe to basic tier');
+    }
 
+    // 2. Check existing subscription and validate upgrade path
     const existingSubscription =
       await this.subscriptionsRepository.getUserSubscriptionByUserId(userId);
-    if (existingSubscription) {
+
+    if (existingSubscription?.tierId === tierId) {
       throw new ConflictException('User already has an active subscription');
+    }
+    if (
+      !Array.isArray(existingSubscription?.tier) &&
+      existingSubscription?.tier.price > tier.price
+    ) {
+      throw new ConflictException('Cannot downgrade subscription');
     }
 
     try {
+      // 3. Get or create Stripe customer
       const user = await this.paymentsService.getUserStripeCustomerId(userId);
       if (!user) {
         throw new NotFoundException('User not found');
       }
 
-      let stripeCustomerId = user.stripeCustomerId;
+      const stripeCustomerId = await this.getOrCreateStripeCustomer(user);
 
-      if (!stripeCustomerId) {
-        const customer = await this.stripeService.createCustomer(
-          user.email,
-          user.fullName,
-        );
-        stripeCustomerId = customer.id;
+      // 4. Get or create Stripe product and price
+      const { stripeProductId, stripePriceId } =
+        await this.getOrCreateStripePricing(tier);
 
-        await this.paymentsService.setUserStripeCustomerId(
-          userId,
-          stripeCustomerId,
-        );
-      }
+      // 5. Create the subscription in Stripe
+      const { subscriptionId, clientSecret } =
+        await this.createStripeSubscription(stripeCustomerId, stripePriceId);
 
-      let stripeProductId = tier.stripeProductId;
-      let stripePriceId = tier.stripePriceId;
-
-      if (!stripeProductId || !stripePriceId) {
-        const product = await this.stripeService.createProduct(
-          tier.name,
-          `${tier.name} subscription plan`,
-        );
-        stripeProductId = product.id;
-
-        const price = await this.stripeService.createPrice(
-          stripeProductId,
-          tier.price,
-        );
-        stripePriceId = price.id;
-
-        await this.subscriptionsRepository.updateTier(
-          tierId,
-          stripeProductId,
-          stripePriceId,
-        );
-      }
-
-      const stripeSubscription = await this.stripeService.createSubscription(
-        stripeCustomerId,
-        stripePriceId,
-      );
-      const subscriptionId = stripeSubscription.id;
-
-      let clientSecret: string | null = null;
-      if (
-        stripeSubscription.latest_invoice &&
-        typeof stripeSubscription.latest_invoice !== 'string'
-      ) {
-        const latestInvoice =
-          stripeSubscription.latest_invoice as Stripe.Invoice;
-
-        if (
-          latestInvoice.payment_intent &&
-          typeof latestInvoice.payment_intent !== 'string'
-        ) {
-          clientSecret =
-            (latestInvoice.payment_intent as Stripe.PaymentIntent)
-              .client_secret || null;
-        }
-      }
-
+      // 6. Save subscription in database
       await this.subscriptionsRepository.createSubscription(
         userId,
         tierId,
@@ -171,6 +140,96 @@ export class SubscriptionsService {
   async deleteUserSubscription(userId: string) {
     return await this.subscriptionsRepository.softDeleteUserSubscription(
       userId,
+    );
+  }
+
+  private async getOrCreateStripeCustomer(user: any): Promise<string> {
+    let { stripeCustomerId } = user;
+
+    if (!stripeCustomerId) {
+      const customer = await this.stripeService.createCustomer(
+        user.email,
+        user.fullName,
+      );
+      stripeCustomerId = customer.id;
+      await this.paymentsService.setUserStripeCustomerId(
+        user.id,
+        stripeCustomerId,
+      );
+    }
+
+    return stripeCustomerId;
+  }
+
+  private async getOrCreateStripePricing(
+    tier: any,
+  ): Promise<{ stripeProductId: string; stripePriceId: string }> {
+    let { stripeProductId, stripePriceId } = tier;
+
+    if (!stripeProductId || !stripePriceId) {
+      const product = await this.stripeService.createProduct(
+        tier.name,
+        `${tier.name} subscription plan`,
+      );
+      stripeProductId = product.id;
+
+      const price = await this.stripeService.createPrice(
+        stripeProductId,
+        tier.price,
+      );
+      stripePriceId = price.id;
+
+      await this.subscriptionsRepository.updateTier(
+        tier.id,
+        stripeProductId,
+        stripePriceId,
+      );
+    }
+
+    return { stripeProductId, stripePriceId };
+  }
+
+  private async createStripeSubscription(
+    stripeCustomerId: string,
+    stripePriceId: string,
+  ): Promise<{ subscriptionId: string; clientSecret: string | null }> {
+    const stripeSubscription = await this.stripeService.createSubscription(
+      stripeCustomerId,
+      stripePriceId,
+    );
+
+    const subscriptionId = stripeSubscription.id;
+    let clientSecret: string | null = null;
+
+    if (
+      stripeSubscription.latest_invoice &&
+      typeof stripeSubscription.latest_invoice !== 'string'
+    ) {
+      const latestInvoice = stripeSubscription.latest_invoice as Stripe.Invoice;
+      if (
+        latestInvoice.payment_intent &&
+        typeof latestInvoice.payment_intent !== 'string'
+      ) {
+        clientSecret =
+          (latestInvoice.payment_intent as Stripe.PaymentIntent)
+            .client_secret || null;
+      }
+    }
+
+    return { subscriptionId, clientSecret };
+  }
+
+  async handleExistingSubscription(existingSubscription: any): Promise<void> {
+    if (existingSubscription.stripeSubscriptionId) {
+      await this.stripeService.cancelSubscription(
+        existingSubscription.stripeSubscriptionId,
+        { prorate: true },
+      );
+    }
+
+    await this.subscriptionsRepository.updateSubscriptionStatus(
+      existingSubscription.id,
+      'upgraded',
     );
   }
 }

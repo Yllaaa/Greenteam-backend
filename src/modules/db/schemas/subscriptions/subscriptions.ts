@@ -19,6 +19,7 @@ export const subscriptionStatus = pgEnum('subscription_status', [
   'expired',
   'pending',
   'failed',
+  'upgraded',
 ]);
 
 export type SubscriptionStatus = (typeof subscriptionStatus.enumValues)[number];

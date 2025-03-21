@@ -41,6 +41,16 @@ export class PaymentsService {
     if (!subscription) {
       throw new NotFoundException('Subscription not found');
     }
+    const existingSubscription =
+      await this.subscriptionsService.getUserSubscriptionByUserId(
+        subscription.userId,
+      );
+
+    if (existingSubscription) {
+      await this.subscriptionsService.handleExistingSubscription(
+        existingSubscription,
+      );
+    }
 
     const stripeInvoice = await this.stripeService.getInvoice(stripeInvoiceId);
 
