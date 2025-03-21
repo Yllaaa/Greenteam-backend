@@ -66,6 +66,19 @@ export const subscriptionsInvoice = pgTable(
   ],
 );
 
+export const stripeEventLogs = pgTable('stripe_event_logs', {
+  id: serial('id').primaryKey(),
+  eventId: text('event_id').notNull(),
+  eventType: text('event_type').notNull(),
+  objectId: text('object_id'),
+  objectType: text('object_type'),
+  status: text('status'),
+  rawData: jsonb('raw_data'),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  processedAt: timestamp('processed_at'),
+});
+
 export const subscriptionsPaymentsRelations = relations(
   subscriptionsPayments,
   ({ one }) => ({

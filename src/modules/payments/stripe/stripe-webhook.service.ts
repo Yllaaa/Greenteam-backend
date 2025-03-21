@@ -1,15 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
 import { PaymentsService } from '../payments/payments.service';
+import { StripeEventLogsRepository } from './stripe-event-logs.repository';
 
 @Injectable()
 export class StripeWebhookService {
   private readonly logger = new Logger(StripeWebhookService.name);
 
-  constructor(private paymentsService: PaymentsService) {}
+  constructor(
+    private paymentsService: PaymentsService,
+    private stripeEventLogsRepository: StripeEventLogsRepository,
+  ) {}
 
   async handleEvent(event: Stripe.Event): Promise<void> {
     this.logger.log(`Processing webhook event: ${event.type}`);
+
+    await this.stripeEventLogsRepository.logEvent({
+      eventId: event.id,
+      eventType: event.type,
+      objectId: this.getObjectId(event),
+      objectType: this.getObjectType(event),
+      rawData: event.data.object as Record<string, any>,
+    });
 
     try {
       switch (event.type) {
@@ -54,5 +66,15 @@ export class StripeWebhookService {
         invoice.id,
       );
     }
+  }
+
+  private getObjectId(event: Stripe.Event): string | undefined {
+    const object = event.data.object as any;
+    return object.id;
+  }
+
+  private getObjectType(event: Stripe.Event): string | undefined {
+    const object = event.data.object as any;
+    return object.object;
   }
 }
