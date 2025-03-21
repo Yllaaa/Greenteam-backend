@@ -16,3 +16,4 @@ export * from './admins/admins';
 export * from './points/points';
 export * from './subscriptions/subscriptions';
 export * from './subscriptions/payments';
+export * from './products/products';
