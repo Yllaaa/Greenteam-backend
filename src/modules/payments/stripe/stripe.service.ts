@@ -81,9 +81,12 @@ export class StripeService {
 
   async cancelSubscription(
     subscriptionId: string,
+    options?: { prorate?: boolean },
   ): Promise<Stripe.Subscription> {
     try {
-      return this.stripe.subscriptions.cancel(subscriptionId);
+      return this.stripe.subscriptions.cancel(subscriptionId, {
+        prorate: options?.prorate,
+      });
     } catch (error) {
       this.logger.error(
         `Error canceling Stripe subscription: ${error.message}`,

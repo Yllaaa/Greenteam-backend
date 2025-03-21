@@ -56,6 +56,15 @@ export class SubscriptionsRepository {
         eq(usersSubscriptions.userId, userId),
         eq(usersSubscriptions.status, 'active'),
       ),
+      with: {
+        tier: {
+          columns: {
+            id: true,
+            name: true,
+            price: true,
+          },
+        },
+      },
     });
   }
 
