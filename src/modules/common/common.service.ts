@@ -20,4 +20,19 @@ export class CommonService {
       };
     });
   }
+
+  async getCitiesForDropdown(params: {
+    countryId: number;
+    search?: string | undefined;
+    limit?: number;
+  }) {
+    const result = await this.commonRepository.searchCitiesForDropdown(params);
+
+    return result.map((city) => {
+      return {
+        id: city.id,
+        name: city.nameEn,
+      };
+    });
+  }
 }
