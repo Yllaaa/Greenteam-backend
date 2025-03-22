@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CommonService } from './common.service';
 import { CityImportService } from './city-seed.service';
+import { GetCitiesForDropdownDto } from './dtos/get-cities.dto';
 @Controller('common')
 export class CommonController {
   constructor(
@@ -21,8 +22,8 @@ export class CommonController {
     return this.commonService.getAllCountries(locale);
   }
 
-  @Get('cities/import')
-  async importCities() {
-    return this.cityImportService.importAllCities();
+  @Get('cities')
+  async getCitiesForDropdown(@Query() query: GetCitiesForDropdownDto) {
+    return this.commonService.getCitiesForDropdown(query);
   }
 }

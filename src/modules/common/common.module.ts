@@ -16,5 +16,6 @@ import { CityImportService } from './city-seed.service';
   ],
   controllers: [CommonController],
   providers: [CommonService, CommonRepository, CityImportService],
+  exports: [CommonService, CommonRepository],
 })
 export class CommonModule {}
