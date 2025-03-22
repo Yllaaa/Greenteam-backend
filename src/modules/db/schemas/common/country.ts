@@ -22,12 +22,10 @@ export const cities = pgTable(
     id: serial('id').primaryKey(),
     countryId: integer('country_id').references(() => countries.id),
     nameEn: varchar('name_en', { length: 100 }).notNull(),
-    nameES: varchar('name_es', { length: 100 }).notNull(),
   },
   (table) => [
     index('cities_country_id_idx').on(table.countryId),
     index('cities_name_en_idx').on(table.nameEn),
-    index('cities_name_es_idx').on(table.nameES),
   ],
 );
 

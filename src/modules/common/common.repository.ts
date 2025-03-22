@@ -78,11 +78,7 @@ export class CommonRepository {
     });
   }
 
-  async insertCity(cityData: {
-    countryId: number;
-    nameEn: string;
-    nameES: string;
-  }) {
+  async insertCity(cityData: { countryId: number; nameEn: string }) {
     const existingCity = await this.drizzleService.db
       .select()
       .from(cities)
@@ -102,7 +98,6 @@ export class CommonRepository {
       .values({
         countryId: cityData.countryId,
         nameEn: cityData.nameEn,
-        nameES: cityData.nameES,
       })
       .returning();
 
