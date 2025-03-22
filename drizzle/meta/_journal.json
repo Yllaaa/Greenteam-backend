@@ -70,6 +70,134 @@
       "version": "7",
       "when": 1742394575400,
       "tag": "0009_absent_inhumans",
+      "when": 1742306327781,
+      "tag": "0009_gorgeous_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1742308816956,
+      "tag": "0010_clammy_blizzard",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1742341150467,
+      "tag": "0011_smiling_true_believers",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1742342578802,
+      "tag": "0012_sparkling_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1742424118537,
+      "tag": "0013_bitter_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1742427394824,
+      "tag": "0014_nappy_sleeper",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1742427674963,
+      "tag": "0015_lively_colonel_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1742429700319,
+      "tag": "0016_odd_venom",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1742429820572,
+      "tag": "0017_demonic_beyonder",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1742429938239,
+      "tag": "0018_ambiguous_inertia",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1742430028897,
+      "tag": "0019_icy_viper",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1742430802569,
+      "tag": "0020_real_albert_cleary",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1742515941458,
+      "tag": "0021_dusty_abomination",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1742520256739,
+      "tag": "0022_swift_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1742526570498,
+      "tag": "0023_ancient_rawhide_kid",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1742595665342,
+      "tag": "0024_colorful_rocket_raccoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1742596405467,
+      "tag": "0025_absurd_power_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1742596544565,
+      "tag": "0026_workable_living_lightning",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1742605557786,
+      "tag": "0027_nervous_inhumans",
       "breakpoints": true
     }
   ]

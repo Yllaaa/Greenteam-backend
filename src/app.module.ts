@@ -18,6 +18,9 @@ import { ChatModule } from './modules/chat/chat.module';
 import { PointingSystemModule } from './modules/pointing-system/pointing-system.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path/posix';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Global()
 @Module({
   imports: [
@@ -36,10 +39,12 @@ import { join } from 'path/posix';
     UsersModule,
     SharedModulesModule,
     ForumModule,
+    ScheduleModule.forRoot(),
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST,
         port: (process.env.REDIS_PORT || 6379) as number,
+        password: process.env.REDIS_PASSWORD,
       },
     }),
     BullMQModule,
@@ -47,6 +52,8 @@ import { join } from 'path/posix';
     ChallengesModule,
     ChatModule,
     PointingSystemModule,
+    SubscriptionsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

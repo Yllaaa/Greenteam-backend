@@ -22,6 +22,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/bullmq": "^11.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.0",
@@ -43,6 +44,7 @@
     "drizzle-kit": "^0.30.4",
     "drizzle-orm": "^0.39.2",
     "drizzle-seed": "^0.3.1",
+    "nest-commander": "^3.17.0",
     "nodemailer": "^6.9.16",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

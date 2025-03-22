@@ -1,7 +1,6 @@
 {
-  "id": "b5f9412e-f634-450a-8c5c-1dd457ec9c3b",
-  "id": "887942da-f43c-4787-a412-b9e2e3cd96b8",
-  "prevId": "343e3407-0011-43e0-9616-38bedc20eb56",
+  "id": "01724e82-020c-4b45-9885-e5d79ce6d44d",
+  "prevId": "887942da-f43c-4787-a412-b9e2e3cd96b8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1363,23 +1362,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "why": {
-          "name": "why",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "how": {
-          "name": "how",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "what": {
-          "name": "what",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
         "page_info_id": {
           "name": "page_info_id",
           "type": "uuid",
@@ -2476,7 +2458,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-
     "public.subscription_benefits": {
       "name": "subscription_benefits",
       "schema": "",
@@ -2608,15 +2589,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
-        },
-        "benefits": {
-          "name": "benefits",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
         }
       },
-      "indexes": {},
       "indexes": {
         "subscription_tiers_name_idx": {
           "name": "subscription_tiers_name_idx",
@@ -2696,8 +2670,6 @@
           "default": "now()"
         }
       },
-      "indexes": {},
-
       "indexes": {
         "subscriptions_invoice_payment_id_idx": {
           "name": "subscriptions_invoice_payment_id_idx",
@@ -2813,7 +2785,6 @@
           "default": "now()"
         }
       },
-      "indexes": {},
       "indexes": {
         "subscriptions_payments_subscription_id_idx": {
           "name": "subscriptions_payments_subscription_id_idx",
@@ -2936,7 +2907,6 @@
           "notNull": false
         }
       },
-      "indexes": {},
       "indexes": {
         "users_subscriptions_user_id_idx": {
           "name": "users_subscriptions_user_id_idx",

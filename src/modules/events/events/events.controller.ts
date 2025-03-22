@@ -17,8 +17,8 @@ import { EventsService } from './events.service';
 import { GetEventsDto } from '../events/dto/getEvents.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
-@Controller('')
 @UseGuards(JwtAuthGuard)
+@Controller('')
 export class EventsController {
   constructor(readonly eventsService: EventsService) {}
 
