@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
-import { cities } from '../db/schemas/schema';
+import { cities, countries, topics } from '../db/schemas/schema';
 @Injectable()
 export class CommonRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
@@ -146,5 +146,38 @@ export class CommonRepository {
     }
 
     return query;
+  }
+
+  async countryExists(countryId: number): Promise<boolean> {
+    const result = await this.drizzleService.db
+      .select({ id: countries.id })
+      .from(countries)
+      .where(eq(countries.id, countryId))
+      .limit(1);
+
+    return result.length > 0;
+  }
+
+  async cityExistsInCountry(
+    cityId: number,
+    countryId: number,
+  ): Promise<boolean> {
+    const result = await this.drizzleService.db
+      .select({ id: cities.id })
+      .from(cities)
+      .where(and(eq(cities.id, cityId), eq(cities.countryId, countryId)))
+      .limit(1);
+
+    return result.length > 0;
+  }
+
+  async topicExists(topicId: number): Promise<boolean> {
+    const result = await this.drizzleService.db
+      .select({ id: topics.id })
+      .from(topics)
+      .where(eq(topics.id, topicId))
+      .limit(1);
+
+    return result.length > 0;
   }
 }

@@ -9,6 +9,7 @@ import {
   char,
   index,
   pgEnum,
+  uuid,
 } from 'drizzle-orm/pg-core';
 import { cities, countries, topics } from '../schema';
 import { relations } from 'drizzle-orm';
@@ -20,20 +21,29 @@ export const marketTypeEnum = pgEnum('market_type', [
   'second_hand',
 ]);
 
+export type MarketType = (typeof marketTypeEnum.enumValues)[number];
+export type SellerType = (typeof sellerTypeEnum.enumValues)[number];
+
 export const products = pgTable(
   'product',
   {
-    id: serial('id').primaryKey(),
-    sellerId: integer('seller_id').notNull(),
+    id: uuid('id').primaryKey().defaultRandom(),
+    sellerId: uuid('seller_id').notNull(),
     sellerType: sellerTypeEnum('seller_type').notNull(),
     name: varchar('name', { length: 255 }).notNull(),
-    description: text('description'),
-    price: numeric('price', { precision: 10, scale: 2 }),
+    description: text('description').notNull(),
+    price: numeric('price', { precision: 10, scale: 2 }).notNull(),
     isHidden: boolean('is_hidden').default(false),
-    marketType: marketTypeEnum('market_type'),
-    topicId: integer('topic_id').references(() => topics.id),
-    countryId: integer('country_id').references(() => countries.id),
-    district: integer('district_id').references(() => cities.id),
+    marketType: marketTypeEnum('market_type').notNull(),
+    topicId: integer('topic_id')
+      .references(() => topics.id)
+      .notNull(),
+    countryId: integer('country_id')
+      .references(() => countries.id)
+      .notNull(),
+    districtId: integer('district_id')
+      .references(() => cities.id)
+      .notNull(),
   },
   (t) => [
     index('seller_id_idx').on(t.sellerId),
@@ -41,7 +51,7 @@ export const products = pgTable(
     index('market_type_idx').on(t.marketType, t.isHidden),
     index('price_idx').on(t.price),
     index('product_country_id_idx').on(t.countryId),
-    index('product_district_id_idx').on(t.district),
+    index('product_district_id_idx').on(t.districtId),
   ],
 );
 
@@ -55,7 +65,7 @@ export const productsRelations = relations(products, ({ one }) => ({
     references: [countries.id],
   }),
   district: one(cities, {
-    fields: [products.district],
+    fields: [products.districtId],
     references: [cities.id],
   }),
 }));
