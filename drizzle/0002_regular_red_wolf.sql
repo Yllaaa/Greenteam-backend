@@ -1,1 +1,0 @@
-ALTER TYPE "public"."event_hosted_by" ADD VALUE 'page';

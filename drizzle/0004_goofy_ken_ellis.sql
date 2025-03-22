@@ -1,1 +1,0 @@
-ALTER TYPE "public"."publication_type" ADD VALUE 'event';
