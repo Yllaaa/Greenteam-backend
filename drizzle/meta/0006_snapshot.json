@@ -1,5 +1,5 @@
 {
-  "id": "7f5ddb8d-d6cd-4fbc-b306-cf0424a57918",
+  "id": "df5927d5-2bac-4853-99ca-8c153b8ca18b",
   "prevId": "64c15186-e542-472f-a22c-9f55afa7b3df",
   "version": "7",
   "dialect": "postgresql",
@@ -1386,6 +1386,24 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "why": {
+          "name": "why",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "how": {
+          "name": "how",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "what": {
+          "name": "what",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {

@@ -27,10 +27,12 @@ export const pages = pgTable(
     cover: varchar().notNull(),
     topic_id: serial().references(() => topics.id),
     category: pageCategory().notNull(),
-    page_info_id: uuid(),
-  },
-  (table) => [uniqueIndex('page_owner').on(table.owner_id)],
-);
+    why: varchar().notNull(),
+    how: varchar().notNull(),
+    what: varchar().notNull()
+  }, (table) => [
+    uniqueIndex('page_owner').on(table.owner_id),
+  ])
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
   owner: one(users, {
@@ -83,10 +85,10 @@ export const pagesFollowers = pgTable(
 export const pagesFollowersRelations = relations(pagesFollowers, ({ one }) => ({
   page: one(pages, {
     fields: [pagesFollowers.page_id],
-    references: [pages.id],
+    references: [pages.id]
   }),
   user: one(users, {
     fields: [pagesFollowers.user_id],
-    references: [users.id],
-  }),
-}));
+    references: [users.id]
+  })
+}))

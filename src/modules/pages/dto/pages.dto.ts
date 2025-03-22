@@ -2,7 +2,7 @@ import { Type } from "class-transformer";
 import { IsIn, IsInt, IsString } from "class-validator";
 import { pageCategory } from "src/modules/db/schemas/schema";
 
-export class PageDto{
+export class PageDto {
     owner_id: string
 
     @IsString()
@@ -27,5 +27,15 @@ export class PageDto{
     @IsIn(pageCategory.enumValues)
     category: string;
 
-    page_info_id: string
+    page_info_id: string;
+
+    @IsString()
+    why: string;
+
+    @IsString()
+    how: string;
+
+    @IsString()
+    what: string;
+
 }

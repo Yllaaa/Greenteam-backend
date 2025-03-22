@@ -1,0 +1,1 @@
+ALTER TABLE "pages" DROP COLUMN "page_info_id";

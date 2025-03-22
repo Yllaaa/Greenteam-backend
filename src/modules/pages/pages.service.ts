@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PagesRepository } from './pages.repository';
 import { PageDto } from './dto/pages.dto';
 import { PageContactDto } from './dto/page-contact.dto';
+import { PageProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class PagesService {
@@ -19,7 +20,11 @@ export class PagesService {
     }
 
     async getPageUserId(pageId: string){
-        return (await this.pagesRepository.getPageUserId(pageId))?.owner_id
+        const page = await this.pagesRepository.getPageUserId(pageId)
+        if (!page) {
+            throw new NotFoundException(`Page with ID ${pageId} not found`)
+        }
+        return page.owner_id;
     }
 
     async addPageContact(contact: PageContactDto, page_id: string){
@@ -29,5 +34,30 @@ export class PagesService {
 
     async addPageFollower(page_id: string, user: any){
         return await this.pagesRepository.addPageFollower(page_id, user.id)
+    }
+
+    async getPagePosts(pageId: string, limit?: number, offset?: number) {
+        const page = await this.pagesRepository.getPageById(pageId);
+        if (!page) {
+            throw new NotFoundException(`Page with ID ${pageId} not found`);
+        }
+        
+        return await this.pagesRepository.getPagePosts(pageId, limit, offset);
+    }
+    
+    async getPageById(pageId: string) {
+        const page = await this.pagesRepository.getPageById(pageId);
+        if (!page) {
+            throw new NotFoundException(`Page with ID ${pageId} not found`);
+        }
+        return page;
+    }
+
+    async getPageEvents(pageId: string, limit?: number, offset?: number) {
+        const page = await this.pagesRepository.getPageById(pageId);
+        if (!page) {
+            throw new NotFoundException(`Page with ID ${pageId} not found`);
+        }
+        return this.pagesRepository.getPageEvents(pageId, limit, offset);
     }
 }
