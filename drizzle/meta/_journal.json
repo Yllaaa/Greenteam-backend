@@ -169,6 +169,27 @@
       "when": 1742526570498,
       "tag": "0023_ancient_rawhide_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1742595665342,
+      "tag": "0024_colorful_rocket_raccoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1742596405467,
+      "tag": "0025_absurd_power_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1742596544565,
+      "tag": "0026_workable_living_lightning",
+      "breakpoints": true
     }
   ]
 }

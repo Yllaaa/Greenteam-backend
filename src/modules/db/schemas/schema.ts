@@ -5,6 +5,7 @@ export * from './posts/comments-likes';
 export * from './posts/enums';
 export * from './forums/forums';
 export * from './common/media';
+export * from './common/country';
 export * from './events/events';
 export * from './groups/groups';
 export * from './pages/pages';
