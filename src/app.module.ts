@@ -21,6 +21,7 @@ import { join } from 'path/posix';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 @Global()
 @Module({
   imports: [
@@ -54,9 +55,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     PointingSystemModule,
     SubscriptionsModule,
     PaymentsModule,
+    MarketplaceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
-  exports: [DrizzleModule, PointingSystemModule, BullMQModule],
+  exports: [DrizzleModule, PointingSystemModule, BullMQModule, CommonModule],
 })
 export class AppModule {}
