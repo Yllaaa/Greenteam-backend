@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
+import { desc, eq } from 'drizzle-orm';
+import { cities } from '../db/schemas/schema';
 @Injectable()
 export class CommonRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
@@ -62,22 +64,48 @@ export class CommonRepository {
     });
   }
 
-  private buildTree(topics: any[]): any[] {
-    const topicMap = new Map();
-
-    topics.forEach((topic) => {
-      topicMap.set(topic.id, { ...topic, subtopics: [] });
+  async getAllCountries(locale?: string) {
+    return await this.drizzleService.db.query.countries.findMany({
+      columns: {
+        id: true,
+        nameEn: true,
+        nameES: true,
+        iso: true,
+      },
+      orderBy: (countries, { asc }) => [
+        asc(countries[locale === 'en' ? 'nameEn' : 'nameES']),
+      ],
     });
+  }
 
-    const tree: any[] = [];
-    topics.forEach((topic) => {
-      if (topic.parentId) {
-        topicMap.get(topic.parentId).subtopics.push(topicMap.get(topic.id));
-      } else {
-        tree.push(topicMap.get(topic.id));
-      }
-    });
+  async insertCity(cityData: {
+    countryId: number;
+    nameEn: string;
+    nameES: string;
+  }) {
+    const existingCity = await this.drizzleService.db
+      .select()
+      .from(cities)
+      .where(
+        eq(cities.countryId, cityData.countryId) &&
+          eq(cities.nameEn, cityData.nameEn),
+      )
+      .limit(1);
 
-    return tree;
+    if (existingCity.length > 0) {
+      return existingCity[0];
+    }
+
+    // Insert new city
+    const [newCity] = await this.drizzleService.db
+      .insert(cities)
+      .values({
+        countryId: cityData.countryId,
+        nameEn: cityData.nameEn,
+        nameES: cityData.nameES,
+      })
+      .returning();
+
+    return newCity;
   }
 }

@@ -9,4 +9,15 @@ export class CommonService {
     }
     return await this.commonRepository.getTopics(query);
   }
+
+  async getAllCountries(locale: string) {
+    const countries = await this.commonRepository.getAllCountries(locale);
+    return countries.map((country) => {
+      return {
+        id: country.id,
+        name: locale === 'es' ? country.nameES : country.nameEn,
+        iso: country.iso,
+      };
+    });
+  }
 }
