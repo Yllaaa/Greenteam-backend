@@ -73,16 +73,21 @@ export class ReactionsRepository {
     userId: string,
     reactionableType: ReactionableTypeEnum,
     reactionableId: string,
+    reactionId?: string,
   ) {
+    const conditions = [
+      eq(publicationsReactions.userId, userId),
+      eq(publicationsReactions.reactionableType, reactionableType),
+      eq(publicationsReactions.reactionableId, reactionableId),
+    ];
+
+    if (reactionId) {
+      conditions.push(eq(publicationsReactions.id, reactionId));
+    }
+
     return this.drizzleService.db
       .delete(publicationsReactions)
-      .where(
-        and(
-          eq(publicationsReactions.userId, userId),
-          eq(publicationsReactions.reactionableType, reactionableType),
-          eq(publicationsReactions.reactionableId, reactionableId),
-        ),
-      );
+      .where(and(...conditions));
   }
 
   async updateReaction(userId: string, dto: CreateReactionDto) {

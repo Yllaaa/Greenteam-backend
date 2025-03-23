@@ -202,14 +202,14 @@ export class PostsRepository {
       .select({
         reactionableId: publicationsReactions.reactionableId,
         userReactionType: sql<string | null>`
-          CASE 
+          MAX(CASE 
             WHEN ${publicationsReactions.reactionType} IN ('like', 'dislike') 
             THEN ${publicationsReactions.reactionType}
             ELSE NULL
-          END
+          END)
         `.as('user_reaction_type'),
         hasDoReaction: sql<boolean>`
-          ${publicationsReactions.reactionType} = 'do'
+          BOOL_OR(${publicationsReactions.reactionType} = 'do')
         `.as('has_do_reaction'),
       })
       .from(publicationsReactions)
@@ -218,6 +218,7 @@ export class PostsRepository {
           ? eq(publicationsReactions.userId, currentUserId)
           : sql`1=1`,
       )
+      .groupBy(publicationsReactions.reactionableId)
       .as('user_reaction');
 
     const queryBuilder = this.drizzleService.db

@@ -59,7 +59,9 @@ export class ReactionsService {
           userId,
           dto.reactionableType,
           dto.reactionableId,
+          existingDoReaction.id,
         ),
+        console.log(existingDoReaction),
         this.challengesService.deleteDoPostChallenge(
           userId,
           dto.reactionableId,
@@ -106,6 +108,7 @@ export class ReactionsService {
           userId,
           dto.reactionableType,
           dto.reactionableId,
+          existingReaction.id,
         );
         if (dto.reactionableType === ReactionableTypeEnum.POST && topicId) {
           const action: Action = {
