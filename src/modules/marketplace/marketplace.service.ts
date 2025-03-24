@@ -19,9 +19,9 @@ export class MarketplaceService {
     marketType: MarketType;
     topicId: number;
     countryId: number;
-    districtId: number;
+    cityId: number;
   }) {
-    if (!['user', 'page'].includes(data.sellerType)) {
+    if (data.sellerType !== 'user') {
       throw new BadRequestException('Invalid seller type');
     }
 
@@ -59,7 +59,7 @@ export class MarketplaceService {
       }
     }
 
-    if (data.districtId) {
+    if (data.cityId) {
       if (!data.countryId) {
         throw new BadRequestException(
           'Country ID is required when district is specified',
@@ -67,7 +67,7 @@ export class MarketplaceService {
       }
 
       const districtExists = await this.commonRepository.cityExistsInCountry(
-        data.districtId,
+        data.cityId,
         data.countryId,
       );
       if (!districtExists) {

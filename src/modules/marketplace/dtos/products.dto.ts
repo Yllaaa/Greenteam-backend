@@ -23,5 +23,5 @@ export class CreateProductDto {
   countryId: number;
 
   @IsNumber()
-  districtId: number;
+  cityId: number;
 }

@@ -17,7 +17,7 @@ export class MarketplaceRepository {
     marketType: MarketType;
     topicId: number;
     countryId: number;
-    districtId: number;
+    cityId: number;
   }) {
     let priceValue: any = null;
     if (data.price !== null && data.price !== undefined) {
@@ -32,7 +32,7 @@ export class MarketplaceRepository {
         name: data.name,
         description: data.description,
         price: priceValue,
-        districtId: data.districtId,
+        cityId: data.cityId,
         countryId: data.countryId,
         topicId: data.topicId,
         marketType: data.marketType,
@@ -55,7 +55,7 @@ export class MarketplaceRepository {
       filters.push(eq(products.countryId, countryId));
     }
     if (districtId) {
-      filters.push(eq(products.districtId, districtId));
+      filters.push(eq(products.cityId, districtId));
     }
     const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
     const result = await this.drizzleService.db.query.products.findMany({
@@ -68,7 +68,7 @@ export class MarketplaceRepository {
         sellerId: true,
         sellerType: true,
         countryId: true,
-        districtId: true,
+        cityId: true,
       },
       with: {
         topic: {
@@ -97,7 +97,7 @@ export class MarketplaceRepository {
         sellerId: true,
         sellerType: true,
         countryId: true,
-        districtId: true,
+        cityId: true,
       },
       with: {
         topic: {

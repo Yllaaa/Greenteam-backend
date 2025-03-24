@@ -19,7 +19,7 @@ import { GetAllProductsDto } from './dtos/getAllProducts.dto';
 export class MarketplaceController {
   constructor(private readonly marketplaceService: MarketplaceService) {}
 
-  @Post('user-create-product')
+  @Post('create-product')
   async createProductFromUser(
     @Body() createProductDto: CreateProductDto,
     @Req() request: any,
