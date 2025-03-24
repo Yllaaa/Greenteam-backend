@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MarketplaceRepository } from './marketplace.repository';
 import { CommonRepository } from '../common/common.repository';
 import { MarketType, SellerType } from '../db/schemas/schema';
+import { GetAllProductsDto } from './dtos/getAllProducts.dto';
 @Injectable()
 export class MarketplaceService {
   constructor(
@@ -77,5 +78,32 @@ export class MarketplaceService {
     }
     await this.marketplaceRepository.insertProduct(data);
     return { message: 'Product created successfully' };
+  }
+
+  async getAllProducts(query: GetAllProductsDto) {
+    return this.marketplaceRepository.getAllProducts(query);
+  }
+
+  async getProductById(productId: string) {
+    const product = await this.marketplaceRepository.getProductById(productId);
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    }
+    return {
+      ...product,
+      seller: {
+        id: product.sellerId,
+        name:
+          product.sellerType === 'user'
+            ? product?.userSeller?.fullName
+            : product?.pageSeller?.name,
+        avatar:
+          product.sellerType === 'user'
+            ? product?.userSeller?.avatar
+            : product?.pageSeller?.avatar,
+      },
+      userSeller: undefined,
+      pageSeller: undefined,
+    };
   }
 }

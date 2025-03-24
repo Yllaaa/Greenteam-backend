@@ -11,7 +11,7 @@ import {
   pgEnum,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { cities, countries, topics } from '../schema';
+import { cities, countries, pages, topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
 
 export const sellerTypeEnum = pgEnum('seller_type', ['user', 'page']);
@@ -67,5 +67,13 @@ export const productsRelations = relations(products, ({ one }) => ({
   district: one(cities, {
     fields: [products.districtId],
     references: [cities.id],
+  }),
+  userSeller: one(users, {
+    fields: [products.sellerId],
+    references: [users.id],
+  }),
+  pageSeller: one(pages, {
+    fields: [products.sellerId],
+    references: [pages.id],
   }),
 }));
