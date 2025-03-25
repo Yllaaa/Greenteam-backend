@@ -40,7 +40,7 @@ export class PagesController {
         res.status(HttpStatus.CREATED).send()
     }
 
-    @Get(':id/follow')
+    @Post(':id/follow')
     async addPageFollower(@Param() pageId: IdParamDto, @Req() req){
         return await this.pagesService.addPageFollower(pageId.id, req.user)
     }

@@ -16,5 +16,4 @@ export class PageContactDto{
     @IsPhoneNumber()
     phone_num: string
 
-    personal_picture: string
 }

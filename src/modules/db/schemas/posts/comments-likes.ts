@@ -88,7 +88,7 @@ export const publicationsReactions = pgTable(
       .references(() => users.id),
     reactionableType: reactionableTypeEnum('reactionable_type').notNull(),
     reactionableId: uuid('reactionable_id').notNull(),
-    reactionType: reactionTypeEnum().notNull(),
+    reactionType: reactionTypeEnum('reaction_type').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [

@@ -37,10 +37,7 @@ export class ProductDto {
         title: string;
         email: string;
         phone_num: string;
-        personal_picture: string;
       }>;
       followersCount: number;
     };
-    posts: Array<any>;
-    events: Array<any>;
   }

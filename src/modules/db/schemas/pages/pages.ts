@@ -57,7 +57,6 @@ export const pagesContacts = pgTable(
     title: varchar().notNull(),
     email: varchar().notNull(),
     phone_num: varchar().notNull(),
-    personal_picture: varchar(),
   },
   (table) => [primaryKey({ columns: [table.page_id, table.email] })],
 );
