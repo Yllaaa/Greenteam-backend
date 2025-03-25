@@ -12,7 +12,7 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dtos/create-product.dto';
 @UseGuards(JwtAuthGuard)
-@Controller('products')
+@Controller('')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 

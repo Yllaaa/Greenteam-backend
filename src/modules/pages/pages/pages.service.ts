@@ -1,16 +1,31 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PagesRepository } from './pages.repository';
-import { PageDto } from './dto/pages.dto';
-import { PageContactDto } from './dto/page-contact.dto';
+import { CreatePageDto } from './dto/create-pages.dto';
+import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { PageProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class PagesService {
   constructor(private readonly pagesRepository: PagesRepository) {}
 
-  async createPage(page: PageDto, user: any) {
-    page.owner_id = user.id;
-    return await this.pagesRepository.createPage(page);
+  async createPage(page: CreatePageDto, user: any) {
+    const ownerId = user.id;
+    if (page.slug.length > 50) {
+      throw new BadRequestException('Slug is too long');
+    }
+    if (await this.pagesRepository.checkSlugTaken(page.slug)) {
+      throw new NotFoundException(`Slug ${page.slug} is already taken`);
+    }
+
+    return await this.pagesRepository.createPage(page, ownerId);
+  }
+
+  async checkSlugTaken(slug: string) {
+    return await this.pagesRepository.checkSlugTaken(slug);
   }
 
   async getPage(user: any) {
@@ -25,9 +40,21 @@ export class PagesService {
     return page.ownerId;
   }
 
-  async addPageContact(contact: PageContactDto, page_id: string) {
-    contact.page_id = page_id;
-    return await this.pagesRepository.addPageContact(contact);
+  async addPageContact(
+    contact: CreatePageContactDto,
+    pageSlug: string,
+    userId: string,
+  ) {
+    const page = await this.pagesRepository.getPageBySlug(pageSlug);
+    if (!page) {
+      throw new NotFoundException(`Page with slug ${pageSlug} not found`);
+    }
+
+    if (page.ownerId !== userId) {
+      throw new BadRequestException('You are not the owner of this page');
+    }
+
+    return await this.pagesRepository.addPageContact(contact, page.id);
   }
 
   async addPageFollower(page_id: string, user: any) {

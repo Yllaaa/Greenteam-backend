@@ -4,18 +4,58 @@ import { DrizzleService } from '../../db/drizzle.service';
 import { eq, and, count } from 'drizzle-orm';
 import {
   events,
+  PageCategoryType,
   pages,
   pagesContacts,
   pagesFollowers,
   posts,
 } from 'src/modules/db/schemas/schema';
+import { CreatePageContactDto } from './dto/create-page-contact.dto';
 
 @Injectable()
 export class PagesRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
-  async createPage(page: any) {
-    return await this.drizzleService.db.insert(pages).values(page).returning();
+  async createPage(
+    page: {
+      topicId: number;
+      countryId: number;
+      cityId: number;
+      category: PageCategoryType;
+      name: string;
+      description: string;
+      slug: string;
+      why: string;
+      how: string;
+      what: string;
+      websiteUrl?: string;
+    },
+    ownerId: string,
+  ) {
+    return await this.drizzleService.db
+      .insert(pages)
+      .values({
+        name: page.name,
+        description: page.description,
+        slug: page.slug,
+        topicId: page.topicId,
+        countryId: page.countryId,
+        cityId: page.cityId,
+        category: page.category,
+        why: page.why,
+        how: page.how,
+        what: page.what,
+        ownerId,
+        websiteUrl: page.websiteUrl ?? null,
+      })
+      .returning();
+  }
+
+  async checkSlugTaken(slug: string) {
+    const page = await this.drizzleService.db.query.pages.findFirst({
+      where: eq(pages.slug, slug),
+    });
+    return !!page;
   }
 
   async getPage(userId: string) {
@@ -70,10 +110,16 @@ export class PagesRepository {
     });
   }
 
-  async addPageContact(contact: any) {
+  async addPageContact(contact: CreatePageContactDto, pageId: string) {
     return await this.drizzleService.db
       .insert(pagesContacts)
-      .values(contact)
+      .values({
+        pageId: pageId,
+        name: contact.name,
+        title: contact.title,
+        email: contact.email,
+        phoneNum: contact.phoneNum,
+      })
       .returning();
   }
 
@@ -156,6 +202,17 @@ export class PagesRepository {
       ...page,
       followersCount: followersCount[0]?.count || 0,
     };
+  }
+
+  async getPageBySlug(slug: string) {
+    return await this.drizzleService.db.query.pages.findFirst({
+      where: eq(pages.slug, slug),
+      columns: {
+        id: true,
+        slug: true,
+        ownerId: true,
+      },
+    });
   }
 
   async getPageEvents(pageId: string, limit: number = 10, offset: number = 0) {
