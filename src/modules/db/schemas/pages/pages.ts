@@ -9,11 +9,13 @@ import {
   serial,
   integer,
   timestamp,
+  index,
 } from 'drizzle-orm/pg-core';
 import { events, posts, topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
 import { countries, cities } from '../schema';
 export const pageCategory = pgEnum('PageCategory', ['Business', 'Project']);
+export type PageCategoryType = (typeof pageCategory.enumValues)[number];
 
 export const pages = pgTable(
   'pages',
@@ -25,8 +27,9 @@ export const pages = pgTable(
     name: varchar('name').notNull(),
     description: text('description').notNull(),
     slug: varchar('slug').notNull(),
-    avatar: varchar('avatar').notNull(),
-    cover: varchar('cover').notNull(),
+    websiteUrl: varchar('website_url'),
+    avatar: varchar('avatar'),
+    cover: varchar('cover'),
     topicId: serial('topic_id').references(() => topics.id),
     category: pageCategory('category').notNull(),
     why: varchar('why').notNull(),
@@ -40,7 +43,11 @@ export const pages = pgTable(
       .notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
-  (table) => [uniqueIndex('page_owner').on(table.ownerId)],
+  (table) => [
+    uniqueIndex('page_slug_idx').on(table.slug),
+    index('page_owner_id_idx').on(table.ownerId),
+    index('page_country_idx').on(table.countryId),
+  ],
 );
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
@@ -69,21 +76,20 @@ export const pagesRelations = relations(pages, ({ one, many }) => ({
 export const pagesContacts = pgTable(
   'pages_contacts',
   {
-    page_id: uuid()
+    pageId: uuid('page_id')
       .notNull()
       .references(() => pages.id),
-    name: varchar().notNull(),
-    title: varchar().notNull(),
-    email: varchar().notNull(),
-    phone_num: varchar().notNull(),
-    personal_picture: varchar(),
+    name: varchar('name', { length: 256 }).notNull(),
+    title: varchar('title', { length: 256 }).notNull(),
+    email: varchar('email', { length: 256 }).notNull(),
+    phoneNum: varchar('phone_num', { length: 20 }).notNull(),
   },
-  (table) => [primaryKey({ columns: [table.page_id, table.email] })],
+  (table) => [primaryKey({ columns: [table.pageId, table.email] })],
 );
 
 export const pagesContactsRelations = relations(pagesContacts, ({ one }) => ({
   page: one(pages, {
-    fields: [pagesContacts.page_id],
+    fields: [pagesContacts.pageId],
     references: [pages.id],
   }),
 }));

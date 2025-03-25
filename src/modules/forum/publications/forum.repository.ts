@@ -95,31 +95,30 @@ export class ForumRepository {
           username: users.username,
         },
         commentCount: sql<number>`COALESCE(${commentCountSubquery.count}, 0)`,
-        ...(filter?.section ==
-        ('need' as unknown as SQL<'need' | 'doubt' | 'dream'>)
+        ...(sql`${forumPublications.section} = 'need'`
           ? {
               signCount: sql<number>`
-            COUNT(CASE 
-              WHEN ${publicationsReactions.reactionType} = 'sign' 
-              THEN 1 
-            END)`.as('sign_count'),
+                COUNT(CASE 
+                  WHEN ${publicationsReactions.reactionType} = 'sign' 
+                  THEN 1 
+                END)`.as('sign_count'),
               dislikeCount: sql<number>`
-            COUNT(CASE 
-              WHEN ${publicationsReactions.reactionType} = 'dislike' 
-              THEN 1 
-            END)`.as('dislike_count'),
+                COUNT(CASE 
+                  WHEN ${publicationsReactions.reactionType} = 'dislike' 
+                  THEN 1 
+                END)`.as('dislike_count'),
             }
           : {
               likeCount: sql<number>`
-            COUNT(CASE 
-              WHEN ${publicationsReactions.reactionType} = 'like' 
-              THEN 1 
-            END)`.as('like_count'),
+                COUNT(CASE 
+                  WHEN ${publicationsReactions.reactionType} = 'like' 
+                  THEN 1 
+                END)`.as('like_count'),
               dislikeCount: sql<number>`
-            COUNT(CASE 
-              WHEN ${publicationsReactions.reactionType} = 'dislike' 
-              THEN 1 
-            END)`.as('dislike_count'),
+                COUNT(CASE 
+                  WHEN ${publicationsReactions.reactionType} = 'dislike' 
+                  THEN 1 
+                END)`.as('dislike_count'),
             }),
         // User reaction status
         userReaction: sql<string | null>`
@@ -140,8 +139,7 @@ export class ForumRepository {
         and(
           eq(forumPublications.id, publicationsReactions.reactionableId),
           eq(publicationsReactions.reactionableType, 'forum_publication'),
-          filter?.section ==
-            ('need' as unknown as SQL<'need' | 'doubt' | 'dream'>)
+          sql`${forumPublications.section} = 'need'`
             ? or(
                 eq(publicationsReactions.reactionType, 'dislike'),
                 eq(publicationsReactions.reactionType, 'sign'),
@@ -164,22 +162,38 @@ export class ForumRepository {
       .limit(limit)
       .offset(offset);
 
-    const results = await baseQuery;
+    const rawResults = (await baseQuery) as unknown as BaseQueryResult[];
 
-    return results.map((row) => ({
-      ...row,
-      commentCount: Number(row.commentCount),
-      ...(filter?.section ===
-      ('need' as unknown as SQL<'need' | 'doubt' | 'dream'>)
-        ? {
-            signCount: 'signCount' in row ? Number(row.signCount || 0) : 0,
-            dislikeCount: Number(row.dislikeCount || 0),
-          }
-        : {
-            likeCount: 'likeCount' in row ? Number(row.likeCount || 0) : 0,
-            dislikeCount: Number(row.dislikeCount || 0),
-          }),
-      userReaction: row.userReaction || null,
-    }));
+    const processedResults: Publication[] = rawResults.map(
+      (row): Publication => {
+        const baseResult: BasePublication = {
+          id: row.id,
+          headline: row.headline,
+          content: row.content,
+          mediaUrl: row.mediaUrl,
+          createdAt: row.createdAt,
+          author: row.author,
+          commentCount: Number(row.commentCount || 0),
+          userReaction: row.userReaction,
+          dislikeCount: Number(row.dislikeCount || 0),
+        };
+
+        if (row.section === 'need') {
+          return {
+            ...baseResult,
+            section: 'need',
+            signCount: Number(row.signCount || 0),
+          };
+        }
+
+        return {
+          ...baseResult,
+          section: row.section as 'doubt' | 'dream',
+          likeCount: Number(row.likeCount || 0),
+        };
+      },
+    );
+
+    return processedResults;
   }
 }

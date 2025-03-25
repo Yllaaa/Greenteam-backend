@@ -28,10 +28,10 @@ export const postSubTopics = pgTable('post_sub_topics', {
   id: uuid('id').primaryKey().defaultRandom(),
   postId: uuid('post_id')
     .notNull()
-    .references(() => posts.id),
+    .references(() => posts.id, { onDelete: 'cascade' }),
   topicId: serial('topic_id')
     .notNull()
-    .references(() => topics.id),
+    .references(() => topics.id, { onDelete: 'cascade' }),
 });
 
 export const topicsRelations = relations(topics, ({ many, one }) => ({

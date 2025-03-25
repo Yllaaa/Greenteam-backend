@@ -107,10 +107,10 @@ export const usersDoPosts = pgTable('users_do_posts', {
   id: uuid('id').primaryKey().defaultRandom(),
   postId: uuid('post_id')
     .notNull()
-    .references(() => posts.id),
+    .references(() => posts.id, { onDelete: 'cascade' }),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   status: userChallengeStatus().default('pending'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
