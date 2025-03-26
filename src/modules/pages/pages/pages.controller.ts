@@ -33,15 +33,11 @@ export class PagesController {
     return await this.pagesService.checkSlugTaken(slug);
   }
 
-  @Get()
-  async getPage(@Req() req) {
-    return await this.pagesService.getPage(req.user);
+  @Get(':slug')
+  async getPageById(@Param('slug') slug: string, @Req() req) {
+    const userId = req.user.id;
+    return await this.pagesService.getPageDetails(slug, userId);
   }
-
-  //   @Get(':id')
-  //   async getPageById(@Param() pageId: IdParamDto) {
-  //     return await this.pagesService.getPageById(pageId.id);
-  //   }
 
   @Post(':slug/add-contact')
   async addPageContact(
