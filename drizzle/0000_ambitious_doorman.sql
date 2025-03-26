@@ -20,7 +20,7 @@
 -- CREATE TYPE "public"."payment_status" AS ENUM('pending', 'succeeded', 'failed', 'refunded');--> statement-breakpoint
 -- CREATE TYPE "public"."market_type" AS ENUM('local_business', 'value_driven_business', 'second_hand');--> statement-breakpoint
 -- CREATE TYPE "public"."seller_type" AS ENUM('user', 'page');--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "Users_accounts" (
+CREATE TABLE IF NOT EXISTS  "Users_accounts"   ( 
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"password" varchar(255) NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS "Users_accounts" (
 	CONSTRAINT "Users_accounts_username_unique" UNIQUE("username")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"friend_requests" (
+CREATE TABLE IF NOT EXISTS "friend_requests" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"sender_id" uuid NOT NULL,
 	"receiver_id" uuid NOT NULL,
@@ -50,14 +50,14 @@ CREATE TABLE IF NOT EXISTS"friend_requests" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"friends" (
+CREATE TABLE IF NOT EXISTS "friends" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"friend_id" uuid NOT NULL,
 	"since" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"posts" (
+CREATE TABLE IF NOT EXISTS "posts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"content" text,
 	"main_topic_id" serial NOT NULL,
@@ -68,13 +68,13 @@ CREATE TABLE IF NOT EXISTS"posts" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"post_sub_topics" (
+CREATE TABLE IF NOT EXISTS "post_sub_topics" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"post_id" uuid NOT NULL,
 	"topic_id" serial NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"topics" (
+CREATE TABLE IF NOT EXISTS "topics" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"parent_id" serial NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS"topics" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"comments_replies" (
+CREATE TABLE IF NOT EXISTS "comments_replies" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"comment_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS"comments_replies" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"publications_comments" (
+CREATE TABLE IF NOT EXISTS "publications_comments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"publication_id" uuid NOT NULL,
 	"publication_type" "publication_type" NOT NULL,
@@ -103,16 +103,16 @@ CREATE TABLE IF NOT EXISTS"publications_comments" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"publications_reactions" (
+CREATE TABLE IF NOT EXISTS "publications_reactions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"reactionable_type" "reactionable_type" NOT NULL,
 	"reactionable_id" uuid NOT NULL,
-	"reactionType" "reaction_type" NOT NULL,
+	"reaction_type" "reaction_type" NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"forum_publications" (
+CREATE TABLE IF NOT EXISTS "forum_publications" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"headline" varchar(255) NOT NULL,
 	"content" text NOT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS"forum_publications" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"media" (
+CREATE TABLE IF NOT EXISTS "media" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"parent_id" uuid,
 	"parent_type" "media_parent_type" NOT NULL,
@@ -133,20 +133,20 @@ CREATE TABLE IF NOT EXISTS"media" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"cities" (
+CREATE TABLE IF NOT EXISTS "cities" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"country_id" integer,
 	"name_en" varchar(100) NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"countries" (
+CREATE TABLE IF NOT EXISTS "countries" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name_en" varchar(100) NOT NULL,
 	"name_es" varchar(100) NOT NULL,
 	"iso" varchar(2) NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"events" (
+CREATE TABLE IF NOT EXISTS "events" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"creator_id" uuid,
 	"creator_type" "creator_type",
@@ -163,13 +163,13 @@ CREATE TABLE IF NOT EXISTS"events" (
 	"createdAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"users_joined_event" (
+CREATE TABLE IF NOT EXISTS "users_joined_event" (
 	"user_id" uuid NOT NULL,
 	"event_id" uuid NOT NULL,
 	CONSTRAINT "users_joined_event_event_id_user_id_pk" PRIMARY KEY("event_id","user_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"groups" (
+CREATE TABLE IF NOT EXISTS "groups" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" uuid NOT NULL,
 	"name" varchar(255) NOT NULL,
@@ -181,38 +181,41 @@ CREATE TABLE IF NOT EXISTS"groups" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"pages" (
+CREATE TABLE IF NOT EXISTS "pages" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" uuid NOT NULL,
 	"name" varchar NOT NULL,
 	"description" text NOT NULL,
 	"slug" varchar NOT NULL,
-	"avatar" varchar NOT NULL,
-	"cover" varchar NOT NULL,
+	"website_url" varchar,
+	"avatar" varchar,
+	"cover" varchar,
 	"topic_id" serial NOT NULL,
 	"category" "PageCategory" NOT NULL,
 	"why" varchar NOT NULL,
 	"how" varchar NOT NULL,
-	"what" varchar NOT NULL
+	"what" varchar NOT NULL,
+	"country_id" integer NOT NULL,
+	"city_id" integer NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"pages_contacts" (
+CREATE TABLE IF NOT EXISTS "pages_contacts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"page_id" uuid NOT NULL,
-	"name" varchar NOT NULL,
-	"title" varchar NOT NULL,
-	"email" varchar NOT NULL,
-	"phone_num" varchar NOT NULL,
-	"personal_picture" varchar,
-	CONSTRAINT "pages_contacts_page_id_email_pk" PRIMARY KEY("page_id","email")
+	"name" varchar(256) NOT NULL,
+	"title" varchar(256) NOT NULL,
+	"email" varchar(256) NOT NULL,
+	"phone_num" varchar(20) NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"pages_followers" (
+CREATE TABLE IF NOT EXISTS "pages_followers" (
 	"page_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
 	CONSTRAINT "pages_followers_page_id_user_id_pk" PRIMARY KEY("page_id","user_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"green_challenges" (
+CREATE TABLE IF NOT EXISTS "green_challenges" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" varchar(256) NOT NULL,
 	"description" text NOT NULL,
@@ -222,7 +225,7 @@ CREATE TABLE IF NOT EXISTS"green_challenges" (
 	"updated_at" timestamp DEFAULT LOCALTIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"users_do_posts" (
+CREATE TABLE IF NOT EXISTS "users_do_posts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"post_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -231,7 +234,7 @@ CREATE TABLE IF NOT EXISTS"users_do_posts" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"users_green_challenges" (
+CREATE TABLE IF NOT EXISTS "users_green_challenges" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"challenge_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -241,14 +244,14 @@ CREATE TABLE IF NOT EXISTS"users_green_challenges" (
 	CONSTRAINT "unique_user_challenge" UNIQUE("user_id","challenge_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"group_members" (
+CREATE TABLE IF NOT EXISTS "group_members" (
 	"user_id" uuid NOT NULL,
 	"group_id" uuid NOT NULL,
 	"joined_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "group_members_user_id_group_id_pk" PRIMARY KEY("user_id","group_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"conversations" (
+CREATE TABLE IF NOT EXISTS "conversations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"participant_a_id" uuid NOT NULL,
 	"participant_a_type" "message_sender_type" NOT NULL,
@@ -257,7 +260,7 @@ CREATE TABLE IF NOT EXISTS"conversations" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"chat_messages" (
+CREATE TABLE IF NOT EXISTS "chat_messages" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"conversation_id" uuid NOT NULL,
 	"sender_id" uuid NOT NULL,
@@ -268,7 +271,7 @@ CREATE TABLE IF NOT EXISTS"chat_messages" (
 	"seen_at" timestamp
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"admins" (
+CREATE TABLE IF NOT EXISTS "admins" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"password" varchar(255) NOT NULL,
@@ -277,7 +280,7 @@ CREATE TABLE IF NOT EXISTS"admins" (
 	CONSTRAINT "admins_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"points_history" (
+CREATE TABLE IF NOT EXISTS "points_history" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"topic_id" integer,
 	"user_id" uuid,
@@ -288,7 +291,7 @@ CREATE TABLE IF NOT EXISTS"points_history" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"user_points" (
+CREATE TABLE IF NOT EXISTS "user_points" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"topic_id" integer,
 	"user_id" uuid,
@@ -298,17 +301,17 @@ CREATE TABLE IF NOT EXISTS"user_points" (
 	CONSTRAINT "user_points_user_topic_unique" UNIQUE("user_id","topic_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"subscription_benefits" (
+CREATE TABLE IF NOT EXISTS "subscription_benefits" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"benefit" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"subscription_tier_benefits" (
+CREATE TABLE IF NOT EXISTS "subscription_tier_benefits" (
 	"tier_id" integer NOT NULL,
 	"benefit_id" uuid NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"subscription_tiers" (
+CREATE TABLE IF NOT EXISTS "subscription_tiers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"price" integer NOT NULL,
@@ -316,7 +319,7 @@ CREATE TABLE IF NOT EXISTS"subscription_tiers" (
 	"stripe_price_id" text
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"users_subscriptions" (
+CREATE TABLE IF NOT EXISTS "users_subscriptions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"tier_id" integer NOT NULL,
@@ -327,7 +330,7 @@ CREATE TABLE IF NOT EXISTS"users_subscriptions" (
 	"stripe_subscription_id" text
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"stripe_event_logs" (
+CREATE TABLE IF NOT EXISTS "stripe_event_logs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"event_id" text NOT NULL,
 	"event_type" text NOT NULL,
@@ -340,7 +343,7 @@ CREATE TABLE IF NOT EXISTS"stripe_event_logs" (
 	"processed_at" timestamp
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"subscriptions_invoice" (
+CREATE TABLE IF NOT EXISTS "subscriptions_invoice" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"payment_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -351,7 +354,7 @@ CREATE TABLE IF NOT EXISTS"subscriptions_invoice" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"subscriptions_payments" (
+CREATE TABLE IF NOT EXISTS "subscriptions_payments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"subscriptionId" uuid NOT NULL,
 	"stripe_payment_id" text NOT NULL,
@@ -361,7 +364,7 @@ CREATE TABLE IF NOT EXISTS"subscriptions_payments" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"product" (
+CREATE TABLE IF NOT EXISTS "product" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"seller_id" uuid NOT NULL,
 	"seller_type" "seller_type" NOT NULL,
@@ -381,8 +384,8 @@ CREATE TABLE IF NOT EXISTS"product" (
 -- ALTER TABLE "friends" ADD CONSTRAINT "friends_friend_id_Users_accounts_id_fk" FOREIGN KEY ("friend_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "posts" ADD CONSTRAINT "posts_main_topic_id_topics_id_fk" FOREIGN KEY ("main_topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "posts" ADD CONSTRAINT "posts_group_id_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."groups"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- ALTER TABLE "post_sub_topics" ADD CONSTRAINT "post_sub_topics_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- ALTER TABLE "post_sub_topics" ADD CONSTRAINT "post_sub_topics_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "post_sub_topics" ADD CONSTRAINT "post_sub_topics_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "post_sub_topics" ADD CONSTRAINT "post_sub_topics_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "topics" ADD CONSTRAINT "topics_parent_id_topics_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "comments_replies" ADD CONSTRAINT "comments_replies_comment_id_publications_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "public"."publications_comments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "comments_replies" ADD CONSTRAINT "comments_replies_user_id_Users_accounts_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -398,12 +401,14 @@ CREATE TABLE IF NOT EXISTS"product" (
 -- ALTER TABLE "groups" ADD CONSTRAINT "groups_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "pages" ADD CONSTRAINT "pages_owner_id_Users_accounts_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "pages" ADD CONSTRAINT "pages_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "pages" ADD CONSTRAINT "pages_country_id_countries_id_fk" FOREIGN KEY ("country_id") REFERENCES "public"."countries"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "pages" ADD CONSTRAINT "pages_city_id_cities_id_fk" FOREIGN KEY ("city_id") REFERENCES "public"."cities"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "pages_contacts" ADD CONSTRAINT "pages_contacts_page_id_pages_id_fk" FOREIGN KEY ("page_id") REFERENCES "public"."pages"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "pages_followers" ADD CONSTRAINT "pages_followers_page_id_pages_id_fk" FOREIGN KEY ("page_id") REFERENCES "public"."pages"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "pages_followers" ADD CONSTRAINT "pages_followers_user_id_Users_accounts_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "green_challenges" ADD CONSTRAINT "green_challenges_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- ALTER TABLE "users_do_posts" ADD CONSTRAINT "users_do_posts_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- ALTER TABLE "users_do_posts" ADD CONSTRAINT "users_do_posts_user_id_Users_accounts_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "users_do_posts" ADD CONSTRAINT "users_do_posts_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "users_do_posts" ADD CONSTRAINT "users_do_posts_user_id_Users_accounts_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."Users_accounts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "users_green_challenges" ADD CONSTRAINT "users_green_challenges_challenge_id_green_challenges_id_fk" FOREIGN KEY ("challenge_id") REFERENCES "public"."green_challenges"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "users_green_challenges" ADD CONSTRAINT "users_green_challenges_user_id_Users_accounts_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "group_members" ADD CONSTRAINT "group_members_user_id_Users_accounts_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."Users_accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -423,11 +428,11 @@ CREATE TABLE IF NOT EXISTS"product" (
 -- ALTER TABLE "product" ADD CONSTRAINT "product_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "product" ADD CONSTRAINT "product_country_id_countries_id_fk" FOREIGN KEY ("country_id") REFERENCES "public"."countries"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- ALTER TABLE "product" ADD CONSTRAINT "product_district_id_cities_id_fk" FOREIGN KEY ("district_id") REFERENCES "public"."cities"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "user_email_idx" ON "Users_accounts" USING btree ("email");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS  "user_username_idx" ON "Users_accounts" USING btree ("username");--> statement-breakpoint
+--CREATE UNIQUE INDEX "user_email_idx" ON "Users_accounts" USING btree ("email");--> statement-breakpoint
+--CREATE UNIQUE INDEX "user_username_idx" ON "Users_accounts" USING btree ("username");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS  "topic_parent_idx" ON "topics" USING btree ("parent_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS  "comment_post_idx" ON "publications_comments" USING btree ("publication_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "user_reaction_idx" ON "publications_reactions" USING btree ("user_id","reactionType","reactionable_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "comment_post_idx" ON "publications_comments" USING btree ("publication_id");--> statement-breakpoint
+--CREATE UNIQUE INDEX "user_reaction_idx" ON "publications_reactions" USING btree ("user_id","reaction_type","reactionable_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "reactionable_idx" ON "publications_reactions" USING btree ("reactionable_type","reactionable_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "forum_pub_topic_idx" ON "forum_publications" USING btree ("main_topic_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "forum_pub_section_idx" ON "forum_publications" USING btree ("section");--> statement-breakpoint
@@ -436,8 +441,11 @@ CREATE INDEX IF NOT EXISTS "cities_name_en_idx" ON "cities" USING btree ("name_e
 CREATE INDEX IF NOT EXISTS "country_name_en_idx" ON "countries" USING btree ("name_en");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "country_name_es_idx" ON "countries" USING btree ("name_es");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "country_iso_idx" ON "countries" USING btree ("iso");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "group_name_idx" ON "groups" USING btree ("name");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "page_owner" ON "pages" USING btree ("owner_id");--> statement-breakpoint
+--CREATE UNIQUE INDEX "group_name_idx" ON "groups" USING btree ("name");--> statement-breakpoint
+--CREATE UNIQUE INDEX "page_slug_idx" ON "pages" USING btree ("slug");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "page_owner_id_idx" ON "pages" USING btree ("owner_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "page_country_idx" ON "pages" USING btree ("country_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "contact_page_id_idx" ON "pages_contacts" USING btree ("page_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "green_challenges_topic_idx" ON "green_challenges" USING btree ("topic_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "green_challenges_expires_at_idx" ON "green_challenges" USING btree ("expires_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "green_challenges_created_at_idx" ON "green_challenges" USING btree ("created_at");--> statement-breakpoint
@@ -448,7 +456,7 @@ CREATE INDEX IF NOT EXISTS "conversation_participant_b_idx" ON "conversations" U
 CREATE INDEX IF NOT EXISTS "message_conversation_idx" ON "chat_messages" USING btree ("conversation_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "message_sender_idx" ON "chat_messages" USING btree ("sender_id","sender_type");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "messages_sent_at_id_index" ON "chat_messages" USING btree ("sent_at","id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "admin_email_idx" ON "admins" USING btree ("email");--> statement-breakpoint
+--CREATE UNIQUE INDEX "admin_email_idx" ON "admins" USING btree ("email");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "points_history_user_topic_idx" ON "points_history" USING btree ("user_id","topic_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "user_points_user_idx" ON "user_points" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "subscription_tier_benefits_tier_id_idx" ON "subscription_tier_benefits" USING btree ("tier_id");--> statement-breakpoint

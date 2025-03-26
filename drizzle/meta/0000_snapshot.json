@@ -1,5 +1,5 @@
 {
-  "id": "fc6a3fc5-0e73-4fc7-a62c-468dd3f892bd",
+  "id": "e2441021-6de4-4bd2-9217-819dbb53d281",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -439,7 +439,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "post_sub_topics_topic_id_topics_id_fk": {
@@ -452,7 +452,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -747,8 +747,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "reactionType": {
-          "name": "reactionType",
+        "reaction_type": {
+          "name": "reaction_type",
           "type": "reaction_type",
           "typeSchema": "public",
           "primaryKey": false,
@@ -773,7 +773,7 @@
               "nulls": "last"
             },
             {
-              "expression": "reactionType",
+              "expression": "reaction_type",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1502,17 +1502,23 @@
           "primaryKey": false,
           "notNull": true
         },
+        "website_url": {
+          "name": "website_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "avatar": {
           "name": "avatar",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "cover": {
           "name": "cover",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "topic_id": {
           "name": "topic_id",
@@ -1544,11 +1550,45 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city_id": {
+          "name": "city_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "page_owner": {
-          "name": "page_owner",
+        "page_slug_idx": {
+          "name": "page_slug_idx",
+          "columns": [
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "page_owner_id_idx": {
+          "name": "page_owner_id_idx",
           "columns": [
             {
               "expression": "owner_id",
@@ -1557,7 +1597,22 @@
               "nulls": "last"
             }
           ],
-          "isUnique": true,
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "page_country_idx": {
+          "name": "page_country_idx",
+          "columns": [
+            {
+              "expression": "country_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1589,6 +1644,32 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "pages_country_id_countries_id_fk": {
+          "name": "pages_country_id_countries_id_fk",
+          "tableFrom": "pages",
+          "tableTo": "countries",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pages_city_id_cities_id_fk": {
+          "name": "pages_city_id_cities_id_fk",
+          "tableFrom": "pages",
+          "tableTo": "cities",
+          "columnsFrom": [
+            "city_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1601,6 +1682,13 @@
       "name": "pages_contacts",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "page_id": {
           "name": "page_id",
           "type": "uuid",
@@ -1609,36 +1697,46 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
         },
         "title": {
           "name": "title",
-          "type": "varchar",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
         },
         "email": {
           "name": "email",
-          "type": "varchar",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
         },
         "phone_num": {
           "name": "phone_num",
-          "type": "varchar",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
-        },
-        "personal_picture": {
-          "name": "personal_picture",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "contact_page_id_idx": {
+          "name": "contact_page_id_idx",
+          "columns": [
+            {
+              "expression": "page_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "pages_contacts_page_id_pages_id_fk": {
           "name": "pages_contacts_page_id_pages_id_fk",
@@ -1654,15 +1752,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "pages_contacts_page_id_email_pk": {
-          "name": "pages_contacts_page_id_email_pk",
-          "columns": [
-            "page_id",
-            "email"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -1904,7 +1994,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "users_do_posts_user_id_Users_accounts_id_fk": {
@@ -1917,7 +2007,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
