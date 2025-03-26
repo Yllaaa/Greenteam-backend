@@ -6,7 +6,6 @@ import {
 import { PagesRepository } from './pages.repository';
 import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
-import { PageProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class PagesService {
@@ -97,13 +96,5 @@ export class PagesService {
 
   async getPageMetadata(pageId: string) {
     return await this.pagesRepository.getPageMetadata(pageId);
-  }
-
-  async getPageEvents(pageId: string, limit?: number, offset?: number) {
-    const page = await this.pagesRepository.getPageById(pageId);
-    if (!page) {
-      throw new NotFoundException(`Page with ID ${pageId} not found`);
-    }
-    return this.pagesRepository.getPageEvents(pageId, limit, offset);
   }
 }

@@ -12,7 +12,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { EventsDto } from '../events/dto/events.dto';
+import { CreateEventDto } from '../events/dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from '../events/dto/getEvents.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -23,7 +23,7 @@ export class EventsController {
   constructor(readonly eventsService: EventsService) {}
 
   @Post('create-event')
-  async createEventFromUser(@Body() event: EventsDto, @Request() req) {
+  async createEventFromUser(@Body() event: CreateEventDto, @Request() req) {
     const userId = req.user.id;
     return this.eventsService.createEvent(event, userId);
   }
@@ -31,15 +31,8 @@ export class EventsController {
   @Get('')
   async getEvents(@Query() eventDto: GetEventsDto, @Req() req) {
     const userId = req.user.id;
-    const pagination = {
-      page: eventDto.page || 1,
-      limit: eventDto.limit || 10,
-    };
-    return await this.eventsService.getEvents(
-      pagination,
-      eventDto.category,
-      userId,
-    );
+
+    return await this.eventsService.getEvents(eventDto, userId);
   }
 
   @Get('/:id')

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
 import { events, usersJoinedEvent } from '../../db/schemas/schema';
 import { and, asc, eq, sql, SQL } from 'drizzle-orm';
-import { EventsDto } from '../../events/events/dto/events.dto';
 
 @Injectable()
 export class EventsGroupRepository {

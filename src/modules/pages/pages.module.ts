@@ -5,10 +5,12 @@ import { PagesRepository } from './pages/pages.repository';
 import { PagesProductsModule } from './products/products.module';
 import { RouterModule } from '@nestjs/core';
 import { PagesPostsModule } from './pages-posts/pages-posts.module';
+import { PagesEventsModule } from './pages-events/pages-events.module';
 
 const pagesRoutes = [
   { path: ':slug/products', module: PagesProductsModule },
   { path: ':slug/posts', module: PagesPostsModule },
+  { path: ':slug/events', module: PagesEventsModule },
 ];
 
 @Module({
@@ -20,6 +22,7 @@ const pagesRoutes = [
       { path: 'pages', module: PagesModule, children: pagesRoutes },
     ]),
     PagesPostsModule,
+    PagesEventsModule,
   ],
   exports: [PagesService, PagesRepository],
 })

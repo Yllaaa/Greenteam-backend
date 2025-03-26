@@ -6,21 +6,23 @@ import {
   usersJoinedEvent,
 } from '../../db/schemas/schema';
 import { and, asc, eq, isNull, sql, SQL } from 'drizzle-orm';
-import { EventsDto } from '../events/dto/events.dto';
+import { CreateEventDto } from '../events/dto/events.dto';
 import { EventResponse } from './interfaces/events.interface';
+import { GetEventsDto } from './dto/getEvents.dto';
 
 @Injectable()
 export class EventsRepository {
   constructor(readonly drizzleService: DrizzleService) {}
 
-  async createEvent(event: EventsDto) {
+  async createEvent(event: CreateEventDto, creatorId: string) {
     const eventValues = {
-      creatorId: event.creatorId,
+      creatorId,
       creatorType: event.creatorType,
       title: event.title,
       description: event.description,
       location: event.location,
       category: event.category,
+      hostedBy: 'user' as any,
       priority: 0,
       startDate: event.startDate,
       endDate: event.endDate,
@@ -38,18 +40,34 @@ export class EventsRepository {
   }
 
   async getEvents(
-    pagination: { page: number; limit: number },
-    category?: SQL<'social' | 'volunteering&work' | 'talks&workshops'>,
+    dto: GetEventsDto,
     userId?: string,
+    pageId?: string,
   ): Promise<EventResponse[]> {
-    const { page, limit } = pagination;
+    const { page, limit } = dto;
     const offset = Math.max(0, (page - 1) * limit);
     const returnedEvents = await this.drizzleService.db.query.events.findMany({
+      columns: {
+        id: true,
+        title: true,
+        description: true,
+        location: true,
+        startDate: true,
+        endDate: true,
+        category: true,
+        poster: true,
+        hostedBy: true,
+      },
       offset: offset,
       limit: limit,
-      where: category
-        ? and(eq(events.category, category), isNull(events.groupId))
-        : isNull(events.groupId),
+      where: (events, { and, eq, isNull }) =>
+        and(
+          isNull(events.groupId),
+          dto.category ? eq(events.category, dto.category) : undefined,
+          pageId
+            ? and(eq(events.creatorId, pageId), eq(events.creatorType, 'page'))
+            : undefined,
+        ),
       orderBy: [asc(events.priority), asc(events.startDate)],
       extras: userId
         ? {
@@ -63,20 +81,29 @@ export class EventsRepository {
           )`.as('is_joined'),
           }
         : {},
-      with: {
-        userCreator: {
-          columns: {
-            id: true,
-            fullName: true,
+      with: pageId
+        ? {
+            pageCreator: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          }
+        : {
+            userCreator: {
+              columns: {
+                id: true,
+                fullName: true,
+              },
+            },
+            pageCreator: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
           },
-        },
-        pageCreator: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
-      },
     });
     return returnedEvents as unknown as EventResponse[];
   }
@@ -93,7 +120,6 @@ export class EventsRepository {
         category: true,
         poster: true,
         hostedBy: true,
-        groupId: true,
       },
       where: eq(events.id, id),
       extras: {
@@ -128,18 +154,58 @@ export class EventsRepository {
             avatar: true,
           },
         },
+        pageCreator: {
+          columns: {
+            id: true,
+            name: true,
+            avatar: true,
+            slug: true,
+          },
+        },
         group: true,
       },
     });
 
     if (!event) return null;
 
-    const { userCreator, group, ...filteredEvent } = event;
+    const creator = event.userCreator
+      ? {
+          id: Array.isArray(event.userCreator)
+            ? event.userCreator[0]?.id
+            : event.userCreator?.id,
+          fullName: Array.isArray(event.userCreator)
+            ? event.userCreator[0]?.fullName
+            : event.userCreator?.fullName,
+          username: Array.isArray(event.userCreator)
+            ? event.userCreator[0]?.username
+            : event.userCreator?.username,
+          avatar: Array.isArray(event.userCreator)
+            ? event.userCreator[0]?.avatar
+            : event.userCreator?.avatar,
+        }
+      : event.pageCreator
+        ? {
+            id: Array.isArray(event.pageCreator)
+              ? event.pageCreator[0]?.id
+              : event.pageCreator?.id,
+            fullName: Array.isArray(event.pageCreator)
+              ? event.pageCreator[0]?.name
+              : event.pageCreator?.name,
+            username: Array.isArray(event.pageCreator)
+              ? event.pageCreator[0]?.slug
+              : event.pageCreator?.slug,
+            avatar: Array.isArray(event.pageCreator)
+              ? event.pageCreator[0]?.avatar
+              : event.pageCreator?.avatar,
+          }
+        : null;
+
+    const { userCreator, pageCreator, group, ...rest } = event;
 
     return {
-      ...filteredEvent,
-      ...(userCreator ? { userCreator } : {}),
-      ...(group ? { group } : {}),
+      ...rest,
+      ...(group && { group }),
+      creator,
     };
   }
 

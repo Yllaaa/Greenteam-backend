@@ -75,13 +75,4 @@ export class PagesController {
   async addPageFollower(@Param('pageId') pageId: string, @Req() req) {
     return await this.pagesService.addPageFollower(pageId, req.user);
   }
-
-  //   @Get(':id/events')
-  //   async getPageEvents(
-  //     @Param() pageId: IdParamDto,
-  //     @Query() paginationQuery: PaginationQueryDto,
-  //   ) {
-  //     const { limit, offset } = paginationQuery;
-  //     return await this.pagesService.getPageEvents(pageId.id, limit, offset);
-  //   }
 }

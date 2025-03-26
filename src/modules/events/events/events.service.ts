@@ -5,9 +5,10 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { EventsRepository } from './events.repository';
-import { EventsDto } from './dto/events.dto';
+import { CreateEventDto } from './dto/events.dto';
 import { PostgresError } from 'postgres';
 import { SQL } from 'drizzle-orm';
+import { GetEventsDto } from './dto/getEvents.dto';
 
 @Injectable()
 export class EventsService {
@@ -15,24 +16,12 @@ export class EventsService {
 
   constructor(readonly eventsRepository: EventsRepository) {}
 
-  async createEvent(event: EventsDto, userId: string) {
-    event.creatorId ||= userId;
-    return await this.eventsRepository.createEvent(event);
+  async createEvent(event: CreateEventDto, userId: string) {
+    return await this.eventsRepository.createEvent(event, userId);
   }
 
-  async getEvents(
-    pagination: {
-      page: number;
-      limit: number;
-    },
-    category: SQL<'social' | 'volunteering&work' | 'talks&workshops'>,
-    userId?: string,
-  ) {
-    const events = await this.eventsRepository.getEvents(
-      pagination,
-      category,
-      userId,
-    );
+  async getEvents(dto: GetEventsDto, userId?: string) {
+    const events = await this.eventsRepository.getEvents(dto, userId);
 
     return await Promise.all(
       events.map(async (event) => {

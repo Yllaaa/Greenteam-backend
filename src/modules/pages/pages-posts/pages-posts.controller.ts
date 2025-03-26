@@ -27,6 +27,16 @@ export class PagesPostsController {
     return await this.pagesPostsService.getPagePosts(dto, slug, userId);
   }
 
+  @Get('/:postId')
+  async getPostById(
+    @Param('postId') postId: string,
+    @Param('slug') slug: string,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return await this.pagesPostsService.getPostById(postId, slug, userId);
+  }
+
   @Post('publish-post')
   async createPost(@Body() dto: CreatePostDto, @Param('slug') slug: string) {
     return await this.pagesPostsService.createPost(dto, slug);

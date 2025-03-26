@@ -200,26 +200,4 @@ export class PagesRepository {
       },
     });
   }
-
-  async getPageEvents(pageId: string, limit: number = 10, offset: number = 0) {
-    return await this.drizzleService.db.query.events.findMany({
-      where: and(eq(events.creatorId, pageId), eq(events.creatorType, 'page')),
-      with: {
-        usersJoined: {
-          with: {
-            user: {
-              columns: {
-                id: true,
-                fullName: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: (events, { desc }) => [desc(events.startDate)],
-      limit: limit,
-      offset: offset,
-    });
-  }
 }

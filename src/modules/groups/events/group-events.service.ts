@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { EventsRepository } from '../../events/events/events.repository';
 import { GroupsRepository } from '../groups.repository';
-import { EventsDto } from '../../events/events/dto/events.dto';
+import { CreateEventDto } from '../../events/events/dto/events.dto';
 import { EventsGroupRepository } from './group-events.repository';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class GroupEventsService {
   async createGroupEvent(
     groupId: string,
     userId: string,
-    eventData: EventsDto,
+    eventData: CreateEventDto,
   ) {
     const group = await this.groupsRepository.getGroupById(groupId);
 
@@ -35,11 +35,11 @@ export class GroupEventsService {
 
     const event = {
       ...eventData,
-      creatorId: userId,
+
       groupId: groupId,
     };
 
-    return this.eventsRepository.createEvent(event);
+    return this.eventsRepository.createEvent(event, userId);
   }
 
   async getGroupEvents(
@@ -73,10 +73,6 @@ export class GroupEventsService {
 
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
-    }
-
-    if (event.groupId !== groupId) {
-      throw new NotFoundException(`Event does not belong to this group`);
     }
 
     return event;

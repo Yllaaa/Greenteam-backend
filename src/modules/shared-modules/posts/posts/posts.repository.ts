@@ -110,13 +110,25 @@ export class PostsRepository {
           id: posts.id,
           content: posts.content,
           createdAt: posts.createdAt,
-          groupId: posts.groupId,
+          //     groupId: posts.groupId,
         },
         author: {
-          id: users.id,
-          fullName: users.fullName,
-          avatar: users.avatar,
-          username: users.username,
+          id: sql<string>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.id}
+          ELSE ${users.id}
+        END`,
+          name: sql<string>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.name}
+          ELSE ${users.fullName}
+        END`,
+          avatar: sql<string>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.avatar}
+          ELSE ${users.avatar}
+        END`,
+          username: sql<string>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
+          ELSE ${users.username}
+        END`,
         },
         commentCount: this.commentCountQuery,
         likeCount:
@@ -139,6 +151,7 @@ export class PostsRepository {
       })
       .from(posts)
       .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(pages, eq(posts.creatorId, pages.id))
       .leftJoin(
         publicationsComments,
         eq(posts.id, publicationsComments.publicationId),
@@ -157,6 +170,10 @@ export class PostsRepository {
         users.fullName,
         users.avatar,
         users.username,
+        pages.id,
+        pages.name,
+        pages.avatar,
+        pages.slug,
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
         userReaction.userReactionType,

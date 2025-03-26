@@ -41,6 +41,21 @@ export class PagesPostsService {
     );
   }
 
+  async getPostById(postId: string, slug: string, currentUserId: string) {
+    const page = await this.pagesService.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+    const post = await this.postsRepository.getPostInDetails(
+      postId,
+      currentUserId,
+    );
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
+  }
+
   async createPost(dto: CreatePostDto, slug: string) {
     const { content, mainTopicId, creatorType, subtopicIds } = dto;
     if (dto.creatorType != ('page' as CreatorType)) {
