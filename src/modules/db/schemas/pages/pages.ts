@@ -98,23 +98,23 @@ export const pagesContactsRelations = relations(pagesContacts, ({ one }) => ({
 export const pagesFollowers = pgTable(
   'pages_followers',
   {
-    page_id: uuid()
+    pageId: uuid('page_id')
       .notNull()
       .references(() => pages.id),
-    user_id: uuid()
+    userId: uuid('user_id')
       .notNull()
       .references(() => users.id),
   },
-  (table) => [primaryKey({ columns: [table.page_id, table.user_id] })],
+  (table) => [primaryKey({ columns: [table.pageId, table.userId] })],
 );
 
 export const pagesFollowersRelations = relations(pagesFollowers, ({ one }) => ({
   page: one(pages, {
-    fields: [pagesFollowers.page_id],
+    fields: [pagesFollowers.pageId],
     references: [pages.id],
   }),
   user: one(users, {
-    fields: [pagesFollowers.user_id],
+    fields: [pagesFollowers.userId],
     references: [users.id],
   }),
 }));

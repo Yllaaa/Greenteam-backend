@@ -9,7 +9,7 @@ import {
 import { ChallengesRepository } from './challenges.repository';
 import { PostsService } from '../shared-modules/posts/posts/posts.service';
 import { SQL } from 'drizzle-orm';
-import { CreatorType } from '../db/schemas/schema';
+import { CreatorType, UserChallengeStatus } from '../db/schemas/schema';
 @Injectable()
 export class ChallengesService {
   constructor(
@@ -28,6 +28,27 @@ export class ChallengesService {
     return await this.challengesRepository.deleteDoPostChallenge(
       userId,
       postId,
+    );
+  }
+
+  async markDoPostAsDone(postId: string, userId: string) {
+    const doPostChallenge = await this.challengesRepository.findDoPostChallenge(
+      postId,
+      userId,
+    );
+    if (!doPostChallenge) {
+      throw new NotFoundException('Do post challenge not found');
+    }
+
+    if (doPostChallenge.status === 'done') {
+      throw new BadRequestException(
+        'Do post challenge is already marked as done',
+      );
+    }
+    return await this.challengesRepository.UpdateDoPostChallengeStatus(
+      postId,
+      userId,
+      'done',
     );
   }
 

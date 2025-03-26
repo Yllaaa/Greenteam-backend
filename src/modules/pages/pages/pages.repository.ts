@@ -80,7 +80,7 @@ export class PagesRepository {
     const followersCount = await this.drizzleService.db
       .select({ count: count() })
       .from(pagesFollowers)
-      .where(eq(pagesFollowers.page_id, page.id))
+      .where(eq(pagesFollowers.pageId, page.id))
       .execute();
 
     return {
@@ -147,14 +147,32 @@ export class PagesRepository {
     });
   }
 
-  async addPageFollower(page_id: string, user_id: string) {
+  async addPageFollower(pageId: string, userId: string) {
     return await this.drizzleService.db
       .insert(pagesFollowers)
       .values({
-        page_id: page_id,
-        user_id: user_id,
+        pageId,
+        userId,
       })
       .returning();
+  }
+  async getPageFollower(pageId: string, userId: string) {
+    return await this.drizzleService.db.query.pagesFollowers.findFirst({
+      where: and(
+        eq(pagesFollowers.pageId, pageId),
+        eq(pagesFollowers.userId, userId),
+      ),
+    });
+  }
+  async removePageFollower(pageId: string, userId: string) {
+    return await this.drizzleService.db
+      .delete(pagesFollowers)
+      .where(
+        and(
+          eq(pagesFollowers.pageId, pageId),
+          eq(pagesFollowers.userId, userId),
+        ),
+      );
   }
 
   async getPageById(pageId: string) {
@@ -179,7 +197,7 @@ export class PagesRepository {
     const followersCount = await this.drizzleService.db
       .select({ count: count() })
       .from(pagesFollowers)
-      .where(eq(pagesFollowers.page_id, page.id))
+      .where(eq(pagesFollowers.pageId, page.id))
       .execute();
 
     return {

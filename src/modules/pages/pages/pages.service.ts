@@ -82,8 +82,22 @@ export class PagesService {
     return await this.pagesRepository.getPageBySlug(slug);
   }
 
-  async addPageFollower(page_id: string, user: any) {
-    return await this.pagesRepository.addPageFollower(page_id, user.id);
+  async togglePageFollow(slug: string, user: any) {
+    const page = await this.pagesRepository.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException(`Page with slug ${slug} not found`);
+    }
+    const pageId = page.id;
+    const existingFollow = await this.pagesRepository.getPageFollower(
+      pageId,
+      user.id,
+    );
+    if (existingFollow) {
+      await this.pagesRepository.removePageFollower(pageId, user.id);
+      return { success: true, followed: false };
+    }
+    await this.pagesRepository.addPageFollower(pageId, user.id);
+    return { success: true, followed: true };
   }
 
   async getPageById(pageId: string) {

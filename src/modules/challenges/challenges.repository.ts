@@ -4,6 +4,7 @@ import {
   greenChallenges,
   posts,
   topics,
+  UserChallengeStatus,
   users,
   usersDoPosts,
   usersGreenChallenges,
@@ -18,6 +19,27 @@ export class ChallengesRepository {
       userId,
       postId,
     });
+  }
+  async findDoPostChallenge(postId: string, userId: string) {
+    return await this.drizzleService.db.query.usersDoPosts.findFirst({
+      where: and(
+        eq(usersDoPosts.postId, postId),
+        eq(usersDoPosts.userId, userId),
+      ),
+    });
+  }
+
+  async UpdateDoPostChallengeStatus(
+    postId: string,
+    userId: string,
+    status: UserChallengeStatus,
+  ) {
+    return await this.drizzleService.db
+      .update(usersDoPosts)
+      .set({ status })
+      .where(
+        and(eq(usersDoPosts.userId, userId), eq(usersDoPosts.postId, postId)),
+      );
   }
 
   async getUsersDoPosts(
