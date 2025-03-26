@@ -87,15 +87,6 @@ export class PagesService {
     return await this.pagesRepository.addPageFollower(page_id, user.id);
   }
 
-  async getPagePosts(pageId: string, limit?: number, offset?: number) {
-    const page = await this.pagesRepository.getPageById(pageId);
-    if (!page) {
-      throw new NotFoundException(`Page with ID ${pageId} not found`);
-    }
-
-    return await this.pagesRepository.getPagePosts(pageId, limit, offset);
-  }
-
   async getPageById(pageId: string) {
     const page = await this.pagesRepository.getPageById(pageId);
     if (!page) {

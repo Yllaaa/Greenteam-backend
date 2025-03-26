@@ -9,6 +9,7 @@ import {
 import { ChallengesRepository } from './challenges.repository';
 import { PostsService } from '../shared-modules/posts/posts/posts.service';
 import { SQL } from 'drizzle-orm';
+import { CreatorType } from '../db/schemas/schema';
 @Injectable()
 export class ChallengesService {
   constructor(
@@ -105,9 +106,8 @@ export class ChallengesService {
       );
     }
 
-    const creatorType = 'user' as unknown as SQL<
-      'user' | 'page' | 'group_member'
-    >;
+    const creatorType = 'user' as CreatorType;
+
     if (!userGreenChallenge) {
       await this.challengesRepository.addGreenChallengeToUser(
         userId,
@@ -130,7 +130,6 @@ export class ChallengesService {
       {
         content,
         mainTopicId: topicId,
-        creatorId: userId,
         creatorType: creatorType,
         subtopicIds: [],
       },

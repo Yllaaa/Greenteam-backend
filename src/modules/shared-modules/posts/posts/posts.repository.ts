@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { eq, exists, inArray, SQL, and, or, sql } from 'drizzle-orm';
+import { eq, exists, inArray, SQL, and, or, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  CreatorType,
+  pages,
   posts,
   postSubTopics,
   publicationsComments,
@@ -25,9 +27,8 @@ export class PostsRepository {
   async createPost(
     content: string,
     mainTopicId: number,
+    creatorType: CreatorType,
     creatorId: string,
-    creatorType: SQL<'user' | 'page' | 'group_member'>,
-    userId: string,
     groupId?: string,
   ) {
     const [post] = await this.drizzleService.db
@@ -35,7 +36,7 @@ export class PostsRepository {
       .values({
         content,
         mainTopicId: Number(mainTopicId),
-        creatorId: creatorId ?? userId,
+        creatorId,
         creatorType,
         groupId,
       })
@@ -179,6 +180,7 @@ export class PostsRepository {
       page?: number;
     },
     currentUserId?: string,
+    pageId?: string,
   ) {
     const { mainTopicId, subTopicId, groupId } = filters || {};
     const { limit = 10, page = 0 } = pagination || {};
@@ -227,13 +229,25 @@ export class PostsRepository {
           id: posts.id,
           content: posts.content,
           createdAt: posts.createdAt,
-          groupId: posts.groupId,
+          //      groupId: posts.groupId,
         },
         author: {
-          id: users.id,
-          fullName: users.fullName,
-          avatar: users.avatar,
-          username: users.username,
+          id: sql<string>`CASE 
+            WHEN ${posts.creatorType} = 'page' THEN ${pages.id}
+            ELSE ${users.id}
+          END`,
+          name: sql<string>`CASE 
+            WHEN ${posts.creatorType} = 'page' THEN ${pages.name}
+            ELSE ${users.fullName}
+          END`,
+          avatar: sql<string>`CASE 
+            WHEN ${posts.creatorType} = 'page' THEN ${pages.avatar}
+            ELSE ${users.avatar}
+          END`,
+          username: sql<string>`CASE 
+            WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
+            ELSE ${users.username}
+          END`,
         },
         commentCount: this.commentCountQuery,
         likeCount:
@@ -256,6 +270,7 @@ export class PostsRepository {
       })
       .from(posts)
       .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(pages, eq(posts.creatorId, pages.id))
       .leftJoin(
         publicationsComments,
         eq(posts.id, publicationsComments.publicationId),
@@ -274,15 +289,24 @@ export class PostsRepository {
         users.fullName,
         users.avatar,
         users.username,
+        pages.id,
+        pages.name,
+        pages.avatar,
+        pages.slug,
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
         userReaction.userReactionType,
         userReaction.hasDoReaction,
       )
-      .orderBy(posts.createdAt);
+      .orderBy(desc(posts.createdAt));
 
     const conditions: SQL[] = [];
-
+    console.log('pageId', pageId);
+    if (pageId) {
+      conditions.push(
+        and(eq(posts.creatorId, pageId), eq(posts.creatorType, 'page'))!,
+      );
+    }
     if (mainTopicId) {
       conditions.push(eq(posts.mainTopicId, mainTopicId));
     }
@@ -309,7 +333,7 @@ export class PostsRepository {
     }
 
     if (conditions.length > 0) {
-      queryBuilder.where(or(...conditions));
+      queryBuilder.where(and(...conditions));
     }
 
     const paginatedQuery = queryBuilder.limit(limit).offset(offset);

@@ -84,13 +84,4 @@ export class PagesController {
   //     const { limit, offset } = paginationQuery;
   //     return await this.pagesService.getPageEvents(pageId.id, limit, offset);
   //   }
-
-  //   @Get(':id/posts')
-  //   async getPagePosts(
-  //     @Param() pageId: IdParamDto,
-  //     @Query() paginationQuery: PaginationQueryDto,
-  //   ) {
-  //     const { limit, offset } = paginationQuery;
-  //     return await this.pagesService.getPagePosts(pageId.id, limit, offset);
-  //   }
 }

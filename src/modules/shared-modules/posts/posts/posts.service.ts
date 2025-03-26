@@ -17,12 +17,11 @@ export class PostsService {
     private readonly queuesService: QueuesService,
   ) {}
   async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
-    const { content, mainTopicId, creatorId, creatorType, subtopicIds } = dto;
+    const { content, mainTopicId, creatorType, subtopicIds } = dto;
 
     const newPost = await this.postsRepository.createPost(
       content,
       mainTopicId,
-      creatorId,
       creatorType,
       userId,
     );
@@ -47,20 +46,20 @@ export class PostsService {
     return newPost as Post;
   }
 
-  async getPosts(topic: GetPostsDto, userId: string) {
-    if (topic.mainTopicId && topic.subTopicId) {
+  async getPosts(dto: GetPostsDto, userId: string) {
+    if (dto.mainTopicId && dto.subTopicId) {
       throw new BadRequestException(
         'You can only filter by main topic or sub topic',
       );
     }
     return await this.postsRepository.getFilteredPosts(
       {
-        mainTopicId: topic.mainTopicId,
-        subTopicId: topic.subTopicId,
+        mainTopicId: dto.mainTopicId,
+        subTopicId: dto.subTopicId,
       },
       {
-        page: topic.page,
-        limit: topic.limit,
+        page: dto.page,
+        limit: dto.limit,
       },
       userId,
     );

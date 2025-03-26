@@ -24,9 +24,9 @@ export class PostsController {
   }
 
   @Get()
-  async getPosts(@Query() topic: GetPostsDto, @Req() req) {
+  async getPosts(@Query() dto: GetPostsDto, @Req() req) {
     const userId = req.user.id;
-    return this.postsService.getPosts(topic, userId);
+    return this.postsService.getPosts(dto, userId);
   }
 
   @Get(':id')

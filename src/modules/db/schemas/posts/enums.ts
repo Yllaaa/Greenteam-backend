@@ -17,7 +17,7 @@ export const creatorTypeEnum = pgEnum('creator_type', [
   'page',
   'group_member',
 ]);
-
+export type CreatorType = (typeof creatorTypeEnum.enumValues)[number];
 export const mediaTypeEnum = pgEnum('media_type', [
   'photo',
   'video',
