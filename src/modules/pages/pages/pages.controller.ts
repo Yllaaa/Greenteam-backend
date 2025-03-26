@@ -17,7 +17,6 @@ import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
-import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)

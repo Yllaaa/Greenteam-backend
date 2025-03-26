@@ -235,6 +235,8 @@ export class PagesRepository {
         id: true,
         slug: true,
         ownerId: true,
+        countryId: true,
+        cityId: true,
       },
     });
   }

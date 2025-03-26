@@ -45,7 +45,7 @@ export class MarketplaceRepository {
     return result[0];
   }
 
-  async getAllProducts(query: GetAllProductsDto) {
+  async getAllProducts(query: GetAllProductsDto, pageId?: string) {
     const filters: SQL[] = [];
     const { topicId, countryId, districtId, limit, page } = query;
     if (topicId) {
@@ -56,6 +56,10 @@ export class MarketplaceRepository {
     }
     if (districtId) {
       filters.push(eq(products.cityId, districtId));
+    }
+    if (pageId) {
+      filters.push(eq(products.sellerId, pageId));
+      filters.push(eq(products.sellerType, 'page'));
     }
     const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
     const result = await this.drizzleService.db.query.products.findMany({

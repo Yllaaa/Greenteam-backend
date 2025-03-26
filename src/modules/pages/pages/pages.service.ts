@@ -79,6 +79,10 @@ export class PagesService {
     return await this.pagesRepository.deletePageContact(contactId);
   }
 
+  async getPageBySlug(slug: string) {
+    return await this.pagesRepository.getPageBySlug(slug);
+  }
+
   async addPageFollower(page_id: string, user: any) {
     return await this.pagesRepository.addPageFollower(page_id, user.id);
   }
