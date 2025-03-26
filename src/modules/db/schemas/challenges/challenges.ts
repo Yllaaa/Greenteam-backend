@@ -18,6 +18,8 @@ export const userChallengeStatus = pgEnum('user_challenge_status', [
   'done',
   'rejected',
 ]);
+export type UserChallengeStatus =
+  (typeof userChallengeStatus.enumValues)[number];
 
 export const greenChallenges = pgTable(
   'green_challenges',

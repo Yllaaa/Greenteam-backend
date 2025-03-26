@@ -7,6 +7,7 @@ import {
   Param,
   Req,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChallengesService } from './challenges.service';
@@ -27,6 +28,13 @@ export class ChallengesController {
       userChallengesDto,
       userChallengesDto.topicId,
     );
+  }
+
+  @Put('do-posts/:id/mark-as-done')
+  async markDoPostAsDone(@Req() req, @Param('id') postId: string) {
+    const userId = req.user.id;
+    await this.challengesService.markDoPostAsDone(postId, userId);
+    return { message: 'Do post marked as done' };
   }
 
   @Get('green-challenges')

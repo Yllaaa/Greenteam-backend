@@ -71,8 +71,8 @@ export class PagesController {
     return res.status(HttpStatus.OK).json({ message: 'Contact deleted' });
   }
 
-  @Post(':id/follow')
-  async addPageFollower(@Param('pageId') pageId: string, @Req() req) {
-    return await this.pagesService.addPageFollower(pageId, req.user);
+  @Post(':slug/toggle-follow')
+  async addPageFollower(@Param('slug') slug: string, @Req() req) {
+    return await this.pagesService.togglePageFollow(slug, req.user);
   }
 }
