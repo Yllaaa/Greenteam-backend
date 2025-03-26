@@ -27,8 +27,14 @@ export class PagesService {
     return await this.pagesRepository.checkSlugTaken(slug);
   }
 
-  async getPage(user: any) {
-    return await this.pagesRepository.getPage(user.id);
+  async getPageDetails(slug: string, userId: string) {
+    const page = await this.pagesRepository.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException(`Page with slug ${slug} not found`);
+    }
+
+    const pageDetails = await this.pagesRepository.getPageDetails(page.id);
+    return { ...pageDetails, isAdmin: page.ownerId === userId };
   }
 
   async getPageOwnerId(pageId: string) {

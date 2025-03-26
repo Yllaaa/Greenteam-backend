@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
 
-import { eq, and, count } from 'drizzle-orm';
+import { eq, and, count, sql } from 'drizzle-orm';
 import {
   events,
   PageCategoryType,
@@ -58,35 +58,43 @@ export class PagesRepository {
     return !!page;
   }
 
-  async getPage(userId: string) {
+  async getPageDetails(pageId: string) {
     const page = await this.drizzleService.db.query.pages.findFirst({
-      where: eq(pages.ownerId, userId),
+      where: eq(pages.id, pageId),
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        slug: true,
+        websiteUrl: true,
+        why: true,
+        what: true,
+        how: true,
+        avatar: true,
+        cover: true,
+        category: true,
+        createdAt: true,
+      },
       with: {
-        owner: {
+        topic: {
           columns: {
-            fullName: true,
-            avatar: true,
+            id: true,
+            name: true,
           },
         },
-        topic: true,
-        contacts: true,
-        followers: true,
+      },
+      extras: {
+        followersCount: sql<number>`(
+          SELECT CAST(count(*) AS INTEGER)
+          FROM ${pagesFollowers} pf
+          WHERE pf.page_id = ${pageId}
+        )`
+          .mapWith(Number)
+          .as('followers_count'),
       },
     });
 
-    if (!page) return null;
-
-    // Count followers separately
-    const followersCount = await this.drizzleService.db
-      .select({ count: count() })
-      .from(pagesFollowers)
-      .where(eq(pagesFollowers.pageId, page.id))
-      .execute();
-
-    return {
-      ...page,
-      followersCount: followersCount[0]?.count || 0,
-    };
+    return page ? { ...page } : null;
   }
 
   async getPageOwnerId(pageId: string) {
