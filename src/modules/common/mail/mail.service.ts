@@ -19,10 +19,7 @@ export class MailService {
 
   async sendVerificationEmail(email: string, token: string) {
     const verificationUrl = `${process.env.APP_URL}/en/verification/?key=${token}`;
-    console.log(process.env.SMTP_EMAIL, process.env.SMTP_PASSWORD);
-    console.log(verificationUrl);
-    console.log(process.env.MAIL_PORT, process.env.MAIL_HOST);
-    console.log('sending to' + email);
+
     const mailOptions = {
       from: '"Greenteam" <noreply@greenteam.com>',
       to: email,

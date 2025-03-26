@@ -75,7 +75,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { identifier, password } = loginDto;
     if (!identifier || !password) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Missing email or password');
     }
 
     const user = await this.validateUser(identifier, password);
@@ -89,11 +89,11 @@ export class AuthService {
     const isEmail = identifier.includes('@');
     const field = isEmail ? 'email' : 'username';
     user = await this.authRepository.validateUser(field, identifier);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new UnauthorizedException('User not found!');
 
     const isPasswordValid = await argon2.verify(user.password, password);
     if (!isPasswordValid)
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid email or password');
 
     return user;
   }
@@ -156,6 +156,7 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     const user = await this.authRepository.checkUserVerification(token);
+
     if (!user) {
       throw new UnauthorizedException('Invalid verification token');
     }

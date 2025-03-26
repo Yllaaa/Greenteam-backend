@@ -1,11 +1,6 @@
 {
-<<<<<<< HEAD
-  "id": "4681ba0b-b8b5-411e-88b6-fb44485b207b",
-  "prevId": "5806702c-2aa2-4fe2-8626-d5c191e4f66d",
-=======
-  "id": "73ab7ff8-423a-4ea7-8a38-b048a9b9f309",
-  "prevId": "c622a2bc-8f73-4d83-8b0d-750134e981ff",
->>>>>>> main
+  "id": "67befc4b-9b94-4300-816b-7fdb9cc576dd",
+  "prevId": "8144cf45-52a6-4c27-ac4e-9b99141fc161",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -444,7 +439,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "post_sub_topics_topic_id_topics_id_fk": {
@@ -457,7 +452,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -752,13 +747,8 @@
           "primaryKey": false,
           "notNull": true
         },
-<<<<<<< HEAD
         "reaction_type": {
           "name": "reaction_type",
-=======
-        "reactionType": {
-          "name": "reactionType",
->>>>>>> main
           "type": "reaction_type",
           "typeSchema": "public",
           "primaryKey": false,
@@ -783,11 +773,7 @@
               "nulls": "last"
             },
             {
-<<<<<<< HEAD
               "expression": "reaction_type",
-=======
-              "expression": "reactionType",
->>>>>>> main
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1516,6 +1502,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "website_url": {
+          "name": "website_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "avatar": {
           "name": "avatar",
           "type": "varchar",
@@ -1558,8 +1550,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
-<<<<<<< HEAD
-=======
         },
         "country_id": {
           "name": "country_id",
@@ -1579,7 +1569,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
->>>>>>> main
         }
       },
       "indexes": {
@@ -1625,8 +1614,6 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-<<<<<<< HEAD
-=======
         },
         "pages_country_id_countries_id_fk": {
           "name": "pages_country_id_countries_id_fk",
@@ -1653,7 +1640,6 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
->>>>>>> main
         }
       },
       "compositePrimaryKeys": {},
@@ -1969,7 +1955,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "users_do_posts_user_id_Users_accounts_id_fk": {
@@ -1982,7 +1968,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

@@ -7,63 +7,90 @@ import {
   uuid,
   varchar,
   serial,
+  integer,
+  timestamp,
+  index,
 } from 'drizzle-orm/pg-core';
 import { events, posts, topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
-
+import { countries, cities } from '../schema';
 export const pageCategory = pgEnum('PageCategory', ['Business', 'Project']);
+export type PageCategoryType = (typeof pageCategory.enumValues)[number];
 
 export const pages = pgTable(
   'pages',
   {
     id: uuid().primaryKey().defaultRandom(),
-    owner_id: uuid()
+    ownerId: uuid('owner_id')
       .notNull()
       .references(() => users.id),
-    name: varchar().notNull(),
-    description: text().notNull(),
-    slug: varchar().notNull(),
-    avatar: varchar().notNull(),
-    cover: varchar().notNull(),
-    topic_id: serial().references(() => topics.id),
-    category: pageCategory().notNull(),
-    why: varchar().notNull(),
-    how: varchar().notNull(),
-    what: varchar().notNull()
-  }, (table) => [
-    uniqueIndex('page_owner').on(table.owner_id),
-  ])
+    name: varchar('name').notNull(),
+    description: text('description').notNull(),
+    slug: varchar('slug').notNull(),
+    websiteUrl: varchar('website_url'),
+    avatar: varchar('avatar'),
+    cover: varchar('cover'),
+    topicId: serial('topic_id').references(() => topics.id),
+    category: pageCategory('category').notNull(),
+    why: varchar('why').notNull(),
+    how: varchar('how').notNull(),
+    what: varchar('what').notNull(),
+    countryId: integer('country_id')
+      .references(() => countries.id)
+      .notNull(),
+    cityId: integer('city_id')
+      .references(() => cities.id)
+      .notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('page_slug_idx').on(table.slug),
+    index('page_owner_id_idx').on(table.ownerId),
+    index('page_country_idx').on(table.countryId),
+  ],
+);
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
   owner: one(users, {
-    fields: [pages.owner_id],
+    fields: [pages.ownerId],
     references: [users.id],
   }),
   topic: one(topics, {
-    fields: [pages.topic_id],
+    fields: [pages.topicId],
     references: [topics.id],
   }),
   contacts: many(pagesContacts),
   followers: many(pagesFollowers),
+  events: many(events),
+  posts: many(posts),
+  country: one(countries, {
+    fields: [pages.countryId],
+    references: [countries.id],
+  }),
+  city: one(cities, {
+    fields: [pages.cityId],
+    references: [cities.id],
+  }),
 }));
 
 export const pagesContacts = pgTable(
   'pages_contacts',
   {
-    page_id: uuid()
+    id: uuid().primaryKey().defaultRandom(),
+    pageId: uuid('page_id')
       .notNull()
       .references(() => pages.id),
-    name: varchar().notNull(),
-    title: varchar().notNull(),
-    email: varchar().notNull(),
-    phone_num: varchar().notNull(),
+    name: varchar('name', { length: 256 }).notNull(),
+    title: varchar('title', { length: 256 }).notNull(),
+    email: varchar('email', { length: 256 }).notNull(),
+    phoneNum: varchar('phone_num', { length: 20 }).notNull(),
   },
-  (table) => [primaryKey({ columns: [table.page_id, table.email] })],
+  (table) => [index('contact_page_id_idx').on(table.pageId)],
 );
 
 export const pagesContactsRelations = relations(pagesContacts, ({ one }) => ({
   page: one(pages, {
-    fields: [pagesContacts.page_id],
+    fields: [pagesContacts.pageId],
     references: [pages.id],
   }),
 }));
@@ -84,10 +111,10 @@ export const pagesFollowers = pgTable(
 export const pagesFollowersRelations = relations(pagesFollowers, ({ one }) => ({
   page: one(pages, {
     fields: [pagesFollowers.page_id],
-    references: [pages.id]
+    references: [pages.id],
   }),
   user: one(users, {
     fields: [pagesFollowers.user_id],
-    references: [users.id]
-  })
-}))
+    references: [users.id],
+  }),
+}));

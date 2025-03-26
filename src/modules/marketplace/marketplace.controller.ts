@@ -1,15 +1,25 @@
-import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  Get,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { MarketplaceService } from './marketplace.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateProductDto } from './dtos/products.dto';
 import { MarketType } from '../db/schemas/schema';
+import { GetAllProductsDto } from './dtos/getAllProducts.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('marketplace')
 export class MarketplaceController {
   constructor(private readonly marketplaceService: MarketplaceService) {}
 
-  @Post('user-create-product')
+  @Post('create-product')
   async createProductFromUser(
     @Body() createProductDto: CreateProductDto,
     @Req() request: any,
@@ -25,5 +35,15 @@ export class MarketplaceController {
       sellerType,
       marketType,
     });
+  }
+
+  @Get('products')
+  async getAllProducts(@Query() query: GetAllProductsDto) {
+    return this.marketplaceService.getAllProducts(query);
+  }
+
+  @Get('products/:id')
+  async getProductById(@Param('id') id: string) {
+    return this.marketplaceService.getProductById(id);
   }
 }

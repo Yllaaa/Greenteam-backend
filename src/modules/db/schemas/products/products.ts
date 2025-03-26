@@ -11,7 +11,7 @@ import {
   pgEnum,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { cities, countries, topics } from '../schema';
+import { cities, countries, pages, topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
 
 export const sellerTypeEnum = pgEnum('seller_type', ['user', 'page']);
@@ -41,7 +41,7 @@ export const products = pgTable(
     countryId: integer('country_id')
       .references(() => countries.id)
       .notNull(),
-    districtId: integer('district_id')
+    cityId: integer('district_id')
       .references(() => cities.id)
       .notNull(),
   },
@@ -51,7 +51,7 @@ export const products = pgTable(
     index('market_type_idx').on(t.marketType, t.isHidden),
     index('price_idx').on(t.price),
     index('product_country_id_idx').on(t.countryId),
-    index('product_district_id_idx').on(t.districtId),
+    index('product_district_id_idx').on(t.cityId),
   ],
 );
 
@@ -65,7 +65,15 @@ export const productsRelations = relations(products, ({ one }) => ({
     references: [countries.id],
   }),
   district: one(cities, {
-    fields: [products.districtId],
+    fields: [products.cityId],
     references: [cities.id],
+  }),
+  userSeller: one(users, {
+    fields: [products.sellerId],
+    references: [users.id],
+  }),
+  pageSeller: one(pages, {
+    fields: [products.sellerId],
+    references: [pages.id],
   }),
 }));
