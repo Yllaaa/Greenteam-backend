@@ -1,20 +1,19 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PagesController } from './pages/pages.controller';
 import { PagesService } from './pages/pages.service';
 import { PagesRepository } from './pages/pages.repository';
-import { ProductsModule } from './products/products.module';
+import { PagesProductsModule } from './products/products.module';
 import { RouterModule } from '@nestjs/core';
-import { products } from '../db/schemas/schema';
 
-const paymentsRoutes = [{ path: '', module: ProductsModule }];
+const pagesRoutes = [{ path: ':slug/products', module: PagesProductsModule }];
 
 @Module({
   controllers: [PagesController],
   providers: [PagesService, PagesRepository],
   imports: [
-    ProductsModule,
+    forwardRef(() => PagesProductsModule),
     RouterModule.register([
-      { path: 'pages', module: PagesModule, children: paymentsRoutes },
+      { path: 'pages', module: PagesModule, children: pagesRoutes },
     ]),
   ],
   exports: [PagesService, PagesRepository],

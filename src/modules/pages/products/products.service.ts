@@ -3,6 +3,8 @@ import { CommonRepository } from 'src/modules/common/common.repository';
 import { MarketType, SellerType } from 'src/modules/db/schemas/schema';
 import { MarketplaceRepository } from 'src/modules/marketplace/marketplace.repository';
 import { PagesService } from '../pages/pages.service';
+import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
+import { GetPageProductsDto } from './dtos/get-page-products';
 @Injectable()
 export class ProductsService {
   constructor(
@@ -13,7 +15,7 @@ export class ProductsService {
 
   async createProduct(
     data: {
-      pageId: string;
+      slug: string;
       sellerType: SellerType;
       name: string;
       description: string;
@@ -27,7 +29,8 @@ export class ProductsService {
       throw new BadRequestException('Invalid seller type');
     }
 
-    const page = await this.pagesService.getPageMetadata(data.pageId);
+    const page = await this.pagesService.getPageBySlug(data.slug);
+
     if (!page) {
       throw new BadRequestException('Invalid page ID');
     }
@@ -88,10 +91,19 @@ export class ProductsService {
     }
     await this.marketplaceRepository.insertProduct({
       ...data,
-      sellerId: data.pageId,
+      sellerId: page.id,
       countryId: page.countryId,
       cityId: page.cityId,
     });
     return { message: 'Product created successfully' };
+  }
+
+  async getPageProducts(query: GetPageProductsDto, slug: string) {
+    const page = await this.pagesService.getPageBySlug(slug);
+    if (!page) {
+      throw new BadRequestException('Invalid page slug');
+    }
+
+    return await this.marketplaceRepository.getAllProducts(query, page.id);
   }
 }

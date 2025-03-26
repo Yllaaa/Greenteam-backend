@@ -57,6 +57,32 @@ export class PagesService {
     return await this.pagesRepository.addPageContact(contact, page.id);
   }
 
+  async getPageContacts(slug: string) {
+    const page = await this.pagesRepository.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException(`Page with slug ${slug} not found`);
+    }
+    return await this.pagesRepository.getPageContacts(page?.id);
+  }
+
+  async deletePageContact(contactId: string, userId: string) {
+    const contact = await this.pagesRepository.getPageContactById(contactId);
+    if (!contact) {
+      throw new NotFoundException(`Contact with ID ${contactId} not found`);
+    }
+
+    const pageOwnerId = await this.getPageOwnerId(contact.pageId);
+    if (pageOwnerId !== userId) {
+      throw new BadRequestException('You are not the owner of this page');
+    }
+
+    return await this.pagesRepository.deletePageContact(contactId);
+  }
+
+  async getPageBySlug(slug: string) {
+    return await this.pagesRepository.getPageBySlug(slug);
+  }
+
   async addPageFollower(page_id: string, user: any) {
     return await this.pagesRepository.addPageFollower(page_id, user.id);
   }

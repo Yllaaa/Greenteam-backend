@@ -76,6 +76,7 @@ export const pagesRelations = relations(pages, ({ one, many }) => ({
 export const pagesContacts = pgTable(
   'pages_contacts',
   {
+    id: uuid().primaryKey().defaultRandom(),
     pageId: uuid('page_id')
       .notNull()
       .references(() => pages.id),
@@ -84,7 +85,7 @@ export const pagesContacts = pgTable(
     email: varchar('email', { length: 256 }).notNull(),
     phoneNum: varchar('phone_num', { length: 20 }).notNull(),
   },
-  (table) => [primaryKey({ columns: [table.pageId, table.email] })],
+  (table) => [index('contact_page_id_idx').on(table.pageId)],
 );
 
 export const pagesContactsRelations = relations(pagesContacts, ({ one }) => ({

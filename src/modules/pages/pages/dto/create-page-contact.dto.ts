@@ -11,6 +11,5 @@ export class CreatePageContactDto {
   email: string;
 
   @IsString()
-  @IsPhoneNumber()
   phoneNum: string;
 }

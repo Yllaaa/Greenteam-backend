@@ -10,13 +10,13 @@ import {
   HttpStatus,
   Query,
   NotFoundException,
+  Delete,
 } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
-import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
@@ -52,6 +52,23 @@ export class PagesController {
     const userId = req.user.id;
     await this.pagesService.addPageContact(contact, pageSlug, userId);
     return { message: 'Contact added successfully' };
+  }
+
+  @Get(':slug/contacts')
+  async getPageContact(@Param('slug') slug: string) {
+    return await this.pagesService.getPageContacts(slug);
+  }
+
+  @Delete(':slug/contacts/:id')
+  async deletePageContact(
+    @Param('slug') pageSlug: string,
+    @Param('id') contactId: string,
+    @Req() req,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.id;
+    await this.pagesService.deletePageContact(contactId, userId);
+    return res.status(HttpStatus.OK).json({ message: 'Contact deleted' });
   }
 
   //   @Get(':id/follow')

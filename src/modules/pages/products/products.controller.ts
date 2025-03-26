@@ -11,16 +11,17 @@ import {
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { GetPageProductsDto } from './dtos/get-page-products';
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Post(':pageId/create-product')
+  @Post('create-product')
   async createProductFromUser(
     @Body() createProductDto: CreateProductDto,
     @Req() request: any,
-    @Param('pageId') pageId: string,
+    @Param('slug') slug: string,
   ) {
     const userId = request.user.id;
     const sellerType = 'page';
@@ -29,9 +30,17 @@ export class ProductsController {
       {
         ...createProductDto,
         sellerType,
-        pageId,
+        slug,
       },
       userId,
     );
+  }
+
+  @Get('')
+  async getPageProducts(
+    @Query() getPageProductsDto: GetPageProductsDto,
+    @Param('slug') slug: string,
+  ) {
+    return this.productsService.getPageProducts(getPageProductsDto, slug);
   }
 }

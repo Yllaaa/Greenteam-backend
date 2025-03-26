@@ -123,6 +123,30 @@ export class PagesRepository {
       .returning();
   }
 
+  async getPageContacts(pageId: string) {
+    return await this.drizzleService.db.query.pagesContacts.findMany({
+      where: eq(pagesContacts.pageId, pageId),
+      columns: {
+        id: true,
+        name: true,
+        title: true,
+        email: true,
+        phoneNum: true,
+      },
+    });
+  }
+  async deletePageContact(contactId: string) {
+    return await this.drizzleService.db
+      .delete(pagesContacts)
+      .where(eq(pagesContacts.id, contactId));
+  }
+
+  async getPageContactById(contactId: string) {
+    return await this.drizzleService.db.query.pagesContacts.findFirst({
+      where: eq(pagesContacts.id, contactId),
+    });
+  }
+
   async addPageFollower(page_id: string, user_id: string) {
     return await this.drizzleService.db
       .insert(pagesFollowers)
@@ -211,6 +235,8 @@ export class PagesRepository {
         id: true,
         slug: true,
         ownerId: true,
+        countryId: true,
+        cityId: true,
       },
     });
   }
