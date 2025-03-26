@@ -157,46 +157,6 @@ export class PagesRepository {
       .returning();
   }
 
-  async getPagePosts(pageId: string, limit: number = 10, offset: number = 0) {
-    return await this.drizzleService.db.query.posts.findMany({
-      where: and(eq(posts.creatorId, pageId), eq(posts.creatorType, 'page')),
-      with: {
-        mainTopic: true,
-        subTopics: {
-          with: {
-            topic: true,
-          },
-        },
-        comments: {
-          with: {
-            author: {
-              columns: {
-                id: true,
-                fullName: true,
-                avatar: true,
-              },
-            },
-            reactions: true,
-          },
-        },
-        reactions: {
-          with: {
-            user: {
-              columns: {
-                id: true,
-                fullName: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: (posts, { desc }) => [desc(posts.createdAt)],
-      limit: limit,
-      offset: offset,
-    });
-  }
-
   async getPageById(pageId: string) {
     const page = await this.drizzleService.db.query.pages.findFirst({
       where: eq(pages.id, pageId),
@@ -238,28 +198,6 @@ export class PagesRepository {
         countryId: true,
         cityId: true,
       },
-    });
-  }
-
-  async getPageEvents(pageId: string, limit: number = 10, offset: number = 0) {
-    return await this.drizzleService.db.query.events.findMany({
-      where: and(eq(events.creatorId, pageId), eq(events.creatorType, 'page')),
-      with: {
-        usersJoined: {
-          with: {
-            user: {
-              columns: {
-                id: true,
-                fullName: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: (events, { desc }) => [desc(events.startDate)],
-      limit: limit,
-      offset: offset,
     });
   }
 }

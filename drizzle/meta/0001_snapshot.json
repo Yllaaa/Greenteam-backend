@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
+  "id": "5806702c-2aa2-4fe2-8626-d5c191e4f66d",
+=======
   "id": "c622a2bc-8f73-4d83-8b0d-750134e981ff",
+>>>>>>> main
   "prevId": "fc6a3fc5-0e73-4fc7-a62c-468dd3f892bd",
   "version": "7",
   "dialect": "postgresql",
@@ -747,12 +751,21 @@
           "primaryKey": false,
           "notNull": true
         },
+<<<<<<< HEAD
+        "reaction_type": {
+          "name": "reaction_type",
+          "type": "reaction_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+=======
         "reactionType": {
           "name": "reactionType",
           "type": "reaction_type",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
+>>>>>>> main
         },
         "created_at": {
           "name": "created_at",
@@ -773,7 +786,11 @@
               "nulls": "last"
             },
             {
+<<<<<<< HEAD
+              "expression": "reaction_type",
+=======
               "expression": "reactionType",
+>>>>>>> main
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1544,6 +1561,8 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+<<<<<<< HEAD
+=======
         },
         "country_id": {
           "name": "country_id",
@@ -1563,6 +1582,7 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+>>>>>>> main
         }
       },
       "indexes": {
@@ -1608,6 +1628,8 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+<<<<<<< HEAD
+=======
         },
         "pages_country_id_countries_id_fk": {
           "name": "pages_country_id_countries_id_fk",
@@ -1634,6 +1656,7 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+>>>>>>> main
         }
       },
       "compositePrimaryKeys": {},

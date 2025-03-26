@@ -19,5 +19,6 @@ const eventsRoutes = [
       { path: 'events', module: EventsModule, children: eventsRoutes },
     ]),
   ],
+  exports: [EventsService, EventsRepository],
 })
 export class EventsModule {}

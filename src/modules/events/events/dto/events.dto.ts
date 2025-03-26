@@ -1,15 +1,11 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
 import { SQL } from 'drizzle-orm';
-import { EventCategory } from 'src/modules/db/schemas/schema';
+import { CreatorType, EventCategory } from 'src/modules/db/schemas/schema';
 
-export class EventsDto {
-  @IsUUID()
-  @IsOptional()
-  creatorId: string;
-
+export class CreateEventDto {
   @IsIn(['user', 'page'])
-  creatorType: SQL<'user' | 'page'>;
+  creatorType: CreatorType;
 
   @IsString()
   title: string;

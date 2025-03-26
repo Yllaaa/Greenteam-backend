@@ -8,6 +8,7 @@ import {
   IsInt,
 } from 'class-validator';
 import { SQL } from 'drizzle-orm';
+import { CreatorType } from 'src/modules/db/schemas/schema';
 
 export class CreatePostDto {
   @IsString()
@@ -18,12 +19,8 @@ export class CreatePostDto {
   @IsNotEmpty()
   mainTopicId: number;
 
-  @IsUUID()
-  @IsOptional()
-  creatorId: string;
-
   @IsEnum(['user', 'page', 'group_member'])
-  creatorType: SQL<'user' | 'page' | 'group_member'>;
+  creatorType: CreatorType;
 
   @IsArray()
   @IsInt({ each: true })

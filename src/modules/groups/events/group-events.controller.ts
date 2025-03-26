@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GroupEventsService } from './group-events.service';
-import { EventsDto } from '../../events/events/dto/events.dto';
+import { CreateEventDto } from '../../events/events/dto/events.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 
 @Controller('groups/')
@@ -22,7 +22,7 @@ export class GroupEventsController {
   @Post(':groupId/create-event')
   async createGroupEvent(
     @Param('groupId') groupId: string,
-    @Body() eventData: EventsDto,
+    @Body() eventData: CreateEventDto,
     @Request() req,
   ) {
     const groupMemberId = req.user.id;

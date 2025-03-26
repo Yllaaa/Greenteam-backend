@@ -71,26 +71,8 @@ export class PagesController {
     return res.status(HttpStatus.OK).json({ message: 'Contact deleted' });
   }
 
-  //   @Get(':id/follow')
-  //   async addPageFollower(@Param() pageId: IdParamDto, @Req() req) {
-  //     return await this.pagesService.addPageFollower(pageId.id, req.user);
-  //   }
-
-  //   @Get(':id/events')
-  //   async getPageEvents(
-  //     @Param() pageId: IdParamDto,
-  //     @Query() paginationQuery: PaginationQueryDto,
-  //   ) {
-  //     const { limit, offset } = paginationQuery;
-  //     return await this.pagesService.getPageEvents(pageId.id, limit, offset);
-  //   }
-
-  //   @Get(':id/posts')
-  //   async getPagePosts(
-  //     @Param() pageId: IdParamDto,
-  //     @Query() paginationQuery: PaginationQueryDto,
-  //   ) {
-  //     const { limit, offset } = paginationQuery;
-  //     return await this.pagesService.getPagePosts(pageId.id, limit, offset);
-  //   }
+  @Post(':id/follow')
+  async addPageFollower(@Param('pageId') pageId: string, @Req() req) {
+    return await this.pagesService.addPageFollower(pageId, req.user);
+  }
 }

@@ -50,7 +50,6 @@ export class GroupPostsService {
     const post = await this.postsRepository.createPost(
       dto.content,
       dto.mainTopicId,
-      groupMemberId,
       dto.creatorType,
       groupMemberId,
       groupId,
