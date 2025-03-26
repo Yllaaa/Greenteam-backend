@@ -5,10 +5,12 @@ import { UsersRepository } from './users.repository';
 import { FriendsModule } from './friends/friends.module';
 import { RouterModule } from '@nestjs/core';
 import { ScoreModule } from './score/score.module';
+import { ProfileModule } from './profile/profile.module';
 
 const usersRoutes = [
-  { path: '/user', module: FriendsModule },
+  { path: 'friends', module: FriendsModule },
   { path: 'score', module: ScoreModule },
+  { path: 'profile', module: ProfileModule },
 ];
 @Module({
   imports: [
@@ -17,6 +19,7 @@ const usersRoutes = [
       { path: '/users', module: FriendsModule, children: usersRoutes },
     ]),
     ScoreModule,
+    ProfileModule,
   ],
   providers: [UsersService, UsersRepository],
   controllers: [UsersController],

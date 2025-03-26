@@ -1,1 +1,0 @@
-ALTER TABLE "publications_reactions" ALTER COLUMN "reaction_type" SET NOT NULL;
