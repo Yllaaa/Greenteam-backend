@@ -1,4 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ProfileRepository } from './profile.repository';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
-export class ProfileService {}
+export class ProfileService {
+    constructor(private profileRepository: ProfileRepository) { }
+
+    async getUserByUsername(username: string, userId: string) {
+        const user_data = await this.profileRepository.getUserByUsername(username)
+        return {
+            user_data,
+            is_my_profile: user_data?.id === userId
+        };
+    }
+
+
+
+    async updateProfile(userId: string, updateData: UpdateProfileDto) {
+        const updatedUser = await this.profileRepository.updateProfile(userId, updateData);
+
+        if (!updatedUser || updatedUser.length === 0) {
+            throw new NotFoundException('User not found');
+        }
+
+        return {
+            user: updatedUser[0]
+        };
+    }
+}
