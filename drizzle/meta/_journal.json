@@ -29,6 +29,20 @@
       "when": 1744005423227,
       "tag": "0003_sudden_captain_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1744016321068,
+      "tag": "0004_outgoing_rattler",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1744016439342,
+      "tag": "0005_lazy_shocker",
+      "breakpoints": true
     }
   ]
 }

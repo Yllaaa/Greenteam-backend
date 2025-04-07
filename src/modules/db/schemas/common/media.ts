@@ -1,5 +1,7 @@
 import { pgTable, uuid, varchar, timestamp, index } from 'drizzle-orm/pg-core';
 import { mediaParentTypeEnum, mediaTypeEnum } from '../posts/enums';
+import { relations } from 'drizzle-orm';
+import { products } from '../schema';
 
 export const entitiesMedia = pgTable(
   'entities_media',
@@ -16,3 +18,10 @@ export const entitiesMedia = pgTable(
     index('media_type_idx').on(table.mediaType),
   ],
 );
+
+export const entitiesMediaRelations = relations(entitiesMedia, ({ one }) => ({
+  product: one(products, {
+    fields: [entitiesMedia.parentId],
+    references: [products.id],
+  }),
+}));
