@@ -165,7 +165,7 @@ export class UploadMediaService {
       audio?: Express.Multer.File[];
       document?: Express.Multer.File[];
     },
-    type: 'posts' | 'events' | 'profiles' | 'products',
+    type: 'posts' | 'events' | 'profiles' | 'products' | 'forum_publications',
   ) {
     this.validateMediaCombination(files);
 

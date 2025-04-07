@@ -81,7 +81,6 @@ export class PostsRepository {
           mediaUrl: entitiesMedia.mediaUrl,
           mediaType: entitiesMedia.mediaType,
         });
-      console.log('Inserted media entry:', mediaEntry);
     }
   }
 

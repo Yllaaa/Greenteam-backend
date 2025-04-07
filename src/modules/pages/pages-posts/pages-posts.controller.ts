@@ -17,7 +17,7 @@ import { GetPostsDto } from 'src/modules/shared-modules/posts/posts/dto/get-post
 import { CreatePostDto } from 'src/modules/shared-modules/posts/posts/dto/create-post.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
-import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/ValidateMedia.Interceptor';
+import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/validateMedia.interceptor';
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class PagesPostsController {

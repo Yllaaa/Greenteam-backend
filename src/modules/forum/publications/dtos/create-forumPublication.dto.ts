@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -23,6 +24,7 @@ export class CreateForumPublicationDto {
   content: string;
 
   @IsInt()
+  @Type(() => Number)
   mainTopicId: number;
 
   @IsEnum(ForumSection)

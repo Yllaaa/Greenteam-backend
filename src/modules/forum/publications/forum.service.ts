@@ -7,14 +7,21 @@ import {
 import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { SQL } from 'drizzle-orm';
 import { Action } from 'src/modules/pointing-system/pointing-system.repository';
+import { MediaType } from 'src/modules/db/schemas/posts/enums';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 
 @Injectable()
 export class ForumService {
   constructor(
     private readonly forumRepository: ForumRepository,
     private readonly queuesService: QueuesService,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
-  async createPublication(dto: CreateForumPublicationDto, authorId: string) {
+  async createPublication(
+    data: { dto: CreateForumPublicationDto; files: any },
+    authorId: string,
+  ) {
+    const { dto, files } = data;
     const topic = await this.forumRepository.findTopicById(dto.mainTopicId);
     if (!topic) {
       throw new NotFoundException('Topic not found');
@@ -23,6 +30,14 @@ export class ForumService {
       dto,
       authorId,
     );
+    if (files) {
+      const uploadedFiles = await this.uploadMediaService.uploadFilesToS3(
+        files,
+        'forum_publications',
+      );
+      await this.handlePublicationMedia(newPublication.id, uploadedFiles);
+    }
+
     const action: Action = {
       id: newPublication.id,
       type: 'forum_publication',
@@ -58,5 +73,33 @@ export class ForumService {
       throw new NotFoundException('Publication not found');
     }
     return publication;
+  }
+
+  async handlePublicationMedia(
+    publicationId: string,
+    files: any,
+  ): Promise<void> {
+    const mediaEntries: {
+      parentId: string;
+      parentType: 'forum_publication';
+      mediaUrl: string;
+      mediaType: MediaType;
+    }[] = [];
+    const pushMedia = (file: any, mediaType: MediaType) => {
+      mediaEntries.push({
+        parentId: publicationId,
+        parentType: 'forum_publication',
+        mediaUrl: file.location,
+        mediaType,
+      });
+    };
+
+    files?.images?.forEach((file) => pushMedia(file, 'image'));
+    files?.audio?.forEach((file) => pushMedia(file, 'audio'));
+    files?.document?.forEach((file) => pushMedia(file, 'document'));
+
+    if (mediaEntries.length) {
+      await this.forumRepository.insertPublicationMedia(mediaEntries);
+    }
   }
 }

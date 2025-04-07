@@ -45,7 +45,6 @@ export class ReactionsService {
       createdAt: Date;
       content: string;
       mainTopicId: number;
-      mediaUrl: string | null;
       headline: string;
       authorId: string;
       section: 'doubt' | 'dream' | 'need';

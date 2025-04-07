@@ -9,6 +9,7 @@ import {
   serial,
 } from 'drizzle-orm/pg-core';
 import {
+  entitiesMedia,
   publicationsComments,
   publicationsReactions,
   topics,
@@ -41,7 +42,6 @@ export const forumPublications = pgTable(
       .notNull()
       .references(() => users.id),
     section: forumSections().notNull(),
-    mediaUrl: varchar('media_url', { length: 2048 }),
     status: publicationsStatus().default('published'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
@@ -64,5 +64,6 @@ export const forumsPublicationsRelations = relations(
     }),
     comments: many(publicationsComments),
     reactions: many(publicationsReactions),
+    media: many(entitiesMedia),
   }),
 );

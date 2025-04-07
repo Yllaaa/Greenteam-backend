@@ -14,7 +14,6 @@ export class ValidateMediaInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     let files = request.files;
 
-    // 👇 Normalize files to an object grouped by fieldname
     if (Array.isArray(files)) {
       const grouped: Record<string, Express.Multer.File[]> = {};
       for (const file of files) {
@@ -25,7 +24,7 @@ export class ValidateMediaInterceptor implements NestInterceptor {
         grouped[key].push(file);
       }
       files = grouped;
-      request.files = grouped; // set it back to request
+      request.files = grouped;
     }
 
     this.validateMediaConstraints(files);

@@ -20,6 +20,7 @@ export class MarketplaceService {
     topicId: number;
     countryId: number;
     cityId: number;
+    images: Express.Multer.File[];
   }) {
     if (data.sellerType !== 'user') {
       throw new BadRequestException('Invalid seller type');
