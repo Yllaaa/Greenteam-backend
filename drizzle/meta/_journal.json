@@ -8,6 +8,20 @@
       "when": 1742978049367,
       "tag": "0000_ambitious_doorman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1743888171905,
+      "tag": "0001_good_mentallo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743891091916,
+      "tag": "0002_remarkable_nick_fury",
+      "breakpoints": true
     }
   ]
 }

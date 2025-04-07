@@ -19,7 +19,7 @@ export const creatorTypeEnum = pgEnum('creator_type', [
 ]);
 export type CreatorType = (typeof creatorTypeEnum.enumValues)[number];
 export const mediaTypeEnum = pgEnum('media_type', [
-  'photo',
+  'image',
   'video',
   'document',
   'audio',
@@ -31,6 +31,9 @@ export const mediaParentTypeEnum = pgEnum('media_parent_type', [
   'forum_publication',
   'product',
 ]);
+
+export type MediaParentType = (typeof mediaParentTypeEnum.enumValues)[number];
+export type MediaType = (typeof mediaTypeEnum.enumValues)[number];
 
 export const reactionableTypeEnum = pgEnum('reactionable_type', [
   'post',

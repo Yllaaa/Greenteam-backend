@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsInt,
 } from 'class-validator';
-import { SQL } from 'drizzle-orm';
+import { Type } from 'class-transformer';
 import { CreatorType } from 'src/modules/db/schemas/schema';
 
 export class CreatePostDto {
@@ -15,6 +15,7 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
+  @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
   mainTopicId: number;
@@ -22,8 +23,9 @@ export class CreatePostDto {
   @IsEnum(['user', 'page', 'group_member'])
   creatorType: CreatorType;
 
-  @IsArray()
-  @IsInt({ each: true })
   @IsOptional()
+  @IsArray()
+  @Type(() => Number)
+  @IsInt({ each: true })
   subtopicIds: number[];
 }

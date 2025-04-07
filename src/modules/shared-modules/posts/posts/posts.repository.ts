@@ -3,6 +3,9 @@ import { eq, exists, inArray, SQL, and, or, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   CreatorType,
+  entitiesMedia,
+  MediaParentType,
+  MediaType,
   pages,
   posts,
   postSubTopics,
@@ -53,6 +56,33 @@ export class PostsRepository {
     return await this.drizzleService.db
       .insert(postSubTopics)
       .values({ postId, topicId });
+  }
+
+  async insertPostMedia(
+    media: {
+      parentId: string;
+      parentType: MediaParentType;
+      mediaUrl: string;
+      mediaType: MediaType;
+    }[],
+  ) {
+    for (const item of media) {
+      const { parentId, parentType, mediaUrl, mediaType } = item;
+      const [mediaEntry] = await this.drizzleService.db
+        .insert(entitiesMedia)
+        .values({
+          parentId,
+          parentType,
+          mediaUrl,
+          mediaType,
+        })
+        .returning({
+          id: entitiesMedia.id,
+          mediaUrl: entitiesMedia.mediaUrl,
+          mediaType: entitiesMedia.mediaType,
+        });
+      console.log('Inserted media entry:', mediaEntry);
+    }
   }
 
   async getPostById(postId: string) {
@@ -130,6 +160,24 @@ export class PostsRepository {
           ELSE ${users.username}
         END`,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+        COALESCE(
+          array_agg(
+            json_build_object(
+              'id', ${entitiesMedia.id},
+              'mediaUrl', ${entitiesMedia.mediaUrl},
+              'mediaType', ${entitiesMedia.mediaType}
+            )
+          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+          '{}'::json[]
+        )
+      `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
@@ -151,6 +199,7 @@ export class PostsRepository {
       })
       .from(posts)
       .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
       .leftJoin(pages, eq(posts.creatorId, pages.id))
       .leftJoin(
         publicationsComments,
@@ -174,6 +223,7 @@ export class PostsRepository {
         pages.name,
         pages.avatar,
         pages.slug,
+
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
         userReaction.userReactionType,
