@@ -316,6 +316,24 @@ export class PostsRepository {
             ELSE ${users.username}
           END`,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+        COALESCE(
+          array_agg(
+            json_build_object(
+              'id', ${entitiesMedia.id},
+              'mediaUrl', ${entitiesMedia.mediaUrl},
+              'mediaType', ${entitiesMedia.mediaType}
+            )
+          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+          '{}'::json[]
+        )
+      `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(

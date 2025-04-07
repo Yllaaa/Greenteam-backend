@@ -20,7 +20,9 @@ export class CreatePostDto {
   @IsNotEmpty()
   mainTopicId: number;
 
-  @IsEnum(['user', 'page', 'group_member'])
+  @IsEnum(['user', 'page', 'group_member'], {
+    message: 'creatorType must be one of: user, page, group_member',
+  })
   creatorType: CreatorType;
 
   @IsOptional()

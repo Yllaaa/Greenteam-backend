@@ -12,7 +12,21 @@ import { extname } from 'path';
 export class ValidateMediaInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
-    const files: { [key: string]: Express.Multer.File[] } = request.files || {};
+    let files = request.files;
+
+    // 👇 Normalize files to an object grouped by fieldname
+    if (Array.isArray(files)) {
+      const grouped: Record<string, Express.Multer.File[]> = {};
+      for (const file of files) {
+        const key = file.fieldname;
+        if (!grouped[key]) {
+          grouped[key] = [];
+        }
+        grouped[key].push(file);
+      }
+      files = grouped;
+      request.files = grouped; // set it back to request
+    }
 
     this.validateMediaConstraints(files);
 
@@ -35,7 +49,8 @@ export class ValidateMediaInterceptor implements NestInterceptor {
     };
 
     Object.keys(files).forEach((key) => {
-      const groupFiles = files[key];
+      const groupFiles = Array.isArray(files[key]) ? files[key] : [files[key]];
+
       for (const file of groupFiles) {
         const fileExt = extname(file.originalname).toLowerCase();
         if (fileTypes.images.includes(fileExt)) mediaCounts.images++;
