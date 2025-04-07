@@ -58,6 +58,45 @@ export class PagesRepository {
     return !!page;
   }
 
+  async getAllPages(pagination: { page: number; limit: number }) {
+    const offset = (pagination.page - 1) * pagination.limit;
+    const pagesList = await this.drizzleService.db.query.pages.findMany({
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        why: true,
+        what: true,
+        how: true,
+        avatar: true,
+        cover: true,
+        category: true,
+      },
+      with: {
+        topic: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: (pages, { desc }) => [desc(pages.createdAt)],
+      limit: pagination.limit,
+      offset,
+      extras: {
+        followersCount: sql<number>`(
+          SELECT CAST(count(*) AS INTEGER)
+          FROM ${pagesFollowers} pf
+          WHERE pf.page_id = ${pages.id}
+        )`
+          .mapWith(Number)
+          .as('followers_count'),
+      },
+    });
+
+    return pagesList;
+  }
+
   async getPageDetails(pageId: string) {
     const page = await this.drizzleService.db.query.pages.findFirst({
       where: eq(pages.id, pageId),
