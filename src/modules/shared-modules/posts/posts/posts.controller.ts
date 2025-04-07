@@ -1,26 +1,46 @@
 import {
-  Body,
   Controller,
+  Post,
+  Body,
+  Req,
+  UseInterceptors,
+  UploadedFiles,
+  Query,
   Get,
   Param,
-  Post,
-  Query,
-  Req,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
+import {
+  AnyFilesInterceptor,
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { GetPostsDto } from './dto/get-posts.dto';
-@Controller()
+import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/validateMedia.interceptor';
+
 @UseGuards(JwtAuthGuard)
+@Controller('')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
   @Post('publish-post')
-  async createPost(@Body() createPostDto: CreatePostDto, @Req() req) {
+  async createPost(
+    @Body() createPostDto: CreatePostDto,
+    @Req() req,
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      audio?: Express.Multer.File[];
+      document?: Express.Multer.File[];
+    },
+  ) {
     const userId = req.user.id;
-    return this.postsService.createPost(createPostDto, userId);
+    return this.postsService.createPost({ createPostDto, files }, userId);
   }
 
   @Get()

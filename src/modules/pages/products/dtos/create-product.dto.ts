@@ -15,9 +15,12 @@ enum MarketTypeEnum {
 
 export class CreateProductDto {
   @IsString()
+  @Type(() => String)
   name: string;
 
   @IsString()
+  @IsOptional()
+  @Type(() => String)
   description: string;
 
   @IsNumber({}, { message: 'Price must be a number' })
@@ -31,5 +34,6 @@ export class CreateProductDto {
   marketType: MarketType;
 
   @IsNumber()
+  @Type(() => Number)
   topicId: number;
 }

@@ -10,11 +10,14 @@ import { PagesService } from '../pages/pages.service';
 import { SQL } from 'drizzle-orm';
 import { CreatePostDto } from 'src/modules/shared-modules/posts/posts/dto/create-post.dto';
 import { CreatorType } from 'src/modules/db/schemas/schema';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 @Injectable()
 export class PagesPostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
+    private readonly postsService: PostsService,
     private readonly pagesService: PagesService,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
 
   async getPagePosts(dto: GetPostsDto, slug: string, currentUserId?: string) {
@@ -56,15 +59,19 @@ export class PagesPostsService {
     return post;
   }
 
-  async createPost(dto: CreatePostDto, slug: string) {
+  async createPost(data: { dto: CreatePostDto; files: any }, slug: string) {
+    const { dto, files } = data;
     const { content, mainTopicId, creatorType, subtopicIds } = dto;
-    if (dto.creatorType != ('page' as CreatorType)) {
-      throw new BadRequestException('Only page can create posts');
+
+    if (creatorType !== 'page') {
+      throw new BadRequestException('Only page can create posts from here');
     }
+
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
       throw new NotFoundException('Page not found');
     }
+
     const newPost = await this.postsRepository.createPost(
       content,
       mainTopicId,
@@ -72,12 +79,21 @@ export class PagesPostsService {
       page.id,
     );
 
-    if (subtopicIds.length) {
+    if (subtopicIds?.length) {
       await Promise.all(
         subtopicIds.map((topicId) =>
           this.postsRepository.addSubtopic(newPost.id, topicId),
         ),
       );
+    }
+
+    if (files && Object.keys(files).length > 0) {
+      const uploadedFiles = await this.uploadMediaService.uploadFilesToS3(
+        files,
+        'posts',
+      );
+
+      await this.postsService.handlePostMedia(newPost.id, uploadedFiles);
     }
 
     return newPost;

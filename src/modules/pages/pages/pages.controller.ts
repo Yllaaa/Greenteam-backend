@@ -33,6 +33,14 @@ export class PagesController {
     return await this.pagesService.checkSlugTaken(slug);
   }
 
+  @Get('')
+  async getAllPages(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    return await this.pagesService.getAllPages({ page, limit });
+  }
+
   @Get(':slug')
   async getPageById(@Param('slug') slug: string, @Req() req) {
     const userId = req.user.id;

@@ -10,15 +10,24 @@ import { GetPostsDto } from './dto/get-posts.dto';
 import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
 import { Action } from 'src/modules/pointing-system/pointing-system.repository';
 import { QueuesService } from 'src/modules/common/queues/queues.service';
+import { MediaType } from 'src/modules/db/schemas/posts/enums';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly queuesService: QueuesService,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
-  async createPost(dto: CreatePostDto, userId: string): Promise<Post> {
-    const { content, mainTopicId, creatorType, subtopicIds } = dto;
-
+  async createPost(
+    dto: {
+      createPostDto: CreatePostDto;
+      files: any;
+    },
+    userId: string,
+  ): Promise<Post> {
+    const { content, mainTopicId, creatorType, subtopicIds } =
+      dto.createPostDto;
     const newPost = await this.postsRepository.createPost(
       content,
       mainTopicId,
@@ -33,10 +42,18 @@ export class PostsService {
         ),
       );
     }
+
+    const { files } = dto;
+    if (files && Object.keys(files).length > 0) {
+      const uploadedFiles = await this.uploadMediaService.uploadFilesToS3(
+        files,
+        'posts',
+      );
+      await this.handlePostMedia(newPost.id, uploadedFiles);
+    }
+
     const action: Action = { id: newPost.id, type: 'post' };
-
     const topicsToAward = subtopicIds.length ? subtopicIds : [mainTopicId];
-
     await Promise.all(
       topicsToAward.map((topicId) =>
         this.queuesService.addPointsJob(userId, topicId, action),
@@ -79,5 +96,31 @@ export class PostsService {
       throw new NotFoundException('Post not found');
     }
     return post;
+  }
+
+  async handlePostMedia(postId: string, files: any): Promise<void> {
+    const mediaEntries: {
+      parentId: string;
+      parentType: 'post';
+      mediaUrl: string;
+      mediaType: MediaType;
+    }[] = [];
+
+    const pushMedia = (file: any, mediaType: MediaType) => {
+      mediaEntries.push({
+        parentId: postId,
+        parentType: 'post',
+        mediaUrl: file.location,
+        mediaType,
+      });
+    };
+
+    files?.images?.forEach((file) => pushMedia(file, 'image'));
+    files?.audio?.forEach((file) => pushMedia(file, 'audio'));
+    files?.document?.forEach((file) => pushMedia(file, 'document'));
+
+    if (mediaEntries.length) {
+      await this.postsRepository.insertPostMedia(mediaEntries);
+    }
   }
 }

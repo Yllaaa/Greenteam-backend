@@ -26,7 +26,11 @@ export class PagesService {
   async checkSlugTaken(slug: string) {
     return await this.pagesRepository.checkSlugTaken(slug);
   }
+  async getAllPages(pagination: { page: number; limit: number }) {
+    const { page, limit } = pagination;
 
+    return await this.pagesRepository.getAllPages({ page, limit });
+  }
   async getPageDetails(slug: string, userId: string) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {

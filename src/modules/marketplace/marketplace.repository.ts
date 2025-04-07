@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
-import { MarketType, products, SellerType } from '../db/schemas/schema';
+import {
+  entitiesMedia,
+  MarketType,
+  MediaParentType,
+  MediaType,
+  products,
+  SellerType,
+} from '../db/schemas/schema';
 import { and, eq, SQL, sql } from 'drizzle-orm';
 import { GetAllProductsDto } from './dtos/getAllProducts.dto';
 
@@ -45,6 +52,32 @@ export class MarketplaceRepository {
     return result[0];
   }
 
+  async insertProductImages(
+    images: {
+      parentId: string;
+      parentType: MediaParentType;
+      mediaUrl: string;
+      mediaType: MediaType;
+    }[],
+  ) {
+    for (const image of images) {
+      const { parentId, parentType, mediaUrl, mediaType } = image;
+      const [savedImage] = await this.drizzleService.db
+        .insert(entitiesMedia)
+        .values({
+          parentId,
+          parentType,
+          mediaUrl,
+          mediaType,
+        })
+        .returning({
+          id: entitiesMedia.id,
+          mediaUrl: entitiesMedia.mediaUrl,
+          mediaType: entitiesMedia.mediaType,
+          parentId: entitiesMedia.parentId,
+        });
+    }
+  }
   async getAllProducts(query: GetAllProductsDto, pageId?: string) {
     const filters: SQL[] = [];
     const { topicId, countryId, districtId, limit, page } = query;
@@ -81,10 +114,18 @@ export class MarketplaceRepository {
             name: true,
           },
         },
+        images: {
+          columns: {
+            id: true,
+            mediaUrl: true,
+            mediaType: true,
+          },
+        },
       },
       where: filters.length ? and(...filters) : undefined,
       limit,
       offset,
+      orderBy: (products, { desc }) => [desc(products.createdAt)],
     });
 
     return result;
@@ -122,6 +163,13 @@ export class MarketplaceRepository {
             id: true,
             name: true,
             avatar: true,
+          },
+        },
+        images: {
+          columns: {
+            id: true,
+            mediaUrl: true,
+            mediaType: true,
           },
         },
       },
