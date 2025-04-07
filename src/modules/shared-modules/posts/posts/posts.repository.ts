@@ -364,6 +364,7 @@ export class PostsRepository {
         eq(posts.id, reactionsAggregation.reactionableId),
       )
       .leftJoin(userReaction, eq(posts.id, userReaction.reactionableId))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
       .groupBy(
         posts.id,
         posts.content,
