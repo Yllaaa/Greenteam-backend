@@ -8,6 +8,18 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 export class ProfileController {
     constructor(private profileService: ProfileService) { }
 
+    @Get('pages')
+    async getUserOwnPages(@Req() req) {
+        const userId: string = req.user.id;
+        return await this.profileService.getUserOwnPages(userId);
+    }
+
+    @Get('groups')
+    async getUserOwnGroups(@Req() req) {
+        const userId: string = req.user.id;
+        return await this.profileService.getUserOwnGroups(userId);
+    }
+
     @Get(':username')
     async getUserByUsername(@Param('username') username: string, @Req() req) {
         const userId: string = req.user.id;
