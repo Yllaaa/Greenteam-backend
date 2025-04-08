@@ -428,22 +428,6 @@ export class PostsRepository {
     return data;
   }
 
-  async getAllPosts(offset: number, limit: number) {
-    return await this.drizzleService.db.query.posts.findMany({
-      offset: offset,
-      limit: limit,
-      with: {
-        user_creator: {
-          columns: {
-            fullName: true,
-            avatar: true,
-          },
-        },
-        comments: true,
-      },
-    });
-  }
-
   async getGroupPosts(
     groupId: string,
     pagination?: { limit?: number; page?: number },

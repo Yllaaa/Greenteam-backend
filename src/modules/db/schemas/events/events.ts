@@ -9,6 +9,7 @@ import {
   primaryKey,
   timestamp,
   serial,
+  index,
 } from 'drizzle-orm/pg-core';
 import { creatorTypeEnum, topics, users, groups, pages } from '../schema';
 import { relations } from 'drizzle-orm';
@@ -26,23 +27,32 @@ export const EventHostedBy = pgEnum('event_hosted_by', [
   'page',
 ]);
 
-export const events = pgTable('events', {
-  id: uuid().primaryKey().defaultRandom(),
-  creatorId: uuid('creator_id'),
-  creatorType: creatorTypeEnum('creator_type'),
-  title: varchar().notNull(),
-  description: text(),
-  location: varchar().notNull(),
-  startDate: timestamp('start_date'),
-  endDate: timestamp('end_date'),
-  category: EventCategory(),
-  hostedBy: EventHostedBy(),
-  poster: varchar(),
-  priority: smallint().notNull().default(0),
+export const events = pgTable(
+  'events',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    creatorId: uuid('creator_id'),
+    creatorType: creatorTypeEnum('creator_type'),
+    title: varchar('title').notNull(),
+    description: text('description').notNull(),
+    location: varchar('location').notNull(),
+    startDate: timestamp('start_date'),
+    endDate: timestamp('end_date'),
+    category: EventCategory('category'),
+    hostedBy: EventHostedBy('hosted_by'),
+    posterUrl: varchar('poster_url'),
+    priority: smallint('priority').notNull().default(0),
 
-  groupId: uuid('group_id').references(() => groups.id),
-  createdAt: timestamp().notNull().defaultNow(),
-});
+    groupId: uuid('group_id').references(() => groups.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('events_creator_id_idx').on(table.creatorId),
+    index('events_start_date_idx').on(table.startDate),
+    index('events_group_id_idx').on(table.groupId),
+    index('events_category_idx').on(table.category),
+  ],
+);
 
 export const events_relations = relations(events, ({ one, many }) => ({
   usersJoined: many(usersJoinedEvent),

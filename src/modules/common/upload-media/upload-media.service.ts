@@ -16,7 +16,16 @@ export class UploadMediaService {
   private readonly MAX_AUDIO_SIZE = 10; // MB
   private readonly MAX_DOC_SIZE = 50; // MB
   private readonly MAX_AUDIO_DURATION = 60; // seconds
-  private readonly ALLOWED_IMAGES = ['.jpg', '.jpeg', '.png', '.webp'];
+  private readonly ALLOWED_IMAGES = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.webp',
+    '.heic',
+    '.gif',
+    '.avif',
+    '.svg',
+  ];
   private readonly ALLOWED_DOCS = ['.pdf', '.docx'];
   private readonly ALLOWED_AUDIO = ['.mp3', '.wav'];
 
@@ -31,7 +40,6 @@ export class UploadMediaService {
   private validateFile(file: Express.Multer.File): void {
     const fileExt = extname(file.originalname).toLowerCase();
     const fileSizeMB = file.size / (1024 * 1024);
-
     if (this.ALLOWED_IMAGES.includes(fileExt)) {
       if (fileSizeMB > this.MAX_IMAGE_SIZE) {
         throw new BadRequestException(
@@ -245,6 +253,46 @@ export class UploadMediaService {
 
       throw error;
     }
+  }
+
+  async uploadSingleImage(
+    file: Express.Multer.File,
+    type:
+      | 'posts'
+      | 'event_poster'
+      | 'profiles'
+      | 'products'
+      | 'forum_publications',
+  ): Promise<{
+    filename: string;
+    location: string;
+    key: string;
+  }> {
+    this.validateFile(file);
+
+    const optimizedBuffer = await this.optimizeImage(file);
+
+    const fileExt = extname(file.originalname).toLowerCase();
+    const fileName = `users/${type}/${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+
+    const uploadResult = await this.s3
+      .upload({
+        Bucket:
+          this.configService.get<string>('AWS_S3_BUCKET_NAME') ||
+          (() => {
+            throw new Error('AWS_S3_BUCKET_NAME is not defined');
+          })(),
+        Key: fileName,
+        Body: optimizedBuffer,
+        ContentType: file.mimetype,
+      })
+      .promise();
+
+    return {
+      filename: fileName,
+      location: uploadResult.Location,
+      key: uploadResult.Key,
+    };
   }
 
   private async deleteS3Files(keys: string[]) {

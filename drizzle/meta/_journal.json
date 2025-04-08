@@ -43,6 +43,13 @@
       "when": 1744016439342,
       "tag": "0005_lazy_shocker",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744071169258,
+      "tag": "0006_melted_king_bedlam",
+      "breakpoints": true
     }
   ]
 }

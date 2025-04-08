@@ -15,9 +15,12 @@ enum PageCategoryEnum {
 }
 export class CreatePageDto {
   @IsString()
+  @Type(() => String)
   name: string;
 
   @IsString()
+  @Type(() => String)
+  @IsOptional()
   description: string;
 
   @IsString()
@@ -26,14 +29,16 @@ export class CreatePageDto {
     message:
       'Slug can only contain letters (A-Z, a-z), numbers (0-9), and underscores (_)',
   })
+  @Type(() => String)
   slug: string;
 
-  @Type(() => Number)
   @IsInt()
+  @Type(() => Number)
   topicId: number;
 
   @IsString()
   @IsOptional()
+  @Type(() => String)
   websiteUrl: string;
 
   @IsIn(Object.values(PageCategoryEnum), {
@@ -42,12 +47,18 @@ export class CreatePageDto {
   category: PageCategoryType;
 
   @IsString()
+  @IsOptional()
+  @Type(() => String)
   why: string;
 
   @IsString()
+  @IsOptional()
+  @Type(() => String)
   how: string;
 
   @IsString()
+  @IsOptional()
+  @Type(() => String)
   what: string;
 
   @IsNumber()
