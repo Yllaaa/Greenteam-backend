@@ -262,7 +262,8 @@ export class UploadMediaService {
       | 'event_poster'
       | 'profiles'
       | 'products'
-      | 'forum_publications',
+      | 'forum_publications'
+      | 'group_banners',
   ): Promise<{
     filename: string;
     location: string;

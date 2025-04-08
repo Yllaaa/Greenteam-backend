@@ -1,39 +1,60 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { GroupsRepository } from './groups.repository';
-import { InsertGroupDto, UpdateGroupDto } from './dtos/groups.dto';
+import { CreateGroupDto } from './dtos/create-group.dto';
+import { UpdateGroupDto } from './dtos/update-group.dto';
+import { UploadMediaService } from '../common/upload-media/upload-media.service';
 
 @Injectable()
 export class GroupsService {
-  constructor(private readonly groupsRepository: GroupsRepository) { }
+  constructor(
+    private readonly groupsRepository: GroupsRepository,
+    private readonly uploadMediaService: UploadMediaService,
+  ) {}
 
-  async createGroup(data: InsertGroupDto) {
-    // TODO: should check for topic exist and user exist 
-
-    // const owner = await this.UsersRepository.findById(data.ownerId);
-    // if (!owner) {
-    //   throw new NotFoundException(`User with ID ${data.ownerId} not found`);
-    // }
-
-    // const topic = await this.topicsRepository.findById(data.topicId);
-    // if (!topic) {
-    //   throw new NotFoundException(`Topic with ID ${data.topicId} not found`);
-    // }
-    return this.groupsRepository.createGroup(data);
+  async createGroup(
+    data: { dto: CreateGroupDto; banner: any },
+    userId: string,
+  ) {
+    const { dto, banner } = data;
+    let uploadedImage;
+    if (banner) {
+      uploadedImage = await this.uploadMediaService.uploadSingleImage(
+        banner,
+        'group_banners',
+      );
+    }
+    return this.groupsRepository.createGroup(
+      { dto, bannerUrl: uploadedImage.location },
+      userId,
+    );
   }
 
-  async getAllGroups(pagination: { limit: number; page: number }, topicId?: number) {
-    return this.groupsRepository.getAllGroups(pagination, topicId);
+  async getAllGroups(
+    pagination: { limit: number; page: number },
+    userId: string,
+    topicId?: number,
+  ) {
+    return this.groupsRepository.getAllGroups(pagination, userId, topicId);
   }
 
-  async getGroupById(groupId: string) {
-    const group = await this.groupsRepository.getGroupById(groupId);
-    if (!group.length) {
+  async getGroupDetails(groupId: string, userId: string) {
+    const group = await this.groupsRepository.getGroupDetails(groupId, userId);
+    if (!group) {
       throw new NotFoundException(`Group with ID ${groupId} not found.`);
     }
-    return group[0];
+    return group;
   }
 
-  async updateGroupById(groupId: string, userId: string, data: UpdateGroupDto) {
+  async updateGroup(
+    groupId: string,
+    userId: string,
+    data: { dto: UpdateGroupDto; banner: any },
+  ) {
+    const { dto, banner } = data;
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
@@ -41,10 +62,26 @@ export class GroupsService {
     }
 
     if (group[0].ownerId !== userId) {
-      throw new ForbiddenException('Only the group owner can update this group.');
+      throw new ForbiddenException(
+        'Only the group owner can update this group.',
+      );
     }
 
-    const updateGroup = await this.groupsRepository.updateGroup(groupId, data);
+    let uploadedImage;
+    if (banner) {
+      const uploadedImage = await this.uploadMediaService.uploadSingleImage(
+        banner,
+        'group_banners',
+      );
+    }
+    const updateData = {
+      ...dto,
+      ...(uploadedImage && { bannerUrl: uploadedImage.location }),
+    };
+    const updateGroup = await this.groupsRepository.updateGroup(
+      groupId,
+      updateData,
+    );
     return updateGroup[0];
   }
 
@@ -56,7 +93,9 @@ export class GroupsService {
     }
 
     if (group[0].ownerId !== userId) {
-      throw new ForbiddenException('Only the group owner can delete this group.');
+      throw new ForbiddenException(
+        'Only the group owner can delete this group.',
+      );
     }
 
     const deletedGroup = await this.groupsRepository.deleteGroup(groupId);

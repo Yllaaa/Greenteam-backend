@@ -18,7 +18,7 @@ import { CreateEventDto } from '../events/dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from '../events/dto/getEvents.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-single-image.interceptor';
+import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard)

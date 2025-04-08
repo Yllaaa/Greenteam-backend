@@ -17,7 +17,7 @@ import { PagesEventsService } from './pages-events.service';
 import { CreateEventDto } from 'src/modules/events/events/dto/events.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-single-image.interceptor';
+import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')

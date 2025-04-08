@@ -77,18 +77,6 @@ export class GroupPostsService {
       throw new NotFoundException(`Group with ID ${groupId} not found.`);
     }
 
-    if (group[0].privacy === 'PRIVATE') {
-      const isMember = await this.groupMemberRepository.isGroupMember(
-        userId,
-        groupId,
-      );
-      if (!isMember) {
-        throw new ForbiddenException(
-          'You must be a member to view posts in this private group.',
-        );
-      }
-    }
-
     return this.postsRepository.getFilteredPosts(
       {
         mainTopicId: topic.mainTopicId,
