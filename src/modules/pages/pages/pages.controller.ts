@@ -10,13 +10,17 @@ import {
   HttpStatus,
   Query,
   NotFoundException,
+  UseInterceptors,
   Delete,
+  UploadedFiles,
 } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
+import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-media/interceptors/validate-profileImages.interceptor';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
@@ -24,8 +28,20 @@ export class PagesController {
   constructor(private readonly pagesService: PagesService) {}
 
   @Post('create-page')
-  async createPage(@Body() data: CreatePageDto, @Req() req) {
-    return await this.pagesService.createPage(data, req.user);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'cover', maxCount: 1 },
+    ]),
+  )
+  @UseInterceptors(ValidateProfileImagesInterceptor)
+  async createPage(
+    @Body() data: CreatePageDto,
+    @Req() req,
+    @UploadedFiles()
+    images: { avatar?: Express.Multer.File[]; cover?: Express.Multer.File[] },
+  ) {
+    return await this.pagesService.createPage({ page: data, images }, req.user);
   }
 
   @Get('check-slug-taken')

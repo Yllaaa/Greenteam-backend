@@ -27,7 +27,10 @@ export class PagesRepository {
       slug: string;
       why: string;
       how: string;
+
       what: string;
+      avatar?: string;
+      cover?: string;
       websiteUrl?: string;
     },
     ownerId: string,
@@ -45,6 +48,8 @@ export class PagesRepository {
         why: page.why,
         how: page.how,
         what: page.what,
+        avatar: page.avatar ?? null,
+        cover: page.cover ?? null,
         ownerId,
         websiteUrl: page.websiteUrl ?? null,
       })

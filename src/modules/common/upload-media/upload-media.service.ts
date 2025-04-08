@@ -16,7 +16,16 @@ export class UploadMediaService {
   private readonly MAX_AUDIO_SIZE = 10; // MB
   private readonly MAX_DOC_SIZE = 50; // MB
   private readonly MAX_AUDIO_DURATION = 60; // seconds
-  private readonly ALLOWED_IMAGES = ['.jpg', '.jpeg', '.png', '.webp'];
+  private readonly ALLOWED_IMAGES = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.webp',
+    '.heic',
+    '.gif',
+    '.avif',
+    '.svg',
+  ];
   private readonly ALLOWED_DOCS = ['.pdf', '.docx'];
   private readonly ALLOWED_AUDIO = ['.mp3', '.wav'];
 
@@ -31,7 +40,6 @@ export class UploadMediaService {
   private validateFile(file: Express.Multer.File): void {
     const fileExt = extname(file.originalname).toLowerCase();
     const fileSizeMB = file.size / (1024 * 1024);
-
     if (this.ALLOWED_IMAGES.includes(fileExt)) {
       if (fileSizeMB > this.MAX_IMAGE_SIZE) {
         throw new BadRequestException(
