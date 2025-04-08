@@ -27,4 +27,16 @@ export class ProfileService {
             user: updatedUser[0]
         };
     }
+
+
+    async getUserOwnPages(userId: string) {
+        const pages = await this.profileRepository.getUserOwnPages(userId);
+        return { pages };
+    }
+
+
+    async getUserOwnGroups(userId: string) {
+        const groups = await this.profileRepository.getUserOwnGroups(userId);
+        return { groups };
+    }
 }
