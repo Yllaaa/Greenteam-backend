@@ -15,7 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateProductDto } from './dtos/products.dto';
 import { MarketType } from '../db/schemas/schema';
 import { GetAllProductsDto } from './dtos/getAllProducts.dto';
-import { ValidateProductMediaInterceptor } from '../common/upload-media/validateProductMedia.interceptor';
+import { ValidateProductMediaInterceptor } from '../common/upload-media/interceptors/validateProductMedia.interceptor';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard)

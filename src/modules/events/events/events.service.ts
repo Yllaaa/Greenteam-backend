@@ -9,15 +9,33 @@ import { CreateEventDto } from './dto/events.dto';
 import { PostgresError } from 'postgres';
 import { SQL } from 'drizzle-orm';
 import { GetEventsDto } from './dto/getEvents.dto';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 
 @Injectable()
 export class EventsService {
   readonly EVENTS_PER_PAGE = 10;
 
-  constructor(readonly eventsRepository: EventsRepository) {}
+  constructor(
+    readonly eventsRepository: EventsRepository,
+    readonly uploadMediaService: UploadMediaService,
+  ) {}
 
-  async createEvent(event: CreateEventDto, userId: string) {
-    return await this.eventsRepository.createEvent(event, userId);
+  async createEvent(
+    event: { dto: CreateEventDto; poster: any },
+    userId: string,
+  ) {
+    const { dto } = event;
+    let uploadedImage;
+    if (event.poster) {
+      uploadedImage = await this.uploadMediaService.uploadSingleImage(
+        event.poster,
+        'event_poster',
+      );
+    }
+    return await this.eventsRepository.createEvent(
+      { dto, posterUrl: uploadedImage?.location || null },
+      userId,
+    );
   }
 
   async getEvents(dto: GetEventsDto, userId?: string) {

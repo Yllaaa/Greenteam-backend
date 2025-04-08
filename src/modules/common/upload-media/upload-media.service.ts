@@ -247,6 +247,46 @@ export class UploadMediaService {
     }
   }
 
+  async uploadSingleImage(
+    file: Express.Multer.File,
+    type:
+      | 'posts'
+      | 'event_poster'
+      | 'profiles'
+      | 'products'
+      | 'forum_publications',
+  ): Promise<{
+    filename: string;
+    location: string;
+    key: string;
+  }> {
+    this.validateFile(file);
+
+    const optimizedBuffer = await this.optimizeImage(file);
+
+    const fileExt = extname(file.originalname).toLowerCase();
+    const fileName = `users/${type}/${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+
+    const uploadResult = await this.s3
+      .upload({
+        Bucket:
+          this.configService.get<string>('AWS_S3_BUCKET_NAME') ||
+          (() => {
+            throw new Error('AWS_S3_BUCKET_NAME is not defined');
+          })(),
+        Key: fileName,
+        Body: optimizedBuffer,
+        ContentType: file.mimetype,
+      })
+      .promise();
+
+    return {
+      filename: fileName,
+      location: uploadResult.Location,
+      key: uploadResult.Key,
+    };
+  }
+
   private async deleteS3Files(keys: string[]) {
     if (keys.length === 0) return;
 

@@ -9,11 +9,15 @@ import {
   UseGuards,
   Post,
   Body,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { PagesEventsService } from './pages-events.service';
 import { CreateEventDto } from 'src/modules/events/events/dto/events.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-single-image.interceptor';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -21,14 +25,20 @@ export class PagesEventsController {
   constructor(private readonly pagesEventsService: PagesEventsService) {}
 
   @Post('create-event')
+  @UseInterceptors(ValidatePosterInterceptor, FileInterceptor('poster'))
   async createEvent(
-    @Body() eventDto: CreateEventDto,
+    @Body() dto: CreateEventDto,
     @Req() req,
     @Param('slug') slug: string,
+    @UploadedFile() poster: Express.Multer.File,
   ) {
     const userId = req.user.id;
     try {
-      return await this.pagesEventsService.createEvent(eventDto, slug, userId);
+      return await this.pagesEventsService.createEvent(
+        { dto, poster },
+        slug,
+        userId,
+      );
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }

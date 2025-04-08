@@ -17,7 +17,7 @@ import {
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetForumPublicationsDto } from './dtos/get-publication.dto';
 import { SQL } from 'drizzle-orm';
-import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/validateMedia.interceptor';
+import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard)

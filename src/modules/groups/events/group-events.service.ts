@@ -39,7 +39,10 @@ export class GroupEventsService {
       groupId: groupId,
     };
 
-    return this.eventsRepository.createEvent(event, userId);
+    return this.eventsRepository.createEvent(
+      { dto: event, posterUrl: 'null' },
+      userId,
+    );
   }
 
   async getGroupEvents(
