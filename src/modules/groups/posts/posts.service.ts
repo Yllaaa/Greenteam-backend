@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PostsRepository } from '../../shared-modules/posts/posts/posts.repository';
 import { Post } from '../../shared-modules/posts/posts/types/post.type';
-import { GroupsRepository } from '../groups.repository';
+import { GroupsRepository } from '../groups/groups.repository';
 import { GroupMembersRepository } from '../group-members/group-members.repository';
 import { GetPostsDto } from '../../shared-modules/posts/posts/dto/get-posts.dto';
 import { CreateGroupPostDto } from './dtos/create-post.dto';
@@ -41,17 +41,6 @@ export class GroupPostsService {
       throw new NotFoundException(`Group with ID ${groupId} not found.`);
     }
 
-    const isGroupMember = await this.groupMemberRepository.isGroupMember(
-      userId,
-      groupId,
-    );
-
-    if (!isGroupMember) {
-      throw new NotFoundException(
-        `user is not a member of group with ID ${groupId}`,
-      );
-    }
-
     const newPost = await this.postsRepository.createPost(
       dto.content,
       dto.mainTopicId,
@@ -60,7 +49,7 @@ export class GroupPostsService {
       groupId,
     );
 
-    if (dto.subtopicIds.length > 0) {
+    if (dto.subtopicIds && dto.subtopicIds.length > 0) {
       await Promise.all(
         dto.subtopicIds.map(async (topicId) => {
           await this.postsRepository.addSubtopic(newPost.id, topicId);
@@ -107,9 +96,25 @@ export class GroupPostsService {
 
   async getPostInDetails(postId: string, userId: string) {
     const post = await this.postsRepository.getPostInDetails(postId, userId);
-    if (!post) {
+    if (!post || !post.length) {
       throw new NotFoundException('Post not found');
     }
     return post;
+  }
+
+  async deletePost(postId: string, userId: string, groupId: string) {
+    const [group] = await this.groupsRepository.getGroupById(groupId);
+    const post = await this.postsRepository.getPostById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    if (post.creatorId !== userId && group.ownerId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this post');
+    }
+
+    await this.postsRepository.deletePost(postId, post.creatorId);
+    return {
+      message: 'Post deleted successfully',
+    };
   }
 }

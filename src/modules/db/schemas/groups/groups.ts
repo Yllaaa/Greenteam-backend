@@ -51,3 +51,36 @@ export const groupsRelations = relations(groups, ({ one, many }) => ({
   members: many(groupMembers),
   posts: many(posts),
 }));
+
+export const groupNotes = pgTable(
+  'group_notes',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    groupId: uuid('group_id')
+      .notNull()
+      .references(() => groups.id, { onDelete: 'cascade' }),
+    creatorId: uuid('creator_id').references(() => users.id, {
+      onDelete: 'cascade',
+    }),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: varchar('content', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
+  },
+  (table) => {
+    return {
+      groupNoteIdx: uniqueIndex('group_note_idx').on(table.title),
+    };
+  },
+);
+
+export const groupNotesRelations = relations(groupNotes, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupNotes.groupId],
+    references: [groups.id],
+  }),
+  creator: one(users, {
+    fields: [groupNotes.creatorId],
+    references: [users.id],
+  }),
+}));

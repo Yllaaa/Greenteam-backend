@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { DrizzleService } from '../db/drizzle.service';
-import { groupMembers, groups, topics, users } from '../db/schemas/schema';
+
 import { eq, sql, desc } from 'drizzle-orm';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
+import { DrizzleService } from 'src/modules/db/drizzle.service';
+import {
+  groupMembers,
+  groups,
+  topics,
+  users,
+} from 'src/modules/db/schemas/schema';
 
 @Injectable()
 export class GroupsRepository {

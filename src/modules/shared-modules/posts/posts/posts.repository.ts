@@ -90,6 +90,7 @@ export class PostsRepository {
       columns: {
         id: true,
         content: true,
+        creatorId: true,
         createdAt: true,
         mainTopicId: true,
       },
@@ -470,6 +471,15 @@ export class PostsRepository {
         reactions: true,
       },
     });
+  }
+
+  async deletePost(postId: string, creatorId: string) {
+    const post = await this.drizzleService.db
+      .delete(posts)
+      .where(and(eq(posts.id, postId), eq(posts.creatorId, creatorId)))
+      .returning({ id: posts.id });
+
+    return post;
   }
 
   private readonly commentCountQuery = sql<number>`

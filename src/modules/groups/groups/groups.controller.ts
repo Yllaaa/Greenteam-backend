@@ -14,13 +14,13 @@ import {
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { GetGroupDtos } from './dtos/get-groups.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ValidateBannerInterceptor } from '../common/upload-media/interceptors/validate-groupBanner.interceptor';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { ValidateBannerInterceptor } from 'src/modules/common/upload-media/interceptors/validate-groupBanner.interceptor';
 
-@Controller('groups')
+@Controller('')
 @UseGuards(JwtAuthGuard)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
