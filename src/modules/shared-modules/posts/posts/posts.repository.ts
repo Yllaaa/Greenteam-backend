@@ -38,7 +38,7 @@ export class PostsRepository {
       .insert(posts)
       .values({
         content,
-        mainTopicId: Number(mainTopicId),
+        mainTopicId,
         creatorId,
         creatorType,
         groupId,
@@ -167,16 +167,16 @@ export class PostsRepository {
           }>
         >`
         COALESCE(
-          array_agg(
-            json_build_object(
+          jsonb_agg(
+            DISTINCT jsonb_build_object(
               'id', ${entitiesMedia.id},
               'mediaUrl', ${entitiesMedia.mediaUrl},
               'mediaType', ${entitiesMedia.mediaType}
             )
           ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
-          '{}'::json[]
+          '[]'::jsonb
         )
-      `.as('media'),
+        `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
@@ -322,16 +322,16 @@ export class PostsRepository {
             mediaType: MediaType;
           }>
         >`
-        COALESCE(
-          array_agg(
-            json_build_object(
-              'id', ${entitiesMedia.id},
-              'mediaUrl', ${entitiesMedia.mediaUrl},
-              'mediaType', ${entitiesMedia.mediaType}
-            )
-          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
-          '{}'::json[]
-        )
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', ${entitiesMedia.id},
+            'mediaUrl', ${entitiesMedia.mediaUrl},
+            'mediaType', ${entitiesMedia.mediaType}
+          )
+        ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+        '[]'::jsonb
+      )
       `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:

@@ -134,17 +134,17 @@ export class ForumRepository {
             mediaType: MediaType;
           }>
         >`
-                COALESCE(
-                  array_agg(
-                    json_build_object(
-                      'id', ${entitiesMedia.id},
-                      'mediaUrl', ${entitiesMedia.mediaUrl},
-                      'mediaType', ${entitiesMedia.mediaType}
-                    )
-                  ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
-                  '{}'::json[]
-                )
-              `.as('media'),
+        COALESCE(
+          jsonb_agg(
+            DISTINCT jsonb_build_object(
+              'id', ${entitiesMedia.id},
+              'mediaUrl', ${entitiesMedia.mediaUrl},
+              'mediaType', ${entitiesMedia.mediaType}
+            )
+          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+          '[]'::jsonb
+        )
+        `.as('media'),
         commentCount: sql<number>`COALESCE(${commentCountSubquery.count}, 0)`,
         ...(sql`${forumPublications.section} = 'need'`
           ? {

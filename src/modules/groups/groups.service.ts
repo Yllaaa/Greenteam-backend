@@ -7,12 +7,14 @@ import { GroupsRepository } from './groups.repository';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { UploadMediaService } from '../common/upload-media/upload-media.service';
+import { GroupMembersService } from './group-members/group-members.service';
 
 @Injectable()
 export class GroupsService {
   constructor(
     private readonly groupsRepository: GroupsRepository,
     private readonly uploadMediaService: UploadMediaService,
+    private readonly groupMembersService: GroupMembersService,
   ) {}
 
   async createGroup(
@@ -27,10 +29,12 @@ export class GroupsService {
         'group_banners',
       );
     }
-    return this.groupsRepository.createGroup(
+    const [newGroup] = await this.groupsRepository.createGroup(
       { dto, bannerUrl: uploadedImage.location },
       userId,
     );
+    await this.groupMembersService.joinGroup(userId, newGroup.id);
+    return newGroup;
   }
 
   async getAllGroups(
