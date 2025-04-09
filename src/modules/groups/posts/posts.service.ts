@@ -47,9 +47,7 @@ export class GroupPostsService {
     );
 
     if (!isGroupMember) {
-      throw new NotFoundException(
-        `user is not a member of group with ID ${groupId}`,
-      );
+      throw new ForbiddenException(`user is not a member this of group`);
     }
 
     const newPost = await this.postsRepository.createPost(
@@ -60,7 +58,7 @@ export class GroupPostsService {
       groupId,
     );
 
-    if (dto.subtopicIds.length > 0) {
+    if (dto.subtopicIds && dto.subtopicIds.length > 0) {
       await Promise.all(
         dto.subtopicIds.map(async (topicId) => {
           await this.postsRepository.addSubtopic(newPost.id, topicId);
@@ -107,9 +105,25 @@ export class GroupPostsService {
 
   async getPostInDetails(postId: string, userId: string) {
     const post = await this.postsRepository.getPostInDetails(postId, userId);
-    if (!post) {
+    if (!post || !post.length) {
       throw new NotFoundException('Post not found');
     }
     return post;
+  }
+
+  async deletePost(postId: string, userId: string, groupId: string) {
+    const [group] = await this.groupsRepository.getGroupById(groupId);
+    const post = await this.postsRepository.getPostById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    if (post.creatorId !== userId && group.ownerId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this post');
+    }
+
+    await this.postsRepository.deletePost(postId, post.creatorId);
+    return {
+      message: 'Post deleted successfully',
+    };
   }
 }

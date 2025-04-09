@@ -11,24 +11,24 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GroupMembersService } from './group-members.service';
 import { UUID } from 'crypto';
 
-@Controller('groups')
+@Controller('')
 @UseGuards(JwtAuthGuard)
 export class GroupMembersController {
-  constructor(private readonly groupMembersService: GroupMembersService) { }
+  constructor(private readonly groupMembersService: GroupMembersService) {}
 
-  @Post(':groupId/join')
+  @Post('/join')
   async joinGroup(@Param('groupId') groupId: string, @Req() req) {
-    const userId: string = req.user.id
+    const userId: string = req.user.id;
     return this.groupMembersService.joinGroup(userId, groupId);
   }
 
-  @Delete(':groupId/leave')
+  @Delete('/leave')
   async leaveGroup(@Param('groupId') groupId: string, @Req() req) {
-    const userId: string = req.user.id
+    const userId: string = req.user.id;
     return this.groupMembersService.leaveGroup(userId, groupId);
   }
 
-  @Get(':groupId/members')
+  @Get('/members')
   async getGroupMembers(@Param('groupId') groupId: string) {
     return this.groupMembersService.getGroupMembers(groupId);
   }

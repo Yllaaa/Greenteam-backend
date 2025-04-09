@@ -71,6 +71,13 @@
       "when": 1744179335755,
       "tag": "0009_lean_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1744229758141,
+      "tag": "0010_peaceful_maggott",
+      "breakpoints": true
     }
   ]
 }

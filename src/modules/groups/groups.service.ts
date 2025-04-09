@@ -89,6 +89,10 @@ export class GroupsService {
     return updateGroup[0];
   }
 
+  async getGroupById(groupId: string) {
+    return await this.groupsRepository.getGroupById(groupId);
+  }
+
   async deleteGroup(groupId: string, userId: string) {
     const group = await this.groupsRepository.getGroupById(groupId);
 

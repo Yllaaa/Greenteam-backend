@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -19,16 +20,13 @@ import { CreateGroupPostDto } from './dtos/create-post.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
 
-@Controller('groups')
+@Controller('')
 @UseGuards(JwtAuthGuard)
 export class GroupPostsController {
-  constructor(
-    private readonly groupPostsService: GroupPostsService,
-    private readonly postsService: PostsService,
-  ) {}
+  constructor(private readonly groupPostsService: GroupPostsService) {}
 
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
-  @Post(':groupId/publish-post')
+  @Post('/publish-post')
   async createGroupPost(
     @Body() dto: CreateGroupPostDto,
     @Req() req,
@@ -44,7 +42,7 @@ export class GroupPostsController {
     return this.groupPostsService.createPost({ dto, files }, groupId, userId);
   }
 
-  @Get(':groupId/posts')
+  @Get('/')
   async getGroupPosts(
     @Param('groupId') groupId: string,
     @Query() getPostDto: GetPostsDto,
@@ -54,9 +52,19 @@ export class GroupPostsController {
     return this.groupPostsService.getGroupPosts(groupId, userId, getPostDto);
   }
 
-  @Get(':groupId/posts/:postId')
+  @Get('/:postId')
   async getGroupPost(@Param('postId') postId: string, @Req() req) {
     const userId: string = req.user.id;
-    return this.postsService.getPostInDetails(postId, userId);
+    return this.groupPostsService.getPostInDetails(postId, userId);
+  }
+
+  @Delete('/:postId')
+  async deleteGroupPost(
+    @Param('postId') postId: string,
+    @Req() req,
+    @Param('groupId') groupId: string,
+  ) {
+    const userId: string = req.user.id;
+    return this.groupPostsService.deletePost(postId, userId, groupId);
   }
 }
