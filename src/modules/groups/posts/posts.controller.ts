@@ -14,11 +14,11 @@ import {
 import { GroupPostsService } from './posts.service';
 import { CreatePostDto } from '../../shared-modules/posts/posts/dto/create-post.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { PostsService } from '../../shared-modules/posts/posts/posts.service';
 import { GetPostsDto } from '../../shared-modules/posts/posts/dto/get-posts.dto';
 import { CreateGroupPostDto } from './dtos/create-post.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
+import { RequireGroupMembership } from 'src/modules/groups/decorators/group-member.decorator';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
@@ -26,6 +26,7 @@ export class GroupPostsController {
   constructor(private readonly groupPostsService: GroupPostsService) {}
 
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
+  @RequireGroupMembership()
   @Post('/publish-post')
   async createGroupPost(
     @Body() dto: CreateGroupPostDto,

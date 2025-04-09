@@ -1,7 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { GroupsController } from './groups.controller';
-import { GroupsRepository } from './groups.repository';
-import { GroupsService } from './groups.service';
+import { GroupsController } from './groups/groups.controller';
+import { GroupsRepository } from './groups/groups.repository';
+import { GroupsService } from './groups/groups.service';
 import { GroupMembersModule } from './group-members/group-members.module';
 import { GroupPostsModule } from './posts/posts.module';
 import { GroupEventsModule } from './events/group-events.module';

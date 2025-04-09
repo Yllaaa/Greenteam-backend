@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PostsRepository } from '../../shared-modules/posts/posts/posts.repository';
 import { Post } from '../../shared-modules/posts/posts/types/post.type';
-import { GroupsRepository } from '../groups.repository';
+import { GroupsRepository } from '../groups/groups.repository';
 import { GroupMembersRepository } from '../group-members/group-members.repository';
 import { GetPostsDto } from '../../shared-modules/posts/posts/dto/get-posts.dto';
 import { CreateGroupPostDto } from './dtos/create-post.dto';
@@ -39,15 +39,6 @@ export class GroupPostsService {
 
     if (!group || !group.length) {
       throw new NotFoundException(`Group with ID ${groupId} not found.`);
-    }
-
-    const isGroupMember = await this.groupMemberRepository.isGroupMember(
-      userId,
-      groupId,
-    );
-
-    if (!isGroupMember) {
-      throw new ForbiddenException(`user is not a member this of group`);
     }
 
     const newPost = await this.postsRepository.createPost(

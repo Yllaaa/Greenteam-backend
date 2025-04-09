@@ -124,7 +124,7 @@ export class EventsRepository {
     return returnedEvents as unknown as EventResponse[];
   }
 
-  async getEventDetails(id: string, userId: string) {
+  async getEventDetails(id: string, userId: string, groupId?: string) {
     const event = await this.drizzleService.db.query.events.findFirst({
       columns: {
         id: true,
@@ -137,7 +137,13 @@ export class EventsRepository {
         posterUrl: true,
         hostedBy: true,
       },
-      where: eq(events.id, id),
+      where: (events, { eq, and }) => {
+        const conditions = [eq(events.id, id)];
+        if (groupId) {
+          conditions.push(eq(events.groupId, groupId));
+        }
+        return and(...conditions);
+      },
       extras: {
         joinedCount: sql<number>`(
           SELECT COUNT(*)::integer 
@@ -178,7 +184,14 @@ export class EventsRepository {
             slug: true,
           },
         },
-        group: true,
+        ...(groupId && {
+          group: {
+            columns: {
+              id: true,
+              name: true,
+            },
+          },
+        }),
       },
     });
 

@@ -7,7 +7,7 @@ import {
 import { NotesRepositry } from './notes.repository';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { GroupMembersService } from '../group-members/group-members.service';
-import { GroupsService } from '../groups.service';
+import { GroupsService } from '../groups/groups.service';
 
 @Injectable()
 export class NotesService {

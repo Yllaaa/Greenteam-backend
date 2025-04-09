@@ -6,8 +6,8 @@ import {
 import { GroupsRepository } from './groups.repository';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
-import { UploadMediaService } from '../common/upload-media/upload-media.service';
-import { GroupMembersService } from './group-members/group-members.service';
+import { GroupMembersService } from '../group-members/group-members.service';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 
 @Injectable()
 export class GroupsService {

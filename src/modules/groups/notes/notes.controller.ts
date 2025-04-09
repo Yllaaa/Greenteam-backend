@@ -13,7 +13,7 @@ import {
 import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { RequireGroupMembership } from 'src/decorators/group-member.decorator';
+import { RequireGroupMembership } from 'src/modules/groups/decorators/group-member.decorator';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
