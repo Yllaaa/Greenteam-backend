@@ -35,7 +35,6 @@ export class PostsController {
     @UploadedFiles()
     files: {
       images?: Express.Multer.File[];
-      audio?: Express.Multer.File[];
       document?: Express.Multer.File[];
     },
   ) {

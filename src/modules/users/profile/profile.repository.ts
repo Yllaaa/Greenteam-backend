@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
-import { groupMembers, groups, pages, pagesFollowers, users } from '../../db/schemas/schema';
+import {
+  groupMembers,
+  groups,
+  pages,
+  pagesFollowers,
+  users,
+} from '../../db/schemas/schema';
 import { eq, sql } from 'drizzle-orm';
 @Injectable()
 export class ProfileRepository {
@@ -21,8 +27,10 @@ export class ProfileRepository {
     });
   }
 
-
-  async updateProfile(userId: string, updateData: Partial<typeof users.$inferInsert>) {
+  async updateProfile(
+    userId: string,
+    updateData: Partial<typeof users.$inferInsert>,
+  ) {
     // Ensure only specific fields can be updated
     const allowedFields = {
       fullName: updateData.fullName,
@@ -46,8 +54,7 @@ export class ProfileRepository {
       });
   }
 
-
-  async getUserOwnPages(userId: string){
+  async getUserOwnPages(userId: string) {
     const userPages = await this.drizzle.db
       .select({
         id: pages.id,
@@ -74,19 +81,17 @@ export class ProfileRepository {
     return userPages;
   }
 
-
   async getUserOwnGroups(userId: string) {
     const userGroups = await this.drizzle.db
       .select({
         id: groups.id,
         name: groups.name,
         description: groups.description,
-        cover: groups.cover,
+        banner: groups.banner,
         topicId: groups.topicId,
-        privacy: groups.privacy,
         createdAt: groups.createdAt,
         updatedAt: groups.updatedAt,
-        membersCount: sql<number>`CAST(COUNT(DISTINCT ${groupMembers.userId}) AS INT)`
+        membersCount: sql<number>`CAST(COUNT(DISTINCT ${groupMembers.userId}) AS INT)`,
       })
       .from(groups)
       .leftJoin(groupMembers, eq(groupMembers.groupId, groups.id))
