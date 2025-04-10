@@ -89,22 +89,15 @@ export class ForumRepository {
     const limit = pagination?.limit || 10;
     const offset = Math.max(0, (page - 1) * limit);
 
-    const filters: SQL[] = [];
+    const baseFilters = [eq(forumPublications.status, 'published')];
     if (filter?.section) {
-      filters.push(eq(forumPublications.section, filter.section));
+      baseFilters.push(eq(forumPublications.section, filter.section));
     }
     if (filter?.mainTopicId) {
-      filters.push(eq(forumPublications.mainTopicId, filter.mainTopicId));
+      baseFilters.push(eq(forumPublications.mainTopicId, filter.mainTopicId));
     }
 
-    if (filters.length === 0) {
-      filters.push(eq(forumPublications.status, 'published'));
-    }
-    const whereCondition =
-      filters.length > 0
-        ? or(...filters)
-        : eq(forumPublications.status, 'published');
-
+    const whereCondition = and(...baseFilters);
     const commentCountSubquery = this.drizzleService.db
       .select({
         publicationId: publicationsComments.publicationId,
