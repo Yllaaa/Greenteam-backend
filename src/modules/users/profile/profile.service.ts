@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ProfileRepository } from './profile.repository';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
 
 @Injectable()
 export class ProfileService {
@@ -38,5 +39,22 @@ export class ProfileService {
     async getUserOwnGroups(userId: string) {
         const groups = await this.profileRepository.getUserOwnGroups(userId);
         return { groups };
+    }
+
+
+    async getUserLikedDislikedPosts(dto: FilterLikedPostsDto, userId: string) {
+        if (dto.mainTopicId) {
+            throw new BadRequestException(
+                'You can only filter by main topic or sub topic',
+            );
+        }
+        return await this.profileRepository.getUserLikedDislikedPosts(
+            userId,
+            dto.mainTopicId,
+            {
+                page: dto.page,
+                limit: dto.limit,
+            }
+        );
     }
 }

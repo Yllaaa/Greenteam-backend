@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
-import { groupMembers, groups, pages, pagesFollowers, users } from '../../db/schemas/schema';
-import { eq, sql } from 'drizzle-orm';
+import { groupMembers, groups, pages, pagesFollowers, posts, postSubTopics, publicationsComments, publicationsReactions, users } from '../../db/schemas/schema';
+import { eq, or, sql, and, SQL, exists, desc } from 'drizzle-orm';
 @Injectable()
 export class ProfileRepository {
-  constructor(private drizzle: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async getUserByUsername(username: string) {
-    return await this.drizzle.db.query.users.findFirst({
+    return await this.drizzleService.db.query.users.findFirst({
       where: eq(users.username, username),
       columns: {
         id: true,
@@ -30,7 +30,7 @@ export class ProfileRepository {
       avatar: updateData.avatar,
     };
 
-    return await this.drizzle.db
+    return await this.drizzleService.db
       .update(users)
       .set({
         ...allowedFields,
@@ -47,8 +47,8 @@ export class ProfileRepository {
   }
 
 
-  async getUserOwnPages(userId: string){
-    const userPages = await this.drizzle.db
+  async getUserOwnPages(userId: string) {
+    const userPages = await this.drizzleService.db
       .select({
         id: pages.id,
         name: pages.name,
@@ -76,7 +76,7 @@ export class ProfileRepository {
 
 
   async getUserOwnGroups(userId: string) {
-    const userGroups = await this.drizzle.db
+    const userGroups = await this.drizzleService.db
       .select({
         id: groups.id,
         name: groups.name,
@@ -95,4 +95,54 @@ export class ProfileRepository {
 
     return userGroups;
   }
+
+  async getUserLikedDislikedPosts(
+    userId: string,
+    mainTopicId?: number,
+    pagination?: {
+      limit?: number;
+      page?: number;
+    }
+  ) {
+    const { limit = 10, page = 0 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+
+    let conditions = and(
+      eq(publicationsReactions.userId, userId),
+      eq(publicationsReactions.reactionableType, 'post'),
+      or(
+        eq(publicationsReactions.reactionType, 'like'),
+        eq(publicationsReactions.reactionType, 'dislike')
+      )
+    );
+
+    if (mainTopicId !== undefined) {
+      conditions = and(conditions, eq(posts.mainTopicId, mainTopicId));
+    }
+
+    const query = this.drizzleService.db
+      .select({
+        id: posts.id,
+        content: posts.content,
+        mainTopicId: posts.mainTopicId,
+        creatorType: posts.creatorType,
+        creatorId: posts.creatorId,
+        groupId: posts.groupId,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        reactionType: publicationsReactions.reactionType,
+      })
+      .from(publicationsReactions)
+      .innerJoin(
+        posts,
+        eq(publicationsReactions.reactionableId, posts.id)
+      )
+      .where(conditions)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(posts.createdAt));
+
+    return await query;
+  }
+
 }
