@@ -34,6 +34,11 @@ export class PostsRepository {
     creatorId: string,
     groupId?: string,
   ) {
+    console.log('groupId', groupId);
+    console.log('creatorId', creatorId);
+    console.log('creatorType', creatorType);
+    console.log('mainTopicId', mainTopicId);
+    console.log('content', content);
     const [post] = await this.drizzleService.db
       .insert(posts)
       .values({

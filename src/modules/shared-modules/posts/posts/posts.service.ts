@@ -28,6 +28,12 @@ export class PostsService {
   ): Promise<Post> {
     const { content, mainTopicId, creatorType, subtopicIds } =
       dto.createPostDto;
+    console.log('555555555555555555555555555555555555555555');
+    console.log('subtopicIds', subtopicIds);
+    console.log('mainTopicId', mainTopicId);
+    console.log('creatorType', creatorType);
+    console.log('userId', userId);
+    console.log('content', content);
     const newPost = await this.postsRepository.createPost(
       content,
       mainTopicId,
