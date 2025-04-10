@@ -147,15 +147,15 @@ export class ChallengesService {
     );
     const topicId = parentTopic?.id || challenge.topicId;
 
-    await this.postsService.createPost(
-      {
-        content,
-        mainTopicId: topicId,
-        creatorType: creatorType,
-        subtopicIds: [],
-      },
-      userId,
-    );
+    // await this.postsService.createPost(
+    //   {
+    //     content,
+    //     mainTopicId: topicId,
+    //     creatorType: creatorType,
+    //     subtopicIds: [],
+    //   },
+    //   userId,
+    // );
 
     return {
       statusCode: HttpStatus.CREATED,

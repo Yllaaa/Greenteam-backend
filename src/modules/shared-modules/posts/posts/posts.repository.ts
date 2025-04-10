@@ -3,6 +3,9 @@ import { eq, exists, inArray, SQL, and, or, sql, desc } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   CreatorType,
+  entitiesMedia,
+  MediaParentType,
+  MediaType,
   pages,
   posts,
   postSubTopics,
@@ -35,7 +38,7 @@ export class PostsRepository {
       .insert(posts)
       .values({
         content,
-        mainTopicId: Number(mainTopicId),
+        mainTopicId,
         creatorId,
         creatorType,
         groupId,
@@ -55,12 +58,39 @@ export class PostsRepository {
       .values({ postId, topicId });
   }
 
+  async insertPostMedia(
+    media: {
+      parentId: string;
+      parentType: MediaParentType;
+      mediaUrl: string;
+      mediaType: MediaType;
+    }[],
+  ) {
+    for (const item of media) {
+      const { parentId, parentType, mediaUrl, mediaType } = item;
+      const [mediaEntry] = await this.drizzleService.db
+        .insert(entitiesMedia)
+        .values({
+          parentId,
+          parentType,
+          mediaUrl,
+          mediaType,
+        })
+        .returning({
+          id: entitiesMedia.id,
+          mediaUrl: entitiesMedia.mediaUrl,
+          mediaType: entitiesMedia.mediaType,
+        });
+    }
+  }
+
   async getPostById(postId: string) {
     return await this.drizzleService.db.query.posts.findFirst({
       where: eq(posts.id, postId),
       columns: {
         id: true,
         content: true,
+        creatorId: true,
         createdAt: true,
         mainTopicId: true,
       },
@@ -130,6 +160,24 @@ export class PostsRepository {
           ELSE ${users.username}
         END`,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+        COALESCE(
+          jsonb_agg(
+            DISTINCT jsonb_build_object(
+              'id', ${entitiesMedia.id},
+              'mediaUrl', ${entitiesMedia.mediaUrl},
+              'mediaType', ${entitiesMedia.mediaType}
+            )
+          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+          '[]'::jsonb
+        )
+        `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
@@ -151,6 +199,7 @@ export class PostsRepository {
       })
       .from(posts)
       .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
       .leftJoin(pages, eq(posts.creatorId, pages.id))
       .leftJoin(
         publicationsComments,
@@ -174,6 +223,7 @@ export class PostsRepository {
         pages.name,
         pages.avatar,
         pages.slug,
+
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
         userReaction.userReactionType,
@@ -266,6 +316,24 @@ export class PostsRepository {
             ELSE ${users.username}
           END`,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', ${entitiesMedia.id},
+            'mediaUrl', ${entitiesMedia.mediaUrl},
+            'mediaType', ${entitiesMedia.mediaType}
+          )
+        ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+        '[]'::jsonb
+      )
+      `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
@@ -297,6 +365,7 @@ export class PostsRepository {
         eq(posts.id, reactionsAggregation.reactionableId),
       )
       .leftJoin(userReaction, eq(posts.id, userReaction.reactionableId))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
       .groupBy(
         posts.id,
         posts.content,
@@ -360,22 +429,6 @@ export class PostsRepository {
     return data;
   }
 
-  async getAllPosts(offset: number, limit: number) {
-    return await this.drizzleService.db.query.posts.findMany({
-      offset: offset,
-      limit: limit,
-      with: {
-        user_creator: {
-          columns: {
-            fullName: true,
-            avatar: true,
-          },
-        },
-        comments: true,
-      },
-    });
-  }
-
   async getGroupPosts(
     groupId: string,
     pagination?: { limit?: number; page?: number },
@@ -418,6 +471,15 @@ export class PostsRepository {
         reactions: true,
       },
     });
+  }
+
+  async deletePost(postId: string, creatorId: string) {
+    const post = await this.drizzleService.db
+      .delete(posts)
+      .where(and(eq(posts.id, postId), eq(posts.creatorId, creatorId)))
+      .returning({ id: posts.id });
+
+    return post;
   }
 
   private readonly commentCountQuery = sql<number>`

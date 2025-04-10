@@ -1,16 +1,23 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CommonRepository } from 'src/modules/common/common.repository';
-import { MarketType, SellerType } from 'src/modules/db/schemas/schema';
+import {
+  MarketType,
+  MediaParentType,
+  MediaType,
+  SellerType,
+} from 'src/modules/db/schemas/schema';
 import { MarketplaceRepository } from 'src/modules/marketplace/marketplace.repository';
 import { PagesService } from '../pages/pages.service';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { GetPageProductsDto } from './dtos/get-page-products';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 @Injectable()
 export class ProductsService {
   constructor(
     private readonly marketplaceRepository: MarketplaceRepository,
     private readonly commonRepository: CommonRepository,
     private readonly pagesService: PagesService,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
 
   async createProduct(
@@ -22,6 +29,7 @@ export class ProductsService {
       price: number | string;
       marketType: MarketType;
       topicId: number;
+      images: Express.Multer.File[];
     },
     userId: string,
   ) {
@@ -89,12 +97,25 @@ export class ProductsService {
         );
       }
     }
-    await this.marketplaceRepository.insertProduct({
+    const newProduct = await this.marketplaceRepository.insertProduct({
       ...data,
       sellerId: page.id,
       countryId: page.countryId,
       cityId: page.cityId,
     });
+    if (data.images && data.images.length > 0) {
+      const uploadedImages = await this.uploadMediaService.uploadFilesToS3(
+        { images: data.images, audio: [], document: [] },
+        'products',
+      );
+      const images = uploadedImages.images.map((image) => ({
+        parentId: newProduct.id,
+        parentType: 'product' as MediaParentType,
+        mediaUrl: image.location,
+        mediaType: 'image' as MediaType,
+      }));
+      await this.marketplaceRepository.insertProductImages(images);
+    }
     return { message: 'Product created successfully' };
   }
 

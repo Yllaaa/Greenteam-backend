@@ -1,8 +1,9 @@
+import { MediaType } from 'src/modules/db/schemas/posts/enums';
+
 // Define the possible section types
 type Section = 'doubt' | 'need' | 'dream';
 
-// Base type for the raw query result
-type BaseQueryResult = {
+export type BaseQueryResult = {
   id: string;
   headline: string;
   content: string;
@@ -15,6 +16,11 @@ type BaseQueryResult = {
     avatar: string | null;
     username: string;
   } | null;
+  media: Array<{
+    id: string;
+    mediaUrl: string;
+    mediaType: MediaType;
+  }>;
   commentCount: string | number;
   userReaction: string | null;
   dislikeCount: string | number;
@@ -22,8 +28,7 @@ type BaseQueryResult = {
   likeCount?: string | number;
 };
 
-// Refined types for the processed results
-type BasePublication = {
+export type BasePublication = {
   id: string;
   headline: string;
   content: string;
@@ -35,6 +40,11 @@ type BasePublication = {
     avatar: string | null;
     username: string;
   } | null;
+  media: Array<{
+    id: string;
+    mediaUrl: string;
+    mediaType: MediaType;
+  }>;
   commentCount: number;
   userReaction: string | null;
   dislikeCount: number;
@@ -50,4 +60,4 @@ type OtherPublication = BasePublication & {
   likeCount: number;
 };
 
-type Publication = NeedPublication | OtherPublication;
+export type Publication = NeedPublication | OtherPublication;

@@ -22,6 +22,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
+import { UploadMediaModule } from './modules/common/upload-media/upload-media.module';
 @Global()
 @Module({
   imports: [
@@ -56,9 +57,16 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
     SubscriptionsModule,
     PaymentsModule,
     MarketplaceModule,
+    UploadMediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
-  exports: [DrizzleModule, PointingSystemModule, BullMQModule, CommonModule],
+  exports: [
+    DrizzleModule,
+    PointingSystemModule,
+    BullMQModule,
+    CommonModule,
+    UploadMediaModule,
+  ],
 })
 export class AppModule {}

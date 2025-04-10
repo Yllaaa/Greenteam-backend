@@ -6,47 +6,49 @@ import {
   Post,
   Query,
   Req,
-  Request,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GroupEventsService } from './group-events.service';
 import { CreateEventDto } from '../../events/events/dto/events.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
+import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-@Controller('groups/')
+@Controller('')
 @UseGuards(JwtAuthGuard)
 export class GroupEventsController {
   constructor(private readonly groupEventsService: GroupEventsService) {}
 
-  @Post(':groupId/create-event')
+  @UseInterceptors(ValidatePosterInterceptor, FileInterceptor('poster'))
+  @Post('/create-event')
   async createGroupEvent(
     @Param('groupId') groupId: string,
     @Body() eventData: CreateEventDto,
-    @Request() req,
+    @Req() req,
+    @UploadedFile() poster: Express.Multer.File,
   ) {
     const groupMemberId = req.user.id;
-    return this.groupEventsService.createGroupEvent(
-      groupId,
-      groupMemberId,
-      eventData,
-    );
+    return this.groupEventsService.createGroupEvent(groupId, groupMemberId, {
+      data: eventData,
+      poster,
+    });
   }
 
-  @Get(':groupId/events')
+  @Get('')
   async getGroupEvents(
     @Param('groupId') groupId: string,
     @Query() queryParams: GetEventsDto,
   ) {
-    return this.groupEventsService.getGroupEvents(
-      groupId,
-      queryParams.category,
-      queryParams.page,
-      queryParams.limit,
-    );
+    return this.groupEventsService.getGroupEvents(groupId, {
+      page: queryParams.page,
+      limit: queryParams.limit,
+    });
   }
 
-  @Get(':groupId/:eventId')
+  @Get('/:eventId')
   async getGroupEventDetails(
     @Param('groupId') groupId: string,
     @Param('eventId') eventId: string,
@@ -58,16 +60,5 @@ export class GroupEventsController {
       eventId,
       userId,
     );
-  }
-
-  @Post(':groupId/:eventId/join')
-  async joinGroupEvent(
-    @Param('groupId') groupId: string,
-    @Param('eventId') eventId: string,
-    @Request() req,
-  ) {
-    const userId = req.user.id;
-    await this.groupEventsService.joinGroupEvent(groupId, eventId, userId);
-    return { message: 'User joined event successfully' };
   }
 }

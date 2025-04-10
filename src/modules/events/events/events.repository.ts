@@ -5,7 +5,7 @@ import {
   publicationsComments,
   usersJoinedEvent,
 } from '../../db/schemas/schema';
-import { and, asc, eq, isNull, sql, SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, sql, SQL } from 'drizzle-orm';
 import { CreateEventDto } from '../events/dto/events.dto';
 import { EventResponse } from './interfaces/events.interface';
 import { GetEventsDto } from './dto/getEvents.dto';
@@ -14,22 +14,37 @@ import { GetEventsDto } from './dto/getEvents.dto';
 export class EventsRepository {
   constructor(readonly drizzleService: DrizzleService) {}
 
-  async createEvent(event: CreateEventDto, creatorId: string) {
+  async createEvent(
+    event: { dto: CreateEventDto; posterUrl: string },
+    creatorId: string,
+  ) {
+    const { dto, posterUrl } = event;
+    const {
+      title,
+      description,
+      location,
+      category,
+      groupId,
+      creatorType,
+      startDate,
+      endDate,
+    } = dto;
     const eventValues = {
       creatorId,
-      creatorType: event.creatorType,
-      title: event.title,
-      description: event.description,
-      location: event.location,
-      category: event.category,
+      creatorType: creatorType,
+      title: title,
+      description: description,
+      location: location,
+      category: category,
       hostedBy: 'user' as any,
-      priority: 0,
-      startDate: event.startDate,
-      endDate: event.endDate,
+      priority: 1,
+      startDate: startDate,
+      endDate: endDate,
+      posterUrl: posterUrl,
     };
 
-    if (event.groupId) {
-      Object.assign(eventValues, { groupId: event.groupId });
+    if (groupId) {
+      Object.assign(eventValues, { groupId: groupId });
     }
 
     const newEvent = await this.drizzleService.db
@@ -52,14 +67,16 @@ export class EventsRepository {
         title: true,
         description: true,
         location: true,
+
         startDate: true,
         endDate: true,
         category: true,
-        poster: true,
+        posterUrl: true,
         hostedBy: true,
       },
       offset: offset,
       limit: limit,
+      orderBy: (events, { asc }) => [asc(events.priority), desc(events.id)],
       where: (events, { and, eq, isNull }) =>
         and(
           isNull(events.groupId),
@@ -68,7 +85,6 @@ export class EventsRepository {
             ? and(eq(events.creatorId, pageId), eq(events.creatorType, 'page'))
             : undefined,
         ),
-      orderBy: [asc(events.priority), asc(events.startDate)],
       extras: userId
         ? {
             isJoined: sql<boolean>`(
@@ -108,7 +124,7 @@ export class EventsRepository {
     return returnedEvents as unknown as EventResponse[];
   }
 
-  async getEventDetails(id: string, userId: string) {
+  async getEventDetails(id: string, userId: string, groupId?: string) {
     const event = await this.drizzleService.db.query.events.findFirst({
       columns: {
         id: true,
@@ -118,10 +134,16 @@ export class EventsRepository {
         startDate: true,
         endDate: true,
         category: true,
-        poster: true,
+        posterUrl: true,
         hostedBy: true,
       },
-      where: eq(events.id, id),
+      where: (events, { eq, and }) => {
+        const conditions = [eq(events.id, id)];
+        if (groupId) {
+          conditions.push(eq(events.groupId, groupId));
+        }
+        return and(...conditions);
+      },
       extras: {
         joinedCount: sql<number>`(
           SELECT COUNT(*)::integer 
@@ -162,7 +184,14 @@ export class EventsRepository {
             slug: true,
           },
         },
-        group: true,
+        ...(groupId && {
+          group: {
+            columns: {
+              id: true,
+              name: true,
+            },
+          },
+        }),
       },
     });
 

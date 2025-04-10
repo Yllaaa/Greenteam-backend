@@ -4,9 +4,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { EventsRepository } from '../../events/events/events.repository';
-import { GroupsRepository } from '../groups.repository';
+import { GroupsRepository } from '../groups/groups.repository';
 import { CreateEventDto } from '../../events/events/dto/events.dto';
 import { EventsGroupRepository } from './group-events.repository';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { EventsService } from 'src/modules/events/events/events.service';
 
 @Injectable()
 export class GroupEventsService {
@@ -14,17 +16,19 @@ export class GroupEventsService {
     private readonly eventsRepository: EventsRepository,
     private readonly groupsRepository: GroupsRepository,
     private readonly eventsGroupRepository: EventsGroupRepository,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
 
   async createGroupEvent(
     groupId: string,
     userId: string,
-    eventData: CreateEventDto,
+    eventData: { data: CreateEventDto; poster: Express.Multer.File },
   ) {
+    const { data, poster } = eventData;
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found`);
+      throw new NotFoundException(`Group not found`);
     }
 
     if (group[0].ownerId !== userId) {
@@ -32,34 +36,37 @@ export class GroupEventsService {
         'Only group owners can create events for this group',
       );
     }
+    let uploadedImage;
+    if (poster) {
+      uploadedImage = await this.uploadMediaService.uploadSingleImage(
+        poster,
+        'event_poster',
+      );
+    }
 
     const event = {
-      ...eventData,
-
+      ...data,
       groupId: groupId,
     };
 
-    return this.eventsRepository.createEvent(event, userId);
+    return this.eventsRepository.createEvent(
+      { dto: event, posterUrl: uploadedImage?.location || null },
+      userId,
+    );
   }
 
   async getGroupEvents(
     groupId: string,
-    category,
-    page: number = 1,
-    limit: number = 10,
+    pagination: { page: number; limit: number },
   ) {
+    const { page, limit } = pagination;
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
       throw new NotFoundException(`Group with ID ${groupId} not found`);
     }
 
-    return this.eventsGroupRepository.getGroupEvents(
-      groupId,
-      category,
-      page,
-      limit,
-    );
+    return this.eventsGroupRepository.getGroupEvents(groupId, { page, limit });
   }
 
   async getGroupEventDetails(groupId: string, eventId: string, userId: string) {
@@ -69,17 +76,16 @@ export class GroupEventsService {
       throw new NotFoundException(`Group with ID ${groupId} not found`);
     }
 
-    const event = await this.eventsRepository.getEventDetails(eventId, userId);
+    const event = await this.eventsRepository.getEventDetails(
+      eventId,
+      userId,
+      groupId,
+    );
 
     if (!event) {
-      throw new NotFoundException(`Event with ID ${eventId} not found`);
+      throw new NotFoundException(`Event not found`);
     }
 
     return event;
-  }
-
-  async joinGroupEvent(groupId: string, eventId: string, userId: string) {
-    await this.getGroupEventDetails(groupId, eventId, userId);
-    return this.eventsRepository.addUserJoinedEvent(eventId, userId);
   }
 }

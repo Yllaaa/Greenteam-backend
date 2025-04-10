@@ -6,12 +6,18 @@ import {
 import { PagesRepository } from './pages.repository';
 import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 
 @Injectable()
 export class PagesService {
-  constructor(private readonly pagesRepository: PagesRepository) {}
+  constructor(
+    private readonly pagesRepository: PagesRepository,
+    private readonly uploadMediaService: UploadMediaService,
+  ) {}
 
-  async createPage(page: CreatePageDto, user: any) {
+  async createPage(data: { page: CreatePageDto; images: any }, user: any) {
+    const { page, images } = data;
+    const { avatar, cover } = images;
     const ownerId = user.id;
     if (page.slug.length > 50) {
       throw new BadRequestException('Slug is too long');
@@ -20,13 +26,37 @@ export class PagesService {
       throw new NotFoundException(`Slug ${page.slug} is already taken`);
     }
 
-    return await this.pagesRepository.createPage(page, ownerId);
+    let uploadedAvatar;
+    if (avatar) {
+      uploadedAvatar = await this.uploadMediaService.uploadSingleImage(
+        avatar[0],
+        'profiles',
+      );
+    }
+    let uploadedCover;
+    if (cover) {
+      uploadedCover = await this.uploadMediaService.uploadSingleImage(
+        cover[0],
+        'profiles',
+      );
+    }
+
+    const pageData = {
+      ...page,
+      avatar: uploadedAvatar?.location,
+      cover: uploadedCover?.location,
+    };
+    return await this.pagesRepository.createPage(pageData, ownerId);
   }
 
   async checkSlugTaken(slug: string) {
     return await this.pagesRepository.checkSlugTaken(slug);
   }
+  async getAllPages(pagination: { page: number; limit: number }) {
+    const { page, limit } = pagination;
 
+    return await this.pagesRepository.getAllPages({ page, limit });
+  }
   async getPageDetails(slug: string, userId: string) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {

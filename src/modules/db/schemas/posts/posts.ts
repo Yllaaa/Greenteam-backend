@@ -12,6 +12,7 @@ import { relations } from 'drizzle-orm';
 import { postSubTopics, topics } from '../topics/topics';
 import { publicationsComments, publicationsReactions } from './comments-likes';
 import { groups } from '../groups/groups';
+import { entitiesMedia } from '../schema';
 
 export const posts = pgTable('posts', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -42,4 +43,5 @@ export const postsRelations = relations(posts, ({ many, one }) => ({
   }),
   comments: many(publicationsComments),
   reactions: many(publicationsReactions),
+  media: many(entitiesMedia),
 }));

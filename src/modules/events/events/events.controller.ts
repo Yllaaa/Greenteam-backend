@@ -10,12 +10,16 @@ import {
   Req,
   Request,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateEventDto } from '../events/dto/events.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from '../events/dto/getEvents.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -23,9 +27,14 @@ export class EventsController {
   constructor(readonly eventsService: EventsService) {}
 
   @Post('create-event')
-  async createEventFromUser(@Body() event: CreateEventDto, @Request() req) {
+  @UseInterceptors(ValidatePosterInterceptor, FileInterceptor('poster'))
+  async createEventFromUser(
+    @Body() dto: CreateEventDto,
+    @Request() req,
+    @UploadedFile() poster: Express.Multer.File,
+  ) {
     const userId = req.user.id;
-    return this.eventsService.createEvent(event, userId);
+    return this.eventsService.createEvent({ dto, poster }, userId);
   }
 
   @Get('')

@@ -1,13 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
 import {
+  entitiesMedia,
   forumPublications,
+  MediaParentType,
+  MediaType,
   publicationsComments,
   publicationsReactions,
   users,
 } from '../../db/schemas/schema';
 import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
 import { and, desc, eq, isNull, or, SQL, sql } from 'drizzle-orm';
+import {
+  BasePublication,
+  BaseQueryResult,
+  Publication,
+} from './interfaces/publications.interface';
 
 @Injectable()
 export class ForumRepository {
@@ -29,6 +37,32 @@ export class ForumRepository {
       .returning();
 
     return publication[0];
+  }
+
+  async insertPublicationMedia(
+    media: {
+      parentId: string;
+      parentType: MediaParentType;
+      mediaUrl: string;
+      mediaType: MediaType;
+    }[],
+  ) {
+    for (const item of media) {
+      const { parentId, parentType, mediaUrl, mediaType } = item;
+      const [mediaEntry] = await this.drizzleService.db
+        .insert(entitiesMedia)
+        .values({
+          parentId,
+          parentType,
+          mediaUrl,
+          mediaType,
+        })
+        .returning({
+          id: entitiesMedia.id,
+          mediaUrl: entitiesMedia.mediaUrl,
+          mediaType: entitiesMedia.mediaType,
+        });
+    }
   }
 
   async findPublicationById(publicationId: string) {
@@ -86,7 +120,6 @@ export class ForumRepository {
         headline: forumPublications.headline,
         content: forumPublications.content,
         section: forumPublications.section,
-        mediaUrl: forumPublications.mediaUrl,
         createdAt: forumPublications.createdAt,
         author: {
           id: users.id,
@@ -94,6 +127,24 @@ export class ForumRepository {
           avatar: users.avatar,
           username: users.username,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+        COALESCE(
+          jsonb_agg(
+            DISTINCT jsonb_build_object(
+              'id', ${entitiesMedia.id},
+              'mediaUrl', ${entitiesMedia.mediaUrl},
+              'mediaType', ${entitiesMedia.mediaType}
+            )
+          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+          '[]'::jsonb
+        )
+        `.as('media'),
         commentCount: sql<number>`COALESCE(${commentCountSubquery.count}, 0)`,
         ...(sql`${forumPublications.section} = 'need'`
           ? {
@@ -120,7 +171,6 @@ export class ForumRepository {
                   THEN 1 
                 END)`.as('dislike_count'),
             }),
-        // User reaction status
         userReaction: sql<string | null>`
           CASE 
             WHEN ${publicationsReactions.userId} = ${currentUserId}
@@ -134,6 +184,7 @@ export class ForumRepository {
         commentCountSubquery,
         eq(forumPublications.id, commentCountSubquery.publicationId),
       )
+      .leftJoin(entitiesMedia, eq(forumPublications.id, entitiesMedia.parentId))
       .leftJoin(
         publicationsReactions,
         and(
@@ -173,6 +224,7 @@ export class ForumRepository {
           mediaUrl: row.mediaUrl,
           createdAt: row.createdAt,
           author: row.author,
+          media: row.media,
           commentCount: Number(row.commentCount || 0),
           userReaction: row.userReaction,
           dislikeCount: Number(row.dislikeCount || 0),

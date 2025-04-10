@@ -5,6 +5,7 @@ import { CommonService } from './common.service';
 import { CommonRepository } from './common.repository';
 import { HttpModule } from '@nestjs/axios';
 import { CityImportService } from './city-seed.service';
+import { UploadMediaModule } from './upload-media/upload-media.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CityImportService } from './city-seed.service';
       timeout: 20000,
       maxRedirects: 5,
     }),
+    UploadMediaModule,
   ],
   controllers: [CommonController],
   providers: [CommonService, CommonRepository, CityImportService],
