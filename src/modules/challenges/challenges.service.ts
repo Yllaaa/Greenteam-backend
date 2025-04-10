@@ -18,10 +18,11 @@ export class ChallengesService {
   ) {}
 
   async createDoPostChallenge(userId: string, postId: string) {
-    return await this.challengesRepository.createDoPostChallenge(
+    const post = await this.challengesRepository.createDoPostChallenge(
       userId,
       postId,
     );
+    return post;
   }
 
   async deleteDoPostChallenge(userId: string, postId: string) {
@@ -196,6 +197,7 @@ export class ChallengesService {
         avatar: doPost.creator.avatar,
         username: doPost.creator.username,
       },
+      media: doPost.media,
     }));
   }
 

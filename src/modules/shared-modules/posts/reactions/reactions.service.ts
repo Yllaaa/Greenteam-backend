@@ -61,7 +61,6 @@ export class ReactionsService {
           dto.reactionableId,
           existingDoReaction.id,
         ),
-        console.log(existingDoReaction),
         this.challengesService.deleteDoPostChallenge(
           userId,
           dto.reactionableId,
