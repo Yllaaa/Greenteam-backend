@@ -47,6 +47,10 @@ export class ValidateMediaInterceptor implements NestInterceptor {
       document: ['.pdf', '.docx'],
     };
 
+    if (!files) {
+      return;
+    }
+
     Object.keys(files).forEach((key) => {
       const groupFiles = Array.isArray(files[key]) ? files[key] : [files[key]];
 
