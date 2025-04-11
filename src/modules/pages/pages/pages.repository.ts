@@ -102,9 +102,9 @@ export class PagesRepository {
     return pagesList;
   }
 
-  async getPageDetails(pageId: string) {
+  async getPageDetails(slug: string) {
     const page = await this.drizzleService.db.query.pages.findFirst({
-      where: eq(pages.id, pageId),
+      where: eq(pages.slug, slug),
       columns: {
         id: true,
         name: true,
@@ -117,6 +117,7 @@ export class PagesRepository {
         avatar: true,
         cover: true,
         category: true,
+        ownerId: true,
         createdAt: true,
       },
       with: {
@@ -131,7 +132,7 @@ export class PagesRepository {
         followersCount: sql<number>`(
           SELECT CAST(count(*) AS INTEGER)
           FROM ${pagesFollowers} pf
-          WHERE pf.page_id = ${pageId}
+          WHERE pf.page_id = ${pages.id}
         )`
           .mapWith(Number)
           .as('followers_count'),
