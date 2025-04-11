@@ -37,7 +37,7 @@ export class AuthService {
       registerDto.email,
     );
 
-    if (existingEmail[0]) {
+    if (existingEmail) {
       throw new ConflictException('Email already in use');
     }
 
@@ -45,7 +45,7 @@ export class AuthService {
       registerDto.username,
     );
 
-    if (existingUsername[0]) {
+    if (existingUsername) {
       throw new ConflictException('Username already in use');
     }
 
@@ -119,7 +119,7 @@ export class AuthService {
       user = await this.authRepository.createUser(newUser);
     }
 
-    return this.generateToken(user[0]);
+    return this.generateToken(user);
   }
 
   async validateJwtUser(userId: string) {
@@ -181,7 +181,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user[0].isEmailVerified) {
+    if (user.isEmailVerified) {
       throw new ConflictException('Email already verified');
     }
     const verificationToken = uuidv4();
@@ -200,7 +200,7 @@ export class AuthService {
       forgotPasswordDto.email,
     );
 
-    if (!user[0]) {
+    if (!user) {
       return {
         message:
           'If your email is registered, you will receive a password reset link',
@@ -212,18 +212,18 @@ export class AuthService {
 
     try {
       await this.authRepository.forgotPassword(
-        user[0].id,
+        user.id,
         hashedToken,
         resetExpires,
       );
-      await this.mailService.sendPasswordResetEmail(user[0].email, rawToken);
+      await this.mailService.sendPasswordResetEmail(user.email, rawToken);
 
       return {
         message:
           'If your email is registered, you will receive a password reset link',
       };
     } catch (error) {
-      await this.authRepository.forgotPassword(user[0].id, '', new Date(0));
+      await this.authRepository.forgotPassword(user.id, '', new Date(0));
       throw new Error('Failed to process password reset');
     }
   }
