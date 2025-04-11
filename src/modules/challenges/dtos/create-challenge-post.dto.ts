@@ -1,7 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, Min } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class GreenChallengePostDto {
   @IsString()
+  @IsNotEmpty()
   content: string;
 }
