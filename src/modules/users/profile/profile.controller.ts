@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, Req, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -18,6 +19,12 @@ export class ProfileController {
     async getUserOwnGroups(@Req() req) {
         const userId: string = req.user.id;
         return await this.profileService.getUserOwnGroups(userId);
+    }
+
+    @Get('posts')
+    async getPosts(@Query() dto: FilterLikedPostsDto, @Req() req) {
+        const userId = req.user.id;
+        return this.profileService.getUserLikedDislikedPosts(dto, userId);
     }
 
     @Get(':username')

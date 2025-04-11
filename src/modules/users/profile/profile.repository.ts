@@ -1,19 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
-import {
-  groupMembers,
-  groups,
-  pages,
-  pagesFollowers,
-  users,
-} from '../../db/schemas/schema';
-import { eq, sql } from 'drizzle-orm';
+import { groupMembers, groups, pages, pagesFollowers, posts, postSubTopics, publicationsComments, publicationsReactions, users } from '../../db/schemas/schema';
+import { eq, or, sql, and, SQL, exists, desc, inArray } from 'drizzle-orm';
 @Injectable()
 export class ProfileRepository {
-  constructor(private drizzle: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async getUserByUsername(username: string) {
-    return await this.drizzle.db.query.users.findFirst({
+    return await this.drizzleService.db.query.users.findFirst({
       where: eq(users.username, username),
       columns: {
         id: true,
@@ -38,7 +32,7 @@ export class ProfileRepository {
       avatar: updateData.avatar,
     };
 
-    return await this.drizzle.db
+    return await this.drizzleService.db
       .update(users)
       .set({
         ...allowedFields,
@@ -55,7 +49,7 @@ export class ProfileRepository {
   }
 
   async getUserOwnPages(userId: string) {
-    const userPages = await this.drizzle.db
+    const userPages = await this.drizzleService.db
       .select({
         id: pages.id,
         name: pages.name,
@@ -82,7 +76,7 @@ export class ProfileRepository {
   }
 
   async getUserOwnGroups(userId: string) {
-    const userGroups = await this.drizzle.db
+    const userGroups = await this.drizzleService.db
       .select({
         id: groups.id,
         name: groups.name,
@@ -100,4 +94,102 @@ export class ProfileRepository {
 
     return userGroups;
   }
+  
+
+
+  async getUserLikedDislikedPosts(
+    userId: string,
+    mainTopicId?: number,
+    pagination?: {
+      limit?: number;
+      page?: number;
+    },
+  ) {
+    const { limit = 10, page = 1 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+    
+    // Get all posts that the user has reacted to
+    const userReactions = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        reactionType: publicationsReactions.reactionType,
+      })
+      .from(publicationsReactions)
+      .where(eq(publicationsReactions.userId, userId))
+      .as('user_reactions');
+    
+    // Aggregated reactions for all users
+    const reactionsAggregation = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        likeCount: sql<number>`
+          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+        `.as('like_count'),
+        dislikeCount: sql<number>`
+          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+        `.as('dislike_count'),
+      })
+      .from(publicationsReactions)
+      .groupBy(publicationsReactions.reactionableId)
+      .as('reactions_agg');
+    
+    // Query builder for the main query
+    const queryBuilder = this.drizzleService.db
+      .select({
+        post: {
+          id: posts.id,
+          content: posts.content,
+          createdAt: posts.createdAt,
+          creatorType: posts.creatorType,
+        },
+        author: {
+          id: users.id,
+          username: users.username,
+          fullName: users.fullName,
+          avatar: users.avatar,
+        },
+        commentCount: this.commentCountQuery,
+        likeCount: sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as('like_count'),
+        dislikeCount: sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as('dislike_count'),
+        userReactionType: userReactions.reactionType,
+        hasDoReaction: sql<boolean>`${userReactions.reactionType} = 'do'`.as('has_do_reaction'),
+      })
+      .from(posts)
+      .innerJoin(userReactions, eq(posts.id, userReactions.reactionableId))
+      .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(publicationsComments, eq(posts.id, publicationsComments.publicationId))
+      .leftJoin(reactionsAggregation, eq(posts.id, reactionsAggregation.reactionableId))
+      .groupBy(
+        posts.id,
+        posts.content,
+        posts.createdAt,
+        posts.creatorType,
+        posts.groupId,
+        users.id,
+        users.fullName,
+        users.avatar,
+        users.username,
+        reactionsAggregation.likeCount,
+        reactionsAggregation.dislikeCount,
+        userReactions.reactionType,
+      )
+      .orderBy(desc(posts.createdAt));
+    
+    // Apply additional filters if needed
+    const conditions: SQL[] = [];
+    if (mainTopicId) {
+      conditions.push(eq(posts.mainTopicId, mainTopicId));
+    }
+    if (conditions.length > 0) {
+      queryBuilder.where(and(...conditions));
+    }
+    
+    const paginatedQuery = queryBuilder.limit(limit).offset(offset);
+    const data = await paginatedQuery.execute();
+    return data;
+  }
+  
+  private readonly commentCountQuery = sql<number>`
+    COUNT(DISTINCT ${publicationsComments.id})
+  `.as('comment_count');
 }

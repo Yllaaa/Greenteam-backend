@@ -32,7 +32,7 @@ export class AuthRepository {
         email: true,
         fullName: true,
         username: true,
-        avatar: true,
+        // avatar: true,
         bio: true,
       },
     });
