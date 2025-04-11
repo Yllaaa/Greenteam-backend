@@ -92,6 +92,10 @@ export class ChallengesController {
       document?: Express.Multer.File[];
     },
   ) {
+    console.log('files', files);
+    console.log('dto', dto);
+    console.log('challengeId', challengeId);
+    console.log('dto', dto.content);
     const userId = req.user.id;
     return this.challengesService.postAboutCompletedGreenChallenge(
       userId,
