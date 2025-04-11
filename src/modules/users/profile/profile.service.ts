@@ -43,11 +43,6 @@ export class ProfileService {
 
 
     async getUserLikedDislikedPosts(dto: FilterLikedPostsDto, userId: string) {
-        if (dto.mainTopicId) {
-            throw new BadRequestException(
-                'You can only filter by main topic or sub topic',
-            );
-        }
         return await this.profileRepository.getUserLikedDislikedPosts(
             userId,
             dto.mainTopicId,

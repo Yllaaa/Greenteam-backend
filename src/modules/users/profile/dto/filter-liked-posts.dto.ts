@@ -15,8 +15,4 @@ export class FilterLikedPostsDto {
 
     @IsOptional()
     mainTopicId: number;
-
-    @IsOptional()
-    @IsEnum(reactionTypeEnum)
-    reactionType?: string;
 }
