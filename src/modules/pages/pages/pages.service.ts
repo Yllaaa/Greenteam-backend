@@ -57,14 +57,19 @@ export class PagesService {
 
     return await this.pagesRepository.getAllPages({ page, limit });
   }
+
   async getPageDetails(slug: string, userId: string) {
-    const page = await this.pagesRepository.getPageBySlug(slug);
-    if (!page) {
+    const pageDetails = await this.pagesRepository.getPageDetails(slug);
+
+    if (!pageDetails) {
       throw new NotFoundException(`Page with slug ${slug} not found`);
     }
 
-    const pageDetails = await this.pagesRepository.getPageDetails(page.id);
-    return { ...pageDetails, isAdmin: page.ownerId === userId };
+    const isAdmin = pageDetails.ownerId === userId;
+
+    const { ownerId, ...pageWithoutOwnerId } = pageDetails;
+
+    return { ...pageWithoutOwnerId, isAdmin };
   }
 
   async getPageOwnerId(pageId: string) {
