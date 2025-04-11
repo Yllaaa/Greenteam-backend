@@ -14,10 +14,10 @@ import {
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { PagesPostsService } from './pages-posts.service';
 import { GetPostsDto } from 'src/modules/shared-modules/posts/posts/dto/get-posts.dto';
-import { CreatePostDto } from 'src/modules/shared-modules/posts/posts/dto/create-post.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
+import { CreatePagePostDto } from './dtos/create-page-post.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class PagesPostsController {
@@ -47,7 +47,7 @@ export class PagesPostsController {
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
   async createPost(
     @Param('slug') slug: string,
-    @Body() dto: CreatePostDto,
+    @Body() dto: CreatePagePostDto,
     @UploadedFiles()
     files: {
       images?: Express.Multer.File[];

@@ -267,6 +267,7 @@ export class PagesRepository {
         ownerId: true,
         countryId: true,
         cityId: true,
+        topicId: true,
       },
     });
   }

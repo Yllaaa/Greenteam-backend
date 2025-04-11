@@ -10,15 +10,10 @@ import {
 import { Type } from 'class-transformer';
 import { CreatorType } from 'src/modules/db/schemas/schema';
 
-export class CreatePostDto {
+export class CreatePagePostDto {
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
-  mainTopicId: number;
 
   @IsEnum(['user', 'page', 'group_member'], {
     message: 'creatorType must be one of: user, page, group_member',
@@ -28,6 +23,5 @@ export class CreatePostDto {
   @IsArray()
   @Type(() => Number)
   @IsInt({ each: true })
-  @IsNotEmpty()
   subtopicIds: number[];
 }
