@@ -71,9 +71,7 @@ export class AuthRepository {
       .values({
         email: newUser.email,
         password: newUser.password,
-        username: newUser.username
-          ? newUser.username
-          : newUser.email.split('@')[0],
+        username: newUser.username,
         fullName: newUser.fullName
           ? newUser.fullName
           : newUser.email.split('@')[0],
