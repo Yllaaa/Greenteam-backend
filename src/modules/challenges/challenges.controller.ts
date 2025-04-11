@@ -8,10 +8,16 @@ import {
   Req,
   UseGuards,
   Put,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChallengesService } from './challenges.service';
 import { UserChallengesDto } from './dtos/get-do-posts.dto';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { ValidateMediaInterceptor } from '../common/upload-media/interceptors/validateMedia.interceptor';
+import { GreenChallengePostDto } from './dtos/create-challenge-post.dto';
+
 @UseGuards(JwtAuthGuard)
 @Controller('challenges')
 export class ChallengesController {
@@ -74,17 +80,24 @@ export class ChallengesController {
     return this.challengesService.markGreenChallengeAsDone(userId, challengeId);
   }
 
+  @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
   @Post('green-challenges/:id/done-with-post')
   async createDoPostChallenge(
     @Req() req,
     @Param('id') challengeId: string,
-    @Body() content: string,
+    @Body() dto: GreenChallengePostDto,
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      document?: Express.Multer.File[];
+    },
   ) {
     const userId = req.user.id;
     return this.challengesService.postAboutCompletedGreenChallenge(
       userId,
       challengeId,
-      content,
+      dto.content,
+      files,
     );
   }
 }

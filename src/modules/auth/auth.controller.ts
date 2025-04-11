@@ -27,7 +27,7 @@ export class AuthController {
       httpOnly: true,
       secure: false,
       maxAge: 24 * 60 * 60 * 1000 * 90,
-      sameSite: 'lax',
+      sameSite: 'none',
     });
   }
 
@@ -51,15 +51,15 @@ export class AuthController {
 
   @Get('google/login')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth() {
-    console.log(`${process.env.API_URL}/api/v1/auth/google/callback`);
-  }
+  async googleAuth() {}
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const user = req.user;
     const response = await this.authService.googleLogin(user);
+    console.log('response', response);
+
     this.setAuthCookie(res, response?.accessToken);
 
     res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);

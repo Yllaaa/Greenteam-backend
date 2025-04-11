@@ -18,10 +18,11 @@ export class ChallengesService {
   ) {}
 
   async createDoPostChallenge(userId: string, postId: string) {
-    return await this.challengesRepository.createDoPostChallenge(
+    const post = await this.challengesRepository.createDoPostChallenge(
       userId,
       postId,
     );
+    return post;
   }
 
   async deleteDoPostChallenge(userId: string, postId: string) {
@@ -108,6 +109,7 @@ export class ChallengesService {
     userId: string,
     challengeId: string,
     content: string,
+    files: any,
   ) {
     const challenge =
       await this.challengesRepository.findGreenChallengeById(challengeId);
@@ -122,9 +124,7 @@ export class ChallengesService {
       );
 
     if (userGreenChallenge?.status === 'done') {
-      throw new BadRequestException(
-        `User has already completed this challenge with ID ${challengeId}`,
-      );
+      throw new BadRequestException(`you have already done this challenge`);
     }
 
     const creatorType = 'user' as CreatorType;
@@ -147,15 +147,19 @@ export class ChallengesService {
     );
     const topicId = parentTopic?.id || challenge.topicId;
 
-    // await this.postsService.createPost(
-    //   {
-    //     content,
-    //     mainTopicId: topicId,
-    //     creatorType: creatorType,
-    //     subtopicIds: [],
-    //   },
-    //   userId,
-    // );
+    const postData = {
+      content,
+      mainTopicId: topicId,
+      creatorType: creatorType,
+      subtopicIds: [],
+    };
+    await this.postsService.createPost(
+      {
+        createPostDto: postData,
+        files,
+      },
+      userId,
+    );
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -193,6 +197,7 @@ export class ChallengesService {
         avatar: doPost.creator.avatar,
         username: doPost.creator.username,
       },
+      media: doPost.media,
     }));
   }
 
