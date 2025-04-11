@@ -52,14 +52,17 @@ export class PagesService {
   async checkSlugTaken(slug: string) {
     return await this.pagesRepository.checkSlugTaken(slug);
   }
-  async getAllPages(pagination: { page: number; limit: number }) {
+  async getAllPages(
+    pagination: { page: number; limit: number },
+    userId: string,
+  ) {
     const { page, limit } = pagination;
 
-    return await this.pagesRepository.getAllPages({ page, limit });
+    return await this.pagesRepository.getAllPages({ page, limit }, userId);
   }
 
   async getPageDetails(slug: string, userId: string) {
-    const pageDetails = await this.pagesRepository.getPageDetails(slug);
+    const pageDetails = await this.pagesRepository.getPageDetails(slug, userId);
 
     if (!pageDetails) {
       throw new NotFoundException(`Page with slug ${slug} not found`);

@@ -53,8 +53,10 @@ export class PagesController {
   async getAllPages(
     @Query('page') page: number,
     @Query('limit') limit: number,
+    @Req() req,
   ) {
-    return await this.pagesService.getAllPages({ page, limit });
+    const userId = req.user.id;
+    return await this.pagesService.getAllPages({ page, limit }, userId);
   }
 
   @Get(':slug')
