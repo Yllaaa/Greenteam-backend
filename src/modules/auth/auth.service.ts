@@ -104,7 +104,6 @@ export class AuthService {
 
   async googleLogin(profile: any) {
     let user = await this.authRepository.getUserByEmail(profile.email);
-
     if (!user) {
       const newUser = {
         email: profile.email,
@@ -118,7 +117,7 @@ export class AuthService {
       user = await this.authRepository.createUser(newUser);
     }
 
-    return this.generateToken(user);
+    return this.generateToken(user[0]);
   }
 
   async validateJwtUser(userId: string) {

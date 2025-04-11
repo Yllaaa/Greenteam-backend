@@ -23,5 +23,6 @@ export class LoginDto {
   identifier?: string;
 
   @IsString()
+  @MinLength(8)
   password: string;
 }
