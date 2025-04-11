@@ -109,6 +109,8 @@ export class AuthService {
         email: profile.email,
         fullName: profile.fullName,
         googleId: profile.googleId,
+        username:
+          profile.email.split('@')[0] + Math.floor(Math.random() * 100000),
         password: await argon2.hash(profile.id + process.env.SECRET),
         avatar: profile.picture,
         isEmailVerified: true,
