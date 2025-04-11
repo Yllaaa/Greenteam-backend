@@ -12,12 +12,14 @@ import { MailService } from '../common/mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 import * as crypto from 'crypto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private authRepository: AuthRepository,
+    private userService: UsersService,
     private mailService: MailService,
   ) {}
 
@@ -41,11 +43,12 @@ export class AuthService {
       throw new ConflictException('Email already in use');
     }
 
-    const existingUsername = await this.authRepository.getUserByUsername(
+    const existingUser = await this.authRepository.getUserByUsername(
       registerDto.username,
     );
 
-    if (existingUsername) {
+    if (existingUser[0]) {
+      console.log('existingUsername', existingUser[0]);
       throw new ConflictException('Username already in use');
     }
 
@@ -67,8 +70,7 @@ export class AuthService {
       verificationToken,
     );
 
-    const createdUser = await this.authRepository.createUser(newUser);
-
+    const createdUser = (await this.authRepository.createUser(newUser))[0];
     return this.generateToken(createdUser);
   }
 
@@ -103,24 +105,35 @@ export class AuthService {
   }
 
   async googleLogin(profile: any) {
-    let user = await this.authRepository.getUserByEmail(profile.email);
-    if (!user) {
-      const newUser = {
-        email: profile.email,
-        fullName: profile.fullName,
-        googleId: profile.googleId,
-        username:
-          profile.email.split('@')[0] + Math.floor(Math.random() * 100000),
-        password: await argon2.hash(profile.id + process.env.SECRET),
-        avatar: profile.picture,
-        isEmailVerified: true,
-      };
+    try {
+      let user = await this.authRepository.getUserByEmail(profile.email);
 
-      user = (await this.authRepository.createUser(newUser))[0];
-      console.log('newUser', user);
+      if (user && !user.googleId) {
+        await this.userService.updateUserGoogleId(user.id, profile.googleId);
+      }
+
+      if (!user) {
+        const baseUsername = profile.email.split('@')[0];
+        const username = await this.generateUniqueUsername(baseUsername);
+
+        const newUser = {
+          email: profile.email,
+          fullName: profile.fullName,
+          googleId: profile.googleId,
+          username,
+          password: await argon2.hash(crypto.randomBytes(32).toString('hex')),
+          avatar: profile.picture,
+          isEmailVerified: true,
+        };
+
+        const createdUsers = await this.authRepository.createUser(newUser);
+        user = createdUsers[0];
+      }
+
+      return this.generateToken(user);
+    } catch (error) {
+      throw new UnauthorizedException('Failed to authenticate with Google');
     }
-
-    return this.generateToken(user);
   }
 
   async validateJwtUser(userId: string) {
@@ -274,5 +287,26 @@ export class AuthService {
       .digest('hex');
 
     return { rawToken, hashedToken };
+  }
+  private async generateUniqueUsername(baseUsername: string): Promise<string> {
+    let username = baseUsername;
+    let counter = 0;
+    let isUnique = false;
+
+    while (!isUnique) {
+      if (counter > 0) {
+        username = `${baseUsername}${counter}`;
+      }
+
+      const existingUser =
+        await this.authRepository.getUserByUsername(username);
+      if (!existingUser) {
+        isUnique = true;
+      } else {
+        counter++;
+      }
+    }
+
+    return username;
   }
 }
