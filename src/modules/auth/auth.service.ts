@@ -117,6 +117,7 @@ export class AuthService {
       };
 
       user = await this.authRepository.createUser(newUser);
+      console.log('newUser', user);
     }
 
     return this.generateToken(user);
