@@ -84,6 +84,8 @@ export class AuthRepository {
       .returning({
         id: users.id,
         email: users.email,
+        usersname: users.username,
+        avatar: users.avatar,
         fullName: users.fullName,
         googleId: users.googleId,
         isEmailVerified: users.isEmailVerified,
