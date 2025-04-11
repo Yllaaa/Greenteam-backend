@@ -116,7 +116,7 @@ export class AuthService {
         isEmailVerified: true,
       };
 
-      user = await this.authRepository.createUser(newUser);
+      user = (await this.authRepository.createUser(newUser))[0];
       console.log('newUser', user);
     }
 
