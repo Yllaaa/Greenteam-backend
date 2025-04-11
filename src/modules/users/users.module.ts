@@ -22,6 +22,7 @@ const usersRoutes = [
     ProfileModule,
   ],
   providers: [UsersService, UsersRepository],
+  exports: [UsersService, UsersRepository],
   controllers: [UsersController],
 })
 export class UsersModule {}

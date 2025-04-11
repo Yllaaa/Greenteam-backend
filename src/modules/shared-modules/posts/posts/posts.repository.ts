@@ -387,7 +387,6 @@ export class PostsRepository {
       .orderBy(desc(posts.createdAt));
 
     const conditions: SQL[] = [];
-    console.log('pageId', pageId);
     if (pageId) {
       conditions.push(
         and(eq(posts.creatorId, pageId), eq(posts.creatorType, 'page'))!,

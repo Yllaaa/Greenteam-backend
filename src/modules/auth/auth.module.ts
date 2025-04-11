@@ -8,6 +8,7 @@ import { AuthRepository } from './auth.repository';
 import { AuthController } from './auth.controller';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { MailModule } from '../common/mail/mail.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MailModule } from '../common/mail/mail.module';
       inject: [ConfigService],
     }),
     MailModule,
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, AuthRepository, GoogleStrategy],
