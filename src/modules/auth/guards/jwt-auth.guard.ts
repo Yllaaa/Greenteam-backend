@@ -38,11 +38,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       .from(users)
       .where(eq(users.id, user.id))
       .limit(1);
+    console.log('JWT is valid and user is verified', savedUser[0]);
 
     if (!savedUser[0]?.isEmailVerified) {
       throw new UnauthorizedException('Please verify your email');
     }
-
     request.user = savedUser[0];
     return true;
   }
