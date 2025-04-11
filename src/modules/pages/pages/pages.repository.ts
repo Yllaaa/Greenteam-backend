@@ -63,7 +63,10 @@ export class PagesRepository {
     return !!page;
   }
 
-  async getAllPages(pagination: { page: number; limit: number }) {
+  async getAllPages(
+    pagination: { page: number; limit: number },
+    userId: string,
+  ) {
     const offset = (pagination.page - 1) * pagination.limit;
     const pagesList = await this.drizzleService.db.query.pages.findMany({
       columns: {
@@ -96,13 +99,23 @@ export class PagesRepository {
         )`
           .mapWith(Number)
           .as('followers_count'),
+
+        isFollowing: sql<boolean>`(
+        SELECT EXISTS(
+          SELECT 1 
+          FROM ${pagesFollowers} pf 
+          WHERE pf.page_id = ${pages.id} AND pf.user_id = ${userId}
+        )
+      )`
+          .mapWith(Boolean)
+          .as('is_following'),
       },
     });
 
     return pagesList;
   }
 
-  async getPageDetails(slug: string) {
+  async getPageDetails(slug: string, userId: string) {
     const page = await this.drizzleService.db.query.pages.findFirst({
       where: eq(pages.slug, slug),
       columns: {
@@ -130,16 +143,25 @@ export class PagesRepository {
       },
       extras: {
         followersCount: sql<number>`(
-          SELECT CAST(count(*) AS INTEGER)
-          FROM ${pagesFollowers} pf
+          SELECT CAST(count(*) AS INTEGER) 
+          FROM ${pagesFollowers} pf 
           WHERE pf.page_id = ${pages.id}
         )`
           .mapWith(Number)
           .as('followers_count'),
+        isFollowing: sql<boolean>`(
+          SELECT EXISTS(
+            SELECT 1 
+            FROM ${pagesFollowers} pf 
+            WHERE pf.page_id = ${pages.id} AND pf.user_id = ${userId}
+          )
+        )`
+          .mapWith(Boolean)
+          .as('is_following'),
       },
     });
 
-    return page ? { ...page } : null;
+    return page;
   }
 
   async getPageOwnerId(pageId: string) {
