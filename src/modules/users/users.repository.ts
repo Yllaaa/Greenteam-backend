@@ -20,6 +20,13 @@ export class UsersRepository {
     });
   }
 
+  async updateUserGoogleId(userId: string, googleId: string) {
+    return await this.drizzle.db
+      .update(users)
+      .set({ googleId })
+      .where(eq(users.id, userId));
+  }
+
   async deleteUser(userId: string) {
     return await this.drizzle.db.delete(users).where(eq(users.id, userId));
   }

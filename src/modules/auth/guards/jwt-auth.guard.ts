@@ -21,29 +21,28 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isJwtValid = await super.canActivate(context);
     if (!isJwtValid) {
-      console.log('JWT is not valid');
       return false;
     }
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const savedUser = await this.drizzle.db
-      .select({
-        id: users.id,
-        isEmailVerified: users.isEmailVerified,
-        email: users.email,
-        username: users.username,
-        status: users.status,
-      })
-      .from(users)
-      .where(eq(users.id, user.id))
-      .limit(1);
+    const savedUser = await this.drizzle.db.query.users.findFirst({
+      where: eq(users.id, user.id),
+      columns: {
+        id: true,
+        email: true,
+        fullName: true,
+        username: true,
+        avatar: true,
+        isEmailVerified: true,
+      },
+    });
 
-    if (!savedUser[0]?.isEmailVerified) {
+    if (!savedUser?.isEmailVerified) {
       throw new UnauthorizedException('Please verify your email');
     }
 
-    request.user = savedUser[0];
+    request.user = savedUser;
     return true;
   }
 }

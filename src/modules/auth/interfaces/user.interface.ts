@@ -4,6 +4,7 @@ export interface User {
   fullName: string | null;
   username: string;
   avatar: string | null;
+  googleId: string | null;
   bio: string | null;
   isEmailVerified: boolean;
 }

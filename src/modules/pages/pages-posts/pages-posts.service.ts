@@ -8,9 +8,9 @@ import { PostsRepository } from 'src/modules/shared-modules/posts/posts/posts.re
 import { PostsService } from 'src/modules/shared-modules/posts/posts/posts.service';
 import { PagesService } from '../pages/pages.service';
 import { SQL } from 'drizzle-orm';
-import { CreatePostDto } from 'src/modules/shared-modules/posts/posts/dto/create-post.dto';
 import { CreatorType } from 'src/modules/db/schemas/schema';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { CreatePagePostDto } from './dtos/create-page-post.dto';
 @Injectable()
 export class PagesPostsService {
   constructor(
@@ -59,9 +59,9 @@ export class PagesPostsService {
     return post;
   }
 
-  async createPost(data: { dto: CreatePostDto; files: any }, slug: string) {
+  async createPost(data: { dto: CreatePagePostDto; files: any }, slug: string) {
     const { dto, files } = data;
-    const { content, mainTopicId, creatorType, subtopicIds } = dto;
+    const { content, creatorType, subtopicIds } = dto;
 
     if (creatorType !== 'page') {
       throw new BadRequestException('Only page can create posts from here');
@@ -74,7 +74,7 @@ export class PagesPostsService {
 
     const newPost = await this.postsRepository.createPost(
       content,
-      mainTopicId,
+      page.topicId,
       creatorType,
       page.id,
     );

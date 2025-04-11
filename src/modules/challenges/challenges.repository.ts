@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import {
+  entitiesMedia,
   greenChallenges,
+  MediaType,
   posts,
   topics,
   UserChallengeStatus,
@@ -15,10 +17,13 @@ export class ChallengesRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
   async createDoPostChallenge(userId: string, postId: string) {
-    return await this.drizzleService.db.insert(usersDoPosts).values({
-      userId,
-      postId,
-    });
+    return await this.drizzleService.db
+      .insert(usersDoPosts)
+      .values({
+        userId,
+        postId,
+      })
+      .returning();
   }
   async findDoPostChallenge(postId: string, userId: string) {
     return await this.drizzleService.db.query.usersDoPosts.findFirst({
@@ -49,7 +54,14 @@ export class ChallengesRepository {
   ) {
     const { page = 1, limit = 10 } = pagination;
     const offset = Math.max(0, (page - 1) * limit);
+    const conditions = [
+      eq(usersDoPosts.userId, userId),
+      eq(usersDoPosts.status, 'pending'),
+    ];
 
+    if (topicId) {
+      conditions.push(eq(posts.mainTopicId, topicId));
+    }
     return await this.drizzleService.db
       .select({
         post: {
@@ -64,17 +76,31 @@ export class ChallengesRepository {
           avatar: users.avatar,
           username: users.username,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+              COALESCE(
+                jsonb_agg(
+                  DISTINCT jsonb_build_object(
+                    'id', ${entitiesMedia.id},
+                    'mediaUrl', ${entitiesMedia.mediaUrl},
+                    'mediaType', ${entitiesMedia.mediaType}
+                  )
+                ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+                '[]'::jsonb
+              )
+              `.as('media'),
       })
       .from(usersDoPosts)
       .innerJoin(posts, eq(posts.id, usersDoPosts.postId))
       .innerJoin(users, eq(users.id, posts.creatorId))
-      .where(
-        and(
-          eq(usersDoPosts.userId, userId),
-          eq(usersDoPosts.status, 'pending'),
-          topicId ? eq(posts.mainTopicId, topicId) : undefined,
-        ),
-      )
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
+      .where(and(...conditions))
+      .groupBy(usersDoPosts.id, posts.id, users.id, entitiesMedia.id)
       .orderBy(desc(usersDoPosts.createdAt))
       .limit(limit)
       .offset(offset);

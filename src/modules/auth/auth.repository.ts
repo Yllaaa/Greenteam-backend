@@ -40,12 +40,13 @@ export class AuthRepository {
   }
 
   async getUserByEmail(email: string): Promise<User> {
-    const user = this.drizzle.db.query.users.findMany({
+    const user = this.drizzle.db.query.users.findFirst({
       where: eq(users.email, email),
       columns: {
         id: true,
         email: true,
         fullName: true,
+        username: true,
         googleId: true,
         isEmailVerified: true,
       },
@@ -66,14 +67,12 @@ export class AuthRepository {
   }
 
   async createUser(newUser: any): Promise<User> {
-    const [createdUser] = await this.drizzle.db
+    const createdUser = await this.drizzle.db
       .insert(users)
       .values({
         email: newUser.email,
         password: newUser.password,
-        username: newUser.username
-          ? newUser.username
-          : newUser.email.split('@')[0],
+        username: newUser.username,
         fullName: newUser.fullName
           ? newUser.fullName
           : newUser.email.split('@')[0],
@@ -85,6 +84,8 @@ export class AuthRepository {
       .returning({
         id: users.id,
         email: users.email,
+        usersname: users.username,
+        avatar: users.avatar,
         fullName: users.fullName,
         googleId: users.googleId,
         isEmailVerified: users.isEmailVerified,

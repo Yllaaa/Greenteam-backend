@@ -25,7 +25,7 @@ export const publicationsComments = pgTable(
     publicationType: publicationTypeEnum('publication_type').notNull(),
     userId: uuid('user_id')
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
     mediaUrl: varchar('media_url'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -41,7 +41,7 @@ export const commentsReplies = pgTable('comments_replies', {
     .notNull(),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
   mediaUrl: varchar('media_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -85,7 +85,7 @@ export const publicationsReactions = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id')
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: 'cascade' }),
     reactionableType: reactionableTypeEnum('reactionable_type').notNull(),
     reactionableId: uuid('reactionable_id').notNull(),
     reactionType: reactionTypeEnum('reaction_type').notNull(),

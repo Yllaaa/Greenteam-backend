@@ -36,7 +36,7 @@ export const pointsHistory = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     topicId: integer('topic_id').references(() => topics.id),
-    userId: uuid('user_id').references(() => users.id),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
     points: integer('points').notNull(),
     action: actionEnum('action').notNull(),
     actionId: uuid('action_id').notNull(),
@@ -57,7 +57,7 @@ export const userPoints = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     topicId: integer('topic_id').references(() => topics.id),
-    userId: uuid('user_id').references(() => users.id),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
     points: integer('points').notNull(),
     createdAt: timestamp('created_at')
       .notNull()
