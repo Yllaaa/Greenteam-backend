@@ -3,6 +3,7 @@ import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
+import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -26,6 +27,16 @@ export class ProfileController {
         const userId = req.user.id;
         return this.profileService.getUserLikedDislikedPosts(dto, userId);
     }
+
+    @Get('comments')
+    async getUserComments(
+        @Query(new ValidationPipe({ transform: true })) dto: FilterUserCommentsDto,
+        @Req() req
+    ) {
+        const userId = req.user.id;
+        return this.profileService.getUserComments(dto, userId);
+    }
+
 
     @Get(':username')
     async getUserByUsername(@Param('username') username: string, @Req() req) {

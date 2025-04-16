@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { ProfileRepository } from './profile.repository';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
+import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 
 @Injectable()
 export class ProfileService {
@@ -52,4 +53,27 @@ export class ProfileService {
             }
         );
     }
+
+
+    async getUserComments(dto: FilterUserCommentsDto, userId: string) {
+        const result = await this.profileRepository.getUserComments(
+            userId,
+            {
+                mainTopicId: dto.mainTopicId,
+                subTopicId: dto.subTopicId,
+                limit: dto.limit,
+                page: dto.page,
+            }
+        );
+
+        return {
+            items: result,
+            meta: {
+                page: dto.page || 1,
+                limit: dto.limit || 10,
+                itemCount: result.length,
+            }
+        };
+    }
+
 }
