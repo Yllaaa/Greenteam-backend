@@ -56,23 +56,20 @@ export class ProfileService {
 
 
     async getUserComments(dto: FilterUserCommentsDto, userId: string) {
-        const result = await this.profileRepository.getUserComments(
+        const result = await this.profileRepository.getUserCommentedPosts(
             userId,
             {
                 mainTopicId: dto.mainTopicId,
                 subTopicId: dto.subTopicId,
+            },
+            {
                 limit: dto.limit,
                 page: dto.page,
             }
         );
 
         return {
-            items: result,
-            meta: {
-                page: dto.page || 1,
-                limit: dto.limit || 10,
-                itemCount: result.length,
-            }
+            items: result
         };
     }
 

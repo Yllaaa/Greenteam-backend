@@ -28,8 +28,8 @@ export class ProfileController {
         return this.profileService.getUserLikedDislikedPosts(dto, userId);
     }
 
-    @Get('comments')
-    async getUserComments(
+    @Get('commented-posts')
+    async getUserCommentedPosts(
         @Query(new ValidationPipe({ transform: true })) dto: FilterUserCommentsDto,
         @Req() req
     ) {

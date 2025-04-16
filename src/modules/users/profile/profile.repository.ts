@@ -94,7 +94,7 @@ export class ProfileRepository {
 
     return userGroups;
   }
-  
+
 
 
   async getUserLikedDislikedPosts(
@@ -107,7 +107,7 @@ export class ProfileRepository {
   ) {
     const { limit = 10, page = 1 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
-    
+
     // Get all posts that the user has reacted to
     const userReactions = this.drizzleService.db
       .select({
@@ -117,7 +117,7 @@ export class ProfileRepository {
       .from(publicationsReactions)
       .where(eq(publicationsReactions.userId, userId))
       .as('user_reactions');
-    
+
     // Aggregated reactions for all users
     const reactionsAggregation = this.drizzleService.db
       .select({
@@ -132,7 +132,7 @@ export class ProfileRepository {
       .from(publicationsReactions)
       .groupBy(publicationsReactions.reactionableId)
       .as('reactions_agg');
-    
+
     // Query builder for the main query
     const queryBuilder = this.drizzleService.db
       .select({
@@ -174,7 +174,7 @@ export class ProfileRepository {
         userReactions.reactionType,
       )
       .orderBy(desc(posts.createdAt));
-    
+
     // Apply additional filters if needed
     const conditions: SQL[] = [];
     if (mainTopicId) {
@@ -183,27 +183,31 @@ export class ProfileRepository {
     if (conditions.length > 0) {
       queryBuilder.where(and(...conditions));
     }
-    
+
     const paginatedQuery = queryBuilder.limit(limit).offset(offset);
     const data = await paginatedQuery.execute();
     return data;
   }
-  
+
   private readonly commentCountQuery = sql<number>`
     COUNT(DISTINCT ${publicationsComments.id})
   `.as('comment_count');
 
 
-  async getUserComments(
+  async getUserCommentedPosts(
     userId: string,
-    options: {
+    filtration: {
       mainTopicId?: number;
       subTopicId?: number;
+    },
+    pagination: {
       limit?: number;
       page?: number;
     }
   ) {
-    const { mainTopicId, subTopicId, limit = 10, page = 1 } = options;
+    const { mainTopicId, subTopicId } = filtration;
+    const { limit = 10, page = 1 } = pagination;
+
     const offset = Math.max(0, (page - 1) * limit);
 
     // First, get user comments on posts
