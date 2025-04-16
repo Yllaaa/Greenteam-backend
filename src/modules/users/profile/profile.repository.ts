@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
-import { groupMembers, groups, pages, pagesFollowers, posts, postSubTopics, publicationsComments, publicationsReactions, users } from '../../db/schemas/schema';
-import { eq, or, sql, and, SQL, exists, desc, inArray } from 'drizzle-orm';
+import { entitiesMedia, groupMembers, groups, pages, pagesFollowers, posts, postSubTopics, publicationsComments, publicationsReactions, users } from '../../db/schemas/schema';
+import { eq, or, sql, and, SQL, exists, desc, inArray, ne } from 'drizzle-orm';
 @Injectable()
 export class ProfileRepository {
   constructor(private readonly drizzleService: DrizzleService) { }
@@ -94,7 +94,7 @@ export class ProfileRepository {
 
     return userGroups;
   }
-  
+
 
 
   async getUserLikedDislikedPosts(
@@ -107,7 +107,7 @@ export class ProfileRepository {
   ) {
     const { limit = 10, page = 1 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
-    
+
     // Get all posts that the user has reacted to
     const userReactions = this.drizzleService.db
       .select({
@@ -117,7 +117,7 @@ export class ProfileRepository {
       .from(publicationsReactions)
       .where(eq(publicationsReactions.userId, userId))
       .as('user_reactions');
-    
+
     // Aggregated reactions for all users
     const reactionsAggregation = this.drizzleService.db
       .select({
@@ -132,7 +132,7 @@ export class ProfileRepository {
       .from(publicationsReactions)
       .groupBy(publicationsReactions.reactionableId)
       .as('reactions_agg');
-    
+
     // Query builder for the main query
     const queryBuilder = this.drizzleService.db
       .select({
@@ -174,7 +174,7 @@ export class ProfileRepository {
         userReactions.reactionType,
       )
       .orderBy(desc(posts.createdAt));
-    
+
     // Apply additional filters if needed
     const conditions: SQL[] = [];
     if (mainTopicId) {
@@ -183,13 +183,187 @@ export class ProfileRepository {
     if (conditions.length > 0) {
       queryBuilder.where(and(...conditions));
     }
-    
+
     const paginatedQuery = queryBuilder.limit(limit).offset(offset);
     const data = await paginatedQuery.execute();
     return data;
   }
-  
+
   private readonly commentCountQuery = sql<number>`
     COUNT(DISTINCT ${publicationsComments.id})
   `.as('comment_count');
+
+
+  async getUserCommentedPosts(
+    userId: string,
+    filtration: {
+      mainTopicId?: number;
+      subTopicId?: number;
+    },
+    pagination: {
+      limit?: number;
+      page?: number;
+    }
+  ) {
+    const { mainTopicId, subTopicId } = filtration;
+    const { limit = 10, page = 1 } = pagination;
+
+    const offset = Math.max(0, (page - 1) * limit);
+
+    // First, get user comments on posts
+    const userComments = await this.drizzleService.db
+      .select({
+        postId: publicationsComments.publicationId,
+      })
+      .from(publicationsComments)
+      .where(
+        and(
+          eq(publicationsComments.userId, userId),
+          eq(publicationsComments.publicationType, 'post')
+        )
+      );
+
+    if (!userComments.length) {
+      return [];
+    }
+
+    // Get unique post IDs
+    const postIds = [...new Set(userComments.map(c => c.postId))];
+
+    // Build conditions for filtering posts
+    const conditions = [inArray(posts.id, postIds)];
+    if (mainTopicId) {
+      conditions.push(eq(posts.mainTopicId, mainTopicId));
+    }
+
+    // Execute different query based on subTopicId
+    let filteredPosts;
+
+    if (subTopicId) {
+      filteredPosts = await this.drizzleService.db
+        .select({ id: posts.id })
+        .from(posts)
+        .innerJoin(postSubTopics, eq(postSubTopics.postId, posts.id))
+        .where(and(...conditions, eq(postSubTopics.topicId, subTopicId)))
+        .orderBy(desc(posts.createdAt))
+        .limit(limit)
+        .offset(offset);
+    } else {
+      filteredPosts = await this.drizzleService.db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(and(...conditions))
+        .orderBy(desc(posts.createdAt))
+        .limit(limit)
+        .offset(offset);
+    }
+
+    if (!filteredPosts.length) {
+      return [];
+    }
+
+    // Get filtered post IDs
+    const filteredPostIds = filteredPosts.map(post => post.id);
+
+    // Get detailed information for each post
+    const result = await Promise.all(
+      filteredPostIds.map(async (postId) => {
+        // Get post details
+        const post = await this.drizzleService.db.query.posts.findFirst({
+          where: eq(posts.id, postId),
+          columns: {
+            id: true,
+            content: true,
+            createdAt: true,
+            creatorType: true,
+            mainTopicId: true,
+          },
+          with: {
+            user_creator: {
+              columns: {
+                id: true,
+                username: true,
+                fullName: true,
+                avatar: true,
+              },
+            },
+            mainTopic: true,
+          },
+        });
+
+        // Get post media
+        const media = await this.drizzleService.db
+          .select()
+          .from(entitiesMedia)
+          .where(
+            and(
+              eq(entitiesMedia.parentId, postId),
+              eq(entitiesMedia.parentType, 'post')
+            )
+          );
+
+        // Get ALL user's comments for this post
+        const userComments = await this.drizzleService.db
+          .select({
+            id: publicationsComments.id,
+            content: publicationsComments.content,
+            createdAt: publicationsComments.createdAt,
+            updatedAt: publicationsComments.updatedAt,
+            author: {
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              avatar: users.avatar,
+            },
+          })
+          .from(publicationsComments)
+          .innerJoin(users, eq(publicationsComments.userId, users.id))
+          .where(
+            and(
+              eq(publicationsComments.publicationId, postId),
+              eq(publicationsComments.publicationType, 'post'),
+              eq(publicationsComments.userId, userId)
+            )
+          )
+          .orderBy(desc(publicationsComments.createdAt));
+
+        // Get up to 5 other comments (excluding the user's comments)
+        const otherComments = await this.drizzleService.db
+          .select({
+            id: publicationsComments.id,
+            content: publicationsComments.content,
+            createdAt: publicationsComments.createdAt,
+            updatedAt: publicationsComments.updatedAt,
+            author: {
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              avatar: users.avatar,
+            },
+          })
+          .from(publicationsComments)
+          .innerJoin(users, eq(publicationsComments.userId, users.id))
+          .where(
+            and(
+              eq(publicationsComments.publicationId, postId),
+              eq(publicationsComments.publicationType, 'post'),
+              ne(publicationsComments.userId, userId)
+            )
+          )
+          .orderBy(desc(publicationsComments.createdAt))
+          .limit(5);
+
+        return {
+          post: {
+            ...post,
+            media
+          },
+          userComments, // All user's comments for this post
+          otherComments, // Up to 5 other comments
+        };
+      })
+    );
+
+    return result;
+  }
 }
