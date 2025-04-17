@@ -18,3 +18,4 @@ export * from './points/points';
 export * from './subscriptions/subscriptions';
 export * from './subscriptions/payments';
 export * from './products/products';
+export * from './users/users-actions';

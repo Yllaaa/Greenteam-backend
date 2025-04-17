@@ -7,6 +7,7 @@ import { RouterModule } from '@nestjs/core';
 import { ScoreModule } from './score/score.module';
 import { ProfileModule } from './profile/profile.module';
 import { FavouritesModule } from './favourites/favourites.module';
+import { ActionsModule } from './actions/actions.module';
 
 const usersRoutes = [
   { path: 'friends', module: FriendsModule },
@@ -22,6 +23,7 @@ const usersRoutes = [
     ScoreModule,
     ProfileModule,
     FavouritesModule,
+    ActionsModule,
   ],
   providers: [UsersService, UsersRepository],
   exports: [UsersService, UsersRepository],

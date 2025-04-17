@@ -65,4 +65,4 @@ export const usersRelations = relations(users, ({ many }) => ({
   messages: many(messages),
 }));
 
-export * from './friends/friends';
+export * from './friends';
