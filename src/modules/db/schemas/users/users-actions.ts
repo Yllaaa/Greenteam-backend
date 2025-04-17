@@ -45,8 +45,7 @@ export const userBlocks = pgTable(
       .notNull()
       .references(() => users.id),
     blockedId: uuid('blocked_id').notNull(),
-    blockedEntityType: blockedEntityType().notNull(),
-
+    blockedEntityType: blockedEntityType('blocked_type').notNull(),
     ...timestamps,
   },
   (table) => {
@@ -69,7 +68,7 @@ export const userReports = pgTable(
       .notNull()
       .references(() => users.id),
     reportedId: uuid('reported_id').notNull(),
-    reportedEntityType: reportedEntityType().notNull(),
+    reportedType: reportedEntityType('reported_type').notNull(),
     reason: text('reason').notNull(),
     adminNotes: text('admin_notes'),
     status: reportStatus().default('pending').notNull(),
@@ -79,7 +78,7 @@ export const userReports = pgTable(
     reporterIdx: index('reporter_idx').on(table.userId),
     reportedEntityIdx: index('reported_entity_idx').on(
       table.reportedId,
-      table.reportedEntityType,
+      table.reportedType,
     ),
   }),
 );
