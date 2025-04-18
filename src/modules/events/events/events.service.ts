@@ -16,8 +16,6 @@ import { CommonService } from 'src/modules/common/common.service';
 
 @Injectable()
 export class EventsService {
-  readonly EVENTS_PER_PAGE = 10;
-
   constructor(
     readonly eventsRepository: EventsRepository,
     readonly uploadMediaService: UploadMediaService,
@@ -50,7 +48,7 @@ export class EventsService {
     return await Promise.all(
       events.map(async (event) => {
         const hostName = await this.GetEventHostName(event);
-
+        console.log('hostName', hostName);
         const { userCreator, pageCreator, ...rest } = event;
 
         return {
@@ -103,6 +101,7 @@ export class EventsService {
     } else if (hostedByStr === 'Global') {
       return 'Global';
     }
+
     return event?.userCreator?.fullName || event?.pageCreator?.name || null;
   }
 }

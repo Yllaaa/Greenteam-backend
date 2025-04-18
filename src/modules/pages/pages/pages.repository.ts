@@ -11,6 +11,7 @@ import {
   posts,
 } from 'src/modules/db/schemas/schema';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
+import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 
 @Injectable()
 export class PagesRepository {
@@ -63,11 +64,18 @@ export class PagesRepository {
     return !!page;
   }
 
-  async getAllPages(
-    pagination: { page: number; limit: number },
-    userId: string,
-  ) {
-    const offset = (pagination.page - 1) * pagination.limit;
+  async getAllPages(query: GetAllPagesDto, userId: string) {
+    const { countryId, cityId, limit, page } = query;
+    const offset = (page - 1) * limit;
+    const whereConditions: Array<ReturnType<typeof eq>> = [];
+
+    if (countryId) {
+      whereConditions.push(eq(pages.countryId, countryId));
+    }
+    if (cityId) {
+      whereConditions.push(eq(pages.cityId, cityId));
+    }
+
     const pagesList = await this.drizzleService.db.query.pages.findMany({
       columns: {
         id: true,
@@ -89,8 +97,9 @@ export class PagesRepository {
         },
       },
       orderBy: (pages, { desc }) => [desc(pages.createdAt)],
-      limit: pagination.limit,
+      limit,
       offset,
+      where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
       extras: {
         followersCount: sql<number>`(
           SELECT CAST(count(*) AS INTEGER)
@@ -99,19 +108,17 @@ export class PagesRepository {
         )`
           .mapWith(Number)
           .as('followers_count'),
-
         isFollowing: sql<boolean>`(
-        SELECT EXISTS(
-          SELECT 1 
-          FROM ${pagesFollowers} pf 
-          WHERE pf.page_id = ${pages.id} AND pf.user_id = ${userId}
-        )
-      )`
+          SELECT EXISTS(
+            SELECT 1
+            FROM ${pagesFollowers} pf
+            WHERE pf.page_id = ${pages.id} AND pf.user_id = ${userId}
+          )
+        )`
           .mapWith(Boolean)
           .as('is_following'),
       },
     });
-
     return pagesList;
   }
 

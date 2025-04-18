@@ -6,10 +6,11 @@ import {
   IsEnum,
   IsInt,
   Min,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class GetGroupDtos {
+export class GetAllGroupsDtos {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -21,6 +22,18 @@ export class GetGroupDtos {
   @IsInt()
   @Min(1)
   page?: number = 1;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  countryId: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  cityId: number;
 
   @IsOptional()
   @IsInt()

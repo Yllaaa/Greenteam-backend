@@ -8,6 +8,7 @@ import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { CommonService } from 'src/modules/common/common.service';
+import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 
 @Injectable()
 export class PagesService {
@@ -54,13 +55,8 @@ export class PagesService {
   async checkSlugTaken(slug: string) {
     return await this.pagesRepository.checkSlugTaken(slug);
   }
-  async getAllPages(
-    pagination: { page: number; limit: number },
-    userId: string,
-  ) {
-    const { page, limit } = pagination;
-
-    return await this.pagesRepository.getAllPages({ page, limit }, userId);
+  async getAllPages(query: GetAllPagesDto, userId: string) {
+    return await this.pagesRepository.getAllPages(query, userId);
   }
 
   async getPageDetails(slug: string, userId: string) {

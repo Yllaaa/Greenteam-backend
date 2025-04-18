@@ -13,7 +13,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
-import { GetGroupDtos } from './dtos/get-groups.dto';
+import { GetAllGroupsDtos } from './dtos/get-groups.dto';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -37,13 +37,9 @@ export class GroupsController {
   }
 
   @Get()
-  async getGroups(@Query() query: GetGroupDtos, @Req() request) {
+  async getGroups(@Query() query: GetAllGroupsDtos, @Req() request) {
     const userId: string = request.user.id;
-    return this.groupsService.getAllGroups(
-      { limit: query.limit ?? 10, page: query.page ?? 1 },
-      userId,
-      query.topicId,
-    );
+    return this.groupsService.getAllGroups(query, userId);
   }
 
   @Get(':id')

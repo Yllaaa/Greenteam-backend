@@ -80,15 +80,18 @@ export class MarketplaceRepository {
   }
   async getAllProducts(query: GetAllProductsDto, pageId?: string) {
     const filters: SQL[] = [];
-    const { topicId, countryId, districtId, limit, page } = query;
+    const { topicId, countryId, cityId, limit, page, marketType } = query;
     if (topicId) {
       filters.push(eq(products.topicId, topicId));
     }
     if (countryId) {
       filters.push(eq(products.countryId, countryId));
     }
-    if (districtId) {
-      filters.push(eq(products.cityId, districtId));
+    if (cityId) {
+      filters.push(eq(products.cityId, cityId));
+    }
+    if (marketType) {
+      filters.push(eq(products.marketType, marketType));
     }
     if (pageId) {
       filters.push(eq(products.sellerId, pageId));
