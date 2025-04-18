@@ -23,6 +23,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { UploadMediaModule } from './modules/common/upload-media/upload-media.module';
+import { CommunityModule } from './modules/community/community.module';
 @Global()
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { UploadMediaModule } from './modules/common/upload-media/upload-media.mo
     PaymentsModule,
     MarketplaceModule,
     UploadMediaModule,
+    CommunityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

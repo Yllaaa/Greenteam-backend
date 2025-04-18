@@ -11,6 +11,7 @@ import { GroupMembersService } from '../group-members/group-members.service';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { CommonRepository } from 'src/modules/common/common.repository';
 import { CommonService } from 'src/modules/common/common.service';
+import { GetAllGroupsDtos } from './dtos/get-groups.dto';
 
 @Injectable()
 export class GroupsService {
@@ -50,12 +51,8 @@ export class GroupsService {
     return newGroup;
   }
 
-  async getAllGroups(
-    pagination: { limit: number; page: number },
-    userId: string,
-    topicId?: number,
-  ) {
-    return this.groupsRepository.getAllGroups(pagination, userId, topicId);
+  async getAllGroups(query: GetAllGroupsDtos, userId?: string) {
+    return this.groupsRepository.getAllGroups(query, userId);
   }
 
   async getGroupDetails(groupId: string, userId: string) {

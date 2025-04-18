@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-media/interceptors/validate-profileImages.interceptor';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
@@ -50,13 +51,9 @@ export class PagesController {
   }
 
   @Get('')
-  async getAllPages(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
-    @Req() req,
-  ) {
+  async getAllPages(@Query() query: GetAllPagesDto, @Req() req) {
     const userId = req.user.id;
-    return await this.pagesService.getAllPages({ page, limit }, userId);
+    return await this.pagesService.getAllPages(query, userId);
   }
 
   @Get(':slug')

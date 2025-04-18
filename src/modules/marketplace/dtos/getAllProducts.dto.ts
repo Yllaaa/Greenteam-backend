@@ -1,5 +1,11 @@
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+
+export enum MarketType {
+  LOCAL_BUSINESS = 'local_business',
+  VALUE_DRIVEN_BUSINESS = 'value_driven_business',
+  SECOND_HAND = 'second_hand',
+}
 
 export class GetAllProductsDto {
   @IsOptional()
@@ -16,7 +22,7 @@ export class GetAllProductsDto {
   @IsOptional()
   @IsInt()
   @Type(() => Number)
-  districtId?: number;
+  cityId?: number;
 
   @IsOptional()
   @IsInt()
@@ -29,4 +35,10 @@ export class GetAllProductsDto {
   @Type(() => Number)
   @Min(1)
   limit?: number;
+
+  @IsOptional()
+  @IsIn(Object.values(MarketType), {
+    message: `Invalid marketType. Must be one of: ${Object.values(MarketType).join(', ')}`,
+  })
+  marketType?: MarketType;
 }

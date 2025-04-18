@@ -1,10 +1,6 @@
 import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { MarketType } from 'src/modules/db/schemas/schema';
-export enum MarketTypeEnum {
-  LocalBusiness = 'local_business',
-  ValueDrivenBusiness = 'value_driven_business',
-}
+import { MarketType } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 
 export class GetPageProductsDto {
   @IsOptional()
@@ -20,10 +16,10 @@ export class GetPageProductsDto {
   page?: number;
 
   @IsOptional()
-  @IsIn(Object.values(MarketTypeEnum), {
-    message: `Invalid marketType. Must be one of: ${Object.values(MarketTypeEnum).join(', ')}`,
+  @IsIn(Object.values(MarketType), {
+    message: `Invalid marketType. Must be one of: ${Object.values(MarketType).join(', ')}`,
   })
-  marketType?: MarketTypeEnum;
+  marketType?: MarketType;
 
   @IsOptional()
   @IsInt()

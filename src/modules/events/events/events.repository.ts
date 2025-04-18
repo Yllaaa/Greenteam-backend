@@ -61,9 +61,8 @@ export class EventsRepository {
   async getEvents(
     dto: GetEventsDto,
     userId?: string,
-    pageId?: string,
   ): Promise<EventResponse[]> {
-    const { page, limit } = dto;
+    const { page, limit, countryId, cityId, category } = dto;
     const offset = Math.max(0, (page - 1) * limit);
     const returnedEvents = await this.drizzleService.db.query.events.findMany({
       columns: {
@@ -71,7 +70,6 @@ export class EventsRepository {
         title: true,
         description: true,
         location: true,
-
         startDate: true,
         endDate: true,
         category: true,
@@ -84,10 +82,9 @@ export class EventsRepository {
       where: (events, { and, eq, isNull }) =>
         and(
           isNull(events.groupId),
-          dto.category ? eq(events.category, dto.category) : undefined,
-          pageId
-            ? and(eq(events.creatorId, pageId), eq(events.creatorType, 'page'))
-            : undefined,
+          category ? eq(events.category, dto.category) : undefined,
+          cityId ? eq(events.cityId, dto.cityId) : undefined,
+          countryId ? eq(events.countryId, dto.countryId) : undefined,
         ),
       extras: userId
         ? {
@@ -101,29 +98,20 @@ export class EventsRepository {
           )`.as('is_joined'),
           }
         : {},
-      with: pageId
-        ? {
-            pageCreator: {
-              columns: {
-                id: true,
-                name: true,
-              },
-            },
-          }
-        : {
-            userCreator: {
-              columns: {
-                id: true,
-                fullName: true,
-              },
-            },
-            pageCreator: {
-              columns: {
-                id: true,
-                name: true,
-              },
-            },
+      with: {
+        userCreator: {
+          columns: {
+            id: true,
+            fullName: true,
           },
+        },
+        pageCreator: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
     return returnedEvents as unknown as EventResponse[];
   }

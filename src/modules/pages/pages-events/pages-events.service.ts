@@ -12,11 +12,13 @@ import { CreatorType } from 'src/modules/db/schemas/schema';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { CommonService } from 'src/modules/common/common.service';
+import { PagesEventsRepository } from './pages-events.repository';
 
 @Injectable()
 export class PagesEventsService {
   constructor(
     private readonly eventsRepository: EventsRepository,
+    private readonly pagesEventsRepository: PagesEventsRepository,
     private readonly pagesService: PagesService,
     private readonly uploadMediaService: UploadMediaService,
     private readonly commonService: CommonService,
@@ -57,7 +59,11 @@ export class PagesEventsService {
     if (!page) {
       throw new NotFoundException('Page not found');
     }
-    const events = await this.eventsRepository.getEvents(dto, userId, page.id);
+    const events = await this.pagesEventsRepository.getEvents(
+      dto,
+      page.id,
+      userId,
+    );
     return events.map((event) => {
       const { pageCreator, ...rest } = event;
       return {

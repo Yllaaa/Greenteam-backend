@@ -16,6 +16,18 @@ export class GetEventsDto {
   @IsOptional()
   limit: number = 10;
 
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  countryId: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  cityId: number;
+
   @IsIn(EventCategory.enumValues)
   @IsOptional()
   category: SQL<'social' | 'volunteering&work' | 'talks&workshops'>;

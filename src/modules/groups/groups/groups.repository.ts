@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { eq, sql, desc } from 'drizzle-orm';
+import { eq, sql, desc, and, SQL } from 'drizzle-orm';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
@@ -10,6 +10,7 @@ import {
   topics,
   users,
 } from 'src/modules/db/schemas/schema';
+import { GetAllGroupsDtos } from './dtos/get-groups.dto';
 
 @Injectable()
 export class GroupsRepository {
@@ -35,14 +36,9 @@ export class GroupsRepository {
       .returning();
   }
 
-  async getAllGroups(
-    pagination: { limit: number; page: number },
-    userId?: string,
-    topicId?: number,
-  ) {
-    const limit = pagination?.limit || 10;
-    const offset = Math.max(0, (pagination.page - 1) * limit);
-
+  async getAllGroups(query: GetAllGroupsDtos, userId?: string) {
+    const { topicId, limit, page, countryId, cityId } = query;
+    const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
     const selectObj: any = {
       id: groups.id,
       name: groups.name,
@@ -57,7 +53,6 @@ export class GroupsRepository {
           'member_count',
         ),
     };
-
     if (userId) {
       selectObj.isUserMember = sql`
         case when exists (
@@ -68,16 +63,36 @@ export class GroupsRepository {
       `.as('is_user_member');
     }
 
+    let whereConditions: SQL<unknown> | undefined;
+
+    if (topicId) {
+      whereConditions = eq(groups.topicId, topicId);
+    }
+
+    if (countryId) {
+      const countryCondition = eq(groups.countryId, countryId);
+      whereConditions = whereConditions
+        ? and(whereConditions, countryCondition)
+        : countryCondition;
+    }
+
+    if (countryId && cityId) {
+      const cityCondition = eq(groups.cityId, cityId);
+      whereConditions = whereConditions
+        ? and(whereConditions, cityCondition)
+        : cityCondition;
+    }
+
     const groupsWithMetadata = await this.drizzle.db
       .select(selectObj)
       .from(groups)
       .leftJoin(groupMembers, eq(groups.id, groupMembers.groupId))
       .leftJoin(topics, eq(topics.id, groups.topicId))
-      .where(topicId ? eq(groups.topicId, topicId) : undefined)
+      .where(whereConditions)
       .groupBy(groups.id, topics.id, topics.name)
-      .limit(limit)
-      .offset(offset);
+      .limit(limit ?? 10)
 
+      .offset(offset);
     return groupsWithMetadata;
   }
   async getGroupByName(name: string) {
