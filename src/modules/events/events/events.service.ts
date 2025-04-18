@@ -12,6 +12,7 @@ import { SQL } from 'drizzle-orm';
 import { GetEventsDto } from './dto/getEvents.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { CommonRepository } from 'src/modules/common/common.repository';
+import { CommonService } from 'src/modules/common/common.service';
 
 @Injectable()
 export class EventsService {
@@ -21,6 +22,7 @@ export class EventsService {
     readonly eventsRepository: EventsRepository,
     readonly uploadMediaService: UploadMediaService,
     readonly commonRepository: CommonRepository,
+    readonly commonService: CommonService,
   ) {}
 
   async createEvent(
@@ -28,7 +30,7 @@ export class EventsService {
     userId: string,
   ) {
     const { dto } = event;
-    await this.validateLocation(dto.countryId, dto.cityId);
+    await this.commonService.validateLocation(dto.countryId, dto.cityId);
     let uploadedImage;
     if (event.poster) {
       uploadedImage = await this.uploadMediaService.uploadSingleImage(
@@ -102,29 +104,5 @@ export class EventsService {
       return 'Global';
     }
     return event?.userCreator?.fullName || event?.pageCreator?.name || null;
-  }
-
-  private async validateLocation(countryId: number, cityId: number) {
-    if (countryId) {
-      const exists = await this.commonRepository.countryExists(countryId);
-      if (!exists) throw new BadRequestException('Invalid country ID');
-    }
-
-    if (cityId) {
-      if (!countryId) {
-        throw new BadRequestException(
-          'Country ID is required when district is specified',
-        );
-      }
-      const exists = await this.commonRepository.cityExistsInCountry(
-        cityId,
-        countryId,
-      );
-      if (!exists) {
-        throw new BadRequestException(
-          'Invalid district or district does not belong to the specified country',
-        );
-      }
-    }
   }
 }

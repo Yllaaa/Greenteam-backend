@@ -11,6 +11,7 @@ import { PagesService } from '../pages/pages.service';
 import { CreatorType } from 'src/modules/db/schemas/schema';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { CommonService } from 'src/modules/common/common.service';
 
 @Injectable()
 export class PagesEventsService {
@@ -18,6 +19,7 @@ export class PagesEventsService {
     private readonly eventsRepository: EventsRepository,
     private readonly pagesService: PagesService,
     private readonly uploadMediaService: UploadMediaService,
+    private readonly commonService: CommonService,
   ) {}
 
   async createEvent(
@@ -36,6 +38,7 @@ export class PagesEventsService {
     if (page.ownerId !== userId) {
       throw new UnauthorizedException('You are not the owner of this page');
     }
+    await this.commonService.validateLocation(dto.countryId, dto.cityId);
     let uploadedImage;
     if (event.poster) {
       uploadedImage = await this.uploadMediaService.uploadSingleImage(

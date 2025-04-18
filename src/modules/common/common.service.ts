@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CommonRepository } from './common.repository';
 @Injectable()
 export class CommonService {
@@ -34,5 +34,28 @@ export class CommonService {
         name: city.nameEn,
       };
     });
+  }
+  async validateLocation(countryId: number, cityId: number) {
+    if (countryId) {
+      const exists = await this.commonRepository.countryExists(countryId);
+      if (!exists) throw new BadRequestException('Invalid country ID');
+    }
+
+    if (cityId) {
+      if (!countryId) {
+        throw new BadRequestException(
+          'Country ID is required when district is specified',
+        );
+      }
+      const exists = await this.commonRepository.cityExistsInCountry(
+        cityId,
+        countryId,
+      );
+      if (!exists) {
+        throw new BadRequestException(
+          'Invalid district or district does not belong to the specified country',
+        );
+      }
+    }
   }
 }

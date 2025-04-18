@@ -7,12 +7,14 @@ import { PagesRepository } from './pages.repository';
 import { CreatePageDto } from './dto/create-pages.dto';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { CommonService } from 'src/modules/common/common.service';
 
 @Injectable()
 export class PagesService {
   constructor(
     private readonly pagesRepository: PagesRepository,
     private readonly uploadMediaService: UploadMediaService,
+    private readonly commonService: CommonService,
   ) {}
 
   async createPage(data: { page: CreatePageDto; images: any }, user: any) {
@@ -25,7 +27,7 @@ export class PagesService {
     if (await this.pagesRepository.checkSlugTaken(page.slug)) {
       throw new NotFoundException(`Slug ${page.slug} is already taken`);
     }
-
+    await this.commonService.validateLocation(page.countryId, page.cityId);
     let uploadedAvatar;
     if (avatar) {
       uploadedAvatar = await this.uploadMediaService.uploadSingleImage(

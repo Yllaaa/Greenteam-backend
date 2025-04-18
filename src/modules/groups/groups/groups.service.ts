@@ -10,6 +10,7 @@ import { UpdateGroupDto } from './dtos/update-group.dto';
 import { GroupMembersService } from '../group-members/group-members.service';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { CommonRepository } from 'src/modules/common/common.repository';
+import { CommonService } from 'src/modules/common/common.service';
 
 @Injectable()
 export class GroupsService {
@@ -18,6 +19,7 @@ export class GroupsService {
     private readonly uploadMediaService: UploadMediaService,
     private readonly groupMembersService: GroupMembersService,
     private readonly commonRepository: CommonRepository,
+    private readonly commonService: CommonService,
   ) {}
 
   async createGroup(
@@ -31,7 +33,7 @@ export class GroupsService {
         'Group name already taken, please choose another one.',
       );
     }
-    await this.validateLocation(dto.countryId, dto.cityId);
+    await this.commonService.validateLocation(dto.countryId, dto.cityId);
     let uploadedImage;
     console.log('banner', banner);
     if (banner && banner.size > 0) {
@@ -119,29 +121,5 @@ export class GroupsService {
 
     const deletedGroup = await this.groupsRepository.deleteGroup(groupId);
     return { message: 'Group deleted successfully' };
-  }
-
-  private async validateLocation(countryId: number, cityId: number) {
-    if (countryId) {
-      const exists = await this.commonRepository.countryExists(countryId);
-      if (!exists) throw new BadRequestException('Invalid country ID');
-    }
-
-    if (cityId) {
-      if (!countryId) {
-        throw new BadRequestException(
-          'Country ID is required when district is specified',
-        );
-      }
-      const exists = await this.commonRepository.cityExistsInCountry(
-        cityId,
-        countryId,
-      );
-      if (!exists) {
-        throw new BadRequestException(
-          'Invalid district or district does not belong to the specified country',
-        );
-      }
-    }
   }
 }
