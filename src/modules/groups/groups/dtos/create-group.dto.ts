@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsInt,
   Min,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -21,10 +22,11 @@ export class CreateGroupDto {
   @IsNotEmpty()
   description: string;
 
-  @IsOptional()
-  cover?: string;
+  @IsNumber()
+  @Type(() => Number)
+  countryId: number;
 
-  @IsEnum(['PUBLIC', 'PRIVATE'])
-  @IsOptional()
-  privacy?: 'PUBLIC' | 'PRIVATE';
+  @IsNumber()
+  @Type(() => Number)
+  cityId: number;
 }

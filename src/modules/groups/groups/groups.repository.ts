@@ -20,15 +20,17 @@ export class GroupsRepository {
     userId: string,
   ) {
     const { dto, bannerUrl } = data;
-    const { name, description, topicId } = dto;
+    const { name, description, topicId, cityId, countryId } = dto;
     return await this.drizzle.db
       .insert(groups)
       .values({
-        name: name,
-        description: description,
-        topicId: topicId,
+        name,
+        description,
+        topicId,
         ownerId: userId,
         banner: bannerUrl,
+        cityId,
+        countryId,
       })
       .returning();
   }
@@ -77,6 +79,11 @@ export class GroupsRepository {
       .offset(offset);
 
     return groupsWithMetadata;
+  }
+  async getGroupByName(name: string) {
+    return await this.drizzle.db.query.groups.findFirst({
+      where: (groups, { eq }) => eq(groups.name, name),
+    });
   }
   async getGroupById(groupId: string) {
     return await this.drizzle.db

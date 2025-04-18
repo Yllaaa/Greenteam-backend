@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -8,6 +9,7 @@ import { CreateGroupDto } from './dtos/create-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { GroupMembersService } from '../group-members/group-members.service';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { CommonRepository } from 'src/modules/common/common.repository';
 
 @Injectable()
 export class GroupsService {
@@ -15,6 +17,7 @@ export class GroupsService {
     private readonly groupsRepository: GroupsRepository,
     private readonly uploadMediaService: UploadMediaService,
     private readonly groupMembersService: GroupMembersService,
+    private readonly commonRepository: CommonRepository,
   ) {}
 
   async createGroup(
@@ -22,15 +25,23 @@ export class GroupsService {
     userId: string,
   ) {
     const { dto, banner } = data;
+    const existingGroup = await this.groupsRepository.getGroupByName(dto.name);
+    if (existingGroup) {
+      throw new BadRequestException(
+        'Group name already taken, please choose another one.',
+      );
+    }
+    await this.validateLocation(dto.countryId, dto.cityId);
     let uploadedImage;
-    if (banner) {
+    console.log('banner', banner);
+    if (banner && banner.size > 0) {
       uploadedImage = await this.uploadMediaService.uploadSingleImage(
         banner,
         'group_banners',
       );
     }
     const [newGroup] = await this.groupsRepository.createGroup(
-      { dto, bannerUrl: uploadedImage.location },
+      { dto, bannerUrl: uploadedImage?.location },
       userId,
     );
     await this.groupMembersService.joinGroup(userId, newGroup.id);
@@ -108,5 +119,29 @@ export class GroupsService {
 
     const deletedGroup = await this.groupsRepository.deleteGroup(groupId);
     return { message: 'Group deleted successfully' };
+  }
+
+  private async validateLocation(countryId: number, cityId: number) {
+    if (countryId) {
+      const exists = await this.commonRepository.countryExists(countryId);
+      if (!exists) throw new BadRequestException('Invalid country ID');
+    }
+
+    if (cityId) {
+      if (!countryId) {
+        throw new BadRequestException(
+          'Country ID is required when district is specified',
+        );
+      }
+      const exists = await this.commonRepository.cityExistsInCountry(
+        cityId,
+        countryId,
+      );
+      if (!exists) {
+        throw new BadRequestException(
+          'Invalid district or district does not belong to the specified country',
+        );
+      }
+    }
   }
 }
