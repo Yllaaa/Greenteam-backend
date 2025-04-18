@@ -9,6 +9,7 @@ import { CreateEventDto } from '../../events/events/dto/events.dto';
 import { EventsGroupRepository } from './group-events.repository';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { EventsService } from 'src/modules/events/events/events.service';
+import { CommonService } from 'src/modules/common/common.service';
 
 @Injectable()
 export class GroupEventsService {
@@ -17,6 +18,7 @@ export class GroupEventsService {
     private readonly groupsRepository: GroupsRepository,
     private readonly eventsGroupRepository: EventsGroupRepository,
     private readonly uploadMediaService: UploadMediaService,
+    private readonly commonService: CommonService,
   ) {}
 
   async createGroupEvent(
@@ -36,6 +38,7 @@ export class GroupEventsService {
         'Only group owners can create events for this group',
       );
     }
+    await this.commonService.validateLocation(data.countryId, data.cityId);
     let uploadedImage;
     if (poster) {
       uploadedImage = await this.uploadMediaService.uploadSingleImage(
