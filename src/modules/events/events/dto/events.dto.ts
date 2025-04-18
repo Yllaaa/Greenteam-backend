@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsDate,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { SQL } from 'drizzle-orm';
 import { CreatorType, EventCategory } from 'src/modules/db/schemas/schema';
 
@@ -26,6 +33,14 @@ export class CreateEventDto {
 
   @IsIn(EventCategory.enumValues)
   category: SQL<'social' | 'volunteering&work' | 'talks&workshops'>;
+
+  @IsNumber()
+  @Type(() => Number)
+  countryId: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  cityId: number;
 
   @IsUUID()
   @IsOptional()

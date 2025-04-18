@@ -7,11 +7,12 @@ import {
   pgEnum,
   uniqueIndex,
   serial,
+  integer,
 } from 'drizzle-orm/pg-core';
 import { users } from '../users/users';
 import { topics } from '../topics/topics';
 import { posts } from '../schema';
-import { groupMembers } from '../schema';
+import { groupMembers, cities, countries } from '../schema';
 
 export const privacy = pgEnum('privacy', ['PUBLIC', 'PRIVATE']);
 
@@ -28,7 +29,8 @@ export const groups = pgTable(
     topicId: serial('topic_id')
       .notNull()
       .references(() => topics.id, { onDelete: 'cascade' }),
-    // privacy: privacy().default('PRIVATE'),
+    countryId: integer('country_id').references(() => countries.id),
+    cityId: integer('city_id').references(() => cities.id),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
   },

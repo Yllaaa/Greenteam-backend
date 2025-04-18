@@ -10,8 +10,17 @@ import {
   timestamp,
   serial,
   index,
+  integer,
 } from 'drizzle-orm/pg-core';
-import { creatorTypeEnum, topics, users, groups, pages } from '../schema';
+import {
+  creatorTypeEnum,
+  topics,
+  users,
+  groups,
+  pages,
+  countries,
+  cities,
+} from '../schema';
 import { relations } from 'drizzle-orm';
 
 export const EventCategory = pgEnum('event_category', [
@@ -42,7 +51,8 @@ export const events = pgTable(
     hostedBy: EventHostedBy('hosted_by'),
     posterUrl: varchar('poster_url'),
     priority: smallint('priority').notNull().default(0),
-
+    countryId: integer('country_id').references(() => countries.id),
+    cityId: integer('city_id').references(() => cities.id),
     groupId: uuid('group_id').references(() => groups.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },

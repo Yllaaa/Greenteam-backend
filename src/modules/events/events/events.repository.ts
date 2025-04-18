@@ -26,6 +26,8 @@ export class EventsRepository {
       category,
       groupId,
       creatorType,
+      cityId,
+      countryId,
       startDate,
       endDate,
     } = dto;
@@ -40,6 +42,8 @@ export class EventsRepository {
       priority: 1,
       startDate: startDate,
       endDate: endDate,
+      cityId,
+      countryId,
       posterUrl: posterUrl,
     };
 
