@@ -98,12 +98,18 @@ export class PagesService {
     return await this.pagesRepository.addPageContact(contact, page.id);
   }
 
-  async getPageContacts(slug: string) {
+  async getPageContactsBySlug(slug: string) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {
       throw new NotFoundException(`Page with slug ${slug} not found`);
     }
     return await this.pagesRepository.getPageContacts(page?.id);
+  }
+
+  async getPageContactsById(contactId: string) {
+    const contact = await this.pagesRepository.getPageContacts(contactId);
+
+    return contact;
   }
 
   async deletePageContact(contactId: string, userId: string) {
