@@ -75,7 +75,12 @@ export class PagesController {
 
   @Get(':slug/contacts')
   async getPageContact(@Param('slug') slug: string) {
-    return await this.pagesService.getPageContacts(slug);
+    return await this.pagesService.getPageContactsBySlug(slug);
+  }
+
+  @Get(':id/contacts-by-Id')
+  async getPageContactById(@Param('id') id: string) {
+    return await this.pagesService.getPageContactsById(id);
   }
 
   @Delete(':slug/contacts/:id')
