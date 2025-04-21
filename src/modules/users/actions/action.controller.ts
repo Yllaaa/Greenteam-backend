@@ -68,27 +68,4 @@ export class ActionsController {
             createReportDto.reason,
         );
     }
-
-    @Get('reports')
-    async getUserReports(@Req() req) {
-        const userId: string = req.user.id;
-        return this.actionsService.getUserReports(userId);
-    }
-
-    @Get('reports/all')
-    async getAllReports() {
-        return this.actionsService.getAllReports();
-    }
-
-    @Patch('reports/:reportId')
-    async updateReportStatus(
-        @Param('reportId') reportId: string,
-        @Body() updateReportDto: UpdateReportDto,
-    ) {
-        return this.actionsService.updateReportStatus(
-            reportId,
-            updateReportDto.status,
-            updateReportDto.adminNotes
-        );
-    }
 }

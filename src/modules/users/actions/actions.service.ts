@@ -74,22 +74,4 @@ export class ActionsService {
             throw new BadRequestException('Failed to submit report');
         }
     }
-
-    async getUserReports(userId: string) {
-        return await this.actionsRepository.findUserReports(userId);
-    }
-
-    async getAllReports() {
-        return await this.actionsRepository.findAllReports();
-    }
-
-    async updateReportStatus(reportId: string, status: 'pending' | 'resolved' | 'ignored', adminNotes?: string) {
-        const report = await this.actionsRepository.findReport(reportId);
-
-        if (!report) {
-            throw new NotFoundException('Report not found');
-        }
-
-        return await this.actionsRepository.updateReportStatus(reportId, status, adminNotes);
-    }
 }

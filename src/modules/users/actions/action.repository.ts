@@ -60,35 +60,4 @@ export class ActionsRepository {
             reason,
         }).returning();
     }
-
-    async findReport(reportId: string) {
-        return await this.drizzle.db.query.userReports.findFirst({
-            where: eq(userReports.id, reportId),
-        });
-    }
-
-    async findUserReports(userId: string) {
-        return await this.drizzle.db.query.userReports.findMany({
-            where: eq(userReports.userId, userId),
-        });
-    }
-
-    async updateReportStatus(reportId: string, status: 'pending' | 'resolved' | 'ignored', adminNotes?: string) {
-        const updateData: any = { status };
-        if (adminNotes) {
-            updateData.adminNotes = adminNotes;
-        }
-
-        return await this.drizzle.db
-            .update(userReports)
-            .set(updateData)
-            .where(eq(userReports.id, reportId))
-            .returning();
-    }
-
-    async findAllReports() {
-        return await this.drizzle.db.query.userReports.findMany({
-            orderBy: (userReports, { desc }) => [desc(userReports.createdAt)],
-        });
-    }
 }
