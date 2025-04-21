@@ -79,107 +79,48 @@ export class MarketplaceRepository {
         });
     }
   }
-  async getAllProducts(query: GetAllProductsDto, pageId?: string) {
+
+  async getAllProducts(
+    query: GetAllProductsDto,
+    userId?: string,
+    pageId?: string,
+  ) {
     const filters: SQL[] = [];
     const { topicId, countryId, cityId, limit, page, marketType } = query;
-    if (topicId) {
-      filters.push(eq(products.topicId, topicId));
-    }
-    if (countryId) {
-      filters.push(eq(products.countryId, countryId));
-    }
-    if (cityId) {
-      filters.push(eq(products.cityId, cityId));
-    }
-    if (marketType) {
-      filters.push(eq(products.marketType, marketType));
-    }
+
+    if (topicId) filters.push(eq(products.topicId, topicId));
+    if (countryId) filters.push(eq(products.countryId, countryId));
+    if (cityId) filters.push(eq(products.cityId, cityId));
+    if (marketType) filters.push(eq(products.marketType, marketType));
     if (pageId) {
       filters.push(eq(products.sellerId, pageId));
       filters.push(eq(products.sellerType, 'page'));
     }
+
     const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
-    const result = await this.drizzleService.db.query.products.findMany({
-      columns: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        marketType: true,
-        sellerId: true,
-        sellerType: true,
-        countryId: true,
-        cityId: true,
-      },
-      with: {
-        topic: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
-        images: {
-          columns: {
-            id: true,
-            mediaUrl: true,
-            mediaType: true,
-          },
-        },
-      },
-      where: filters.length ? and(...filters) : undefined,
+
+    const queryOptions = this.buildProductQueryOptions(
+      filters,
+      userId,
+      false,
       limit,
       offset,
-      orderBy: (products, { desc }) => [desc(products.createdAt)],
-    });
+    );
 
+    queryOptions.orderBy = (products, { desc }) => [desc(products.createdAt)];
+
+    const result =
+      await this.drizzleService.db.query.products.findMany(queryOptions);
     return result;
   }
 
-  async getProductById(id: string): Promise<Product> {
-    const result = await this.drizzleService.db.query.products.findFirst({
-      columns: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        marketType: true,
-        sellerId: true,
-        sellerType: true,
-        countryId: true,
-        cityId: true,
-      },
-      with: {
-        topic: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
-        userSeller: {
-          columns: {
-            id: true,
-            fullName: true,
-            avatar: true,
-          },
-        },
-        pageSeller: {
-          columns: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-        images: {
-          columns: {
-            id: true,
-            mediaUrl: true,
-            mediaType: true,
-          },
-        },
-      },
-      where: eq(products.id, id),
-    });
+  async getProductById(id: string, userId?: string): Promise<Product> {
+    const filters = [eq(products.id, id)];
 
+    const queryOptions = this.buildProductQueryOptions(filters, userId, true);
+
+    const result =
+      await this.drizzleService.db.query.products.findFirst(queryOptions);
     return result as unknown as Product;
   }
 
@@ -191,7 +132,6 @@ export class MarketplaceRepository {
         productId,
       })
       .returning({
-        id: favoriteProducts.id,
         userId: favoriteProducts.userId,
         productId: favoriteProducts.productId,
       });
@@ -229,5 +169,86 @@ export class MarketplaceRepository {
         eq(favoriteProducts.productId, productId),
       ),
     });
+  }
+
+  private buildProductQueryOptions(
+    filters: SQL[] = [],
+    userId?: string,
+    includeSellerDetails = false,
+    limit?: number,
+    offset?: number,
+  ) {
+    const queryOptions: any = {
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        marketType: true,
+        sellerId: true,
+        sellerType: true,
+        countryId: true,
+        cityId: true,
+      },
+      with: {
+        topic: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+        images: {
+          columns: {
+            id: true,
+            mediaUrl: true,
+            mediaType: true,
+          },
+        },
+      },
+      where: filters.length ? and(...filters) : undefined,
+    };
+
+    if (limit !== undefined) {
+      queryOptions.limit = limit;
+    }
+
+    if (offset !== undefined) {
+      queryOptions.offset = offset;
+    }
+
+    if (includeSellerDetails) {
+      queryOptions.with = {
+        ...queryOptions.with,
+        userSeller: {
+          columns: {
+            id: true,
+            fullName: true,
+            avatar: true,
+          },
+        },
+        pageSeller: {
+          columns: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      };
+    }
+
+    // Add favorites check if userId is provided
+    if (userId) {
+      queryOptions.extras = (products, { sql }) => ({
+        isFavorited: sql<boolean>`
+        EXISTS (
+          SELECT 1 FROM favorite_products
+          WHERE favorite_products.product_id = ${products.id}
+            AND favorite_products.user_id = ${userId}
+        )
+      `.as('is_favorited'),
+      });
+    }
+
+    return queryOptions;
   }
 }

@@ -19,8 +19,9 @@ export class CommunityController {
   }
 
   @Get('products')
-  async getAllProducts(@Query() query: GetAllProductsDto) {
-    return this.communityService.getAllProducts(query);
+  async getAllProducts(@Query() query: GetAllProductsDto, @Req() req) {
+    const userId = req.user?.id;
+    return this.communityService.getAllProducts(query, userId);
   }
 
   @Get('events')

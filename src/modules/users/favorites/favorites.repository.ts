@@ -4,6 +4,7 @@ import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   entitiesMedia,
   events,
+  favoriteProducts,
   friends,
   groupMembers,
   groups,
@@ -11,6 +12,7 @@ import {
   pages,
   pagesFollowers,
   posts,
+  products,
   publicationsComments,
   publicationsReactions,
   topics,
@@ -414,5 +416,55 @@ export class FavoritesRepository {
       .offset(offset);
 
     return joinedEvents as unknown as EventResponse[];
+  }
+
+  async getUserFavoriteProducts(
+    userId: string,
+    pagination?: { limit?: number; page?: number },
+  ) {
+    const { limit, offset } = this.getPaginationParams(pagination);
+    const result = await this.drizzleService.db.query.products.findMany({
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        marketType: true,
+        sellerId: true,
+        sellerType: true,
+        countryId: true,
+        cityId: true,
+      },
+      with: {
+        topic: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+        images: {
+          columns: {
+            id: true,
+            mediaUrl: true,
+            mediaType: true,
+          },
+        },
+      },
+      where: inArray(
+        products.id,
+        this.drizzleService.db
+          .select({ productId: favoriteProducts.productId })
+          .from(favoriteProducts)
+          .where(eq(favoriteProducts.userId, userId)),
+      ),
+      limit,
+      offset,
+      orderBy: (products, { desc }) => [desc(products.createdAt)],
+      extras: {
+        isFavorited: sql<boolean>`true`.as('is_favorited'),
+      },
+    });
+
+    return result;
   }
 }

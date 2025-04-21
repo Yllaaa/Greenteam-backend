@@ -81,8 +81,11 @@ export class FavoritesController {
   }
 
   @Get('products')
-  async getFavoriteProducts() {
-    // Logic to get all favourites
-    return 'Get all favourites';
+  async getFavoriteProducts(@Query() paginationDto: PaginationDto, @Req() req) {
+    const userId = req.user.id;
+    return await this.favoritesService.getUserFavoriteProducts(
+      userId,
+      paginationDto,
+    );
   }
 }

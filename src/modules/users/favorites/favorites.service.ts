@@ -86,6 +86,13 @@ export class FavoritesService {
     );
   }
 
+  async getUserFavoriteProducts(
+    userId: string,
+    pagination?: { limit?: number; page?: number },
+  ) {
+    return this.favoritesRepository.getUserFavoriteProducts(userId, pagination);
+  }
+
   private async GetEventHostName(event) {
     const hostedByStr = String(event.hostedBy);
 

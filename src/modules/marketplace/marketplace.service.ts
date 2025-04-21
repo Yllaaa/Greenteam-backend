@@ -56,12 +56,15 @@ export class MarketplaceService {
     return { message: 'Product created successfully' };
   }
 
-  async getAllProducts(query: GetAllProductsDto) {
-    return this.marketplaceRepository.getAllProducts(query);
+  async getAllProducts(query: GetAllProductsDto, userId: string) {
+    return this.marketplaceRepository.getAllProducts(query, userId);
   }
 
-  async getProductById(productId: string) {
-    const product = await this.marketplaceRepository.getProductById(productId);
+  async getProductById(productId: string, userId: string) {
+    const product = await this.marketplaceRepository.getProductById(
+      productId,
+      userId,
+    );
     if (!product) {
       throw new BadRequestException('Product not found');
     }
@@ -83,7 +86,13 @@ export class MarketplaceService {
     };
   }
   async toggleFavoriteProduct(userId: string, productId: string) {
-    // Check if the product is already favorited
+    const product = await this.marketplaceRepository.getProductById(
+      productId,
+      userId,
+    );
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    }
     const existingFavorite =
       await this.marketplaceRepository.getUserFavoriteProduct(
         userId,

@@ -45,13 +45,15 @@ export class MarketplaceController {
   }
 
   @Get('products')
-  async getAllProducts(@Query() query: GetAllProductsDto) {
-    return this.marketplaceService.getAllProducts(query);
+  async getAllProducts(@Query() query: GetAllProductsDto, @Req() req) {
+    const userId = req.user.id;
+    return this.marketplaceService.getAllProducts(query, userId);
   }
 
   @Get('products/:id')
-  async getProductById(@Param('id') id: string) {
-    return this.marketplaceService.getProductById(id);
+  async getProductById(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    return this.marketplaceService.getProductById(id, userId);
   }
 
   @UseGuards(JwtAuthGuard)
