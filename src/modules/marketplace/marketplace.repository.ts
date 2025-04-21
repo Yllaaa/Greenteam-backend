@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import {
   entitiesMedia,
+  favoriteProducts,
   MarketType,
   MediaParentType,
   MediaType,
@@ -78,27 +79,106 @@ export class MarketplaceRepository {
         });
     }
   }
-  async getAllProducts(query: GetAllProductsDto, pageId?: string) {
+
+  async getAllProducts(
+    query: GetAllProductsDto,
+    userId?: string,
+    pageId?: string,
+  ) {
     const filters: SQL[] = [];
     const { topicId, countryId, cityId, limit, page, marketType } = query;
-    if (topicId) {
-      filters.push(eq(products.topicId, topicId));
-    }
-    if (countryId) {
-      filters.push(eq(products.countryId, countryId));
-    }
-    if (cityId) {
-      filters.push(eq(products.cityId, cityId));
-    }
-    if (marketType) {
-      filters.push(eq(products.marketType, marketType));
-    }
+
+    if (topicId) filters.push(eq(products.topicId, topicId));
+    if (countryId) filters.push(eq(products.countryId, countryId));
+    if (cityId) filters.push(eq(products.cityId, cityId));
+    if (marketType) filters.push(eq(products.marketType, marketType));
     if (pageId) {
       filters.push(eq(products.sellerId, pageId));
       filters.push(eq(products.sellerType, 'page'));
     }
+
     const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
-    const result = await this.drizzleService.db.query.products.findMany({
+
+    const queryOptions = this.buildProductQueryOptions(
+      filters,
+      userId,
+      false,
+      limit,
+      offset,
+    );
+
+    queryOptions.orderBy = (products, { desc }) => [desc(products.createdAt)];
+
+    const result =
+      await this.drizzleService.db.query.products.findMany(queryOptions);
+    return result;
+  }
+
+  async getProductById(id: string, userId?: string): Promise<Product> {
+    const filters = [eq(products.id, id)];
+
+    const queryOptions = this.buildProductQueryOptions(filters, userId, true);
+
+    const result =
+      await this.drizzleService.db.query.products.findFirst(queryOptions);
+    return result as unknown as Product;
+  }
+
+  async favoriteProduct(userId: string, productId: string) {
+    const result = await this.drizzleService.db
+      .insert(favoriteProducts)
+      .values({
+        userId,
+        productId,
+      })
+      .returning({
+        userId: favoriteProducts.userId,
+        productId: favoriteProducts.productId,
+      });
+
+    return result[0];
+  }
+  async unfavoriteProduct(userId: string, productId: string) {
+    const result = await this.drizzleService.db
+      .delete(favoriteProducts)
+      .where(
+        and(
+          eq(favoriteProducts.userId, userId),
+          eq(favoriteProducts.productId, productId),
+        ),
+      )
+      .returning({
+        id: favoriteProducts.id,
+        userId: favoriteProducts.userId,
+        productId: favoriteProducts.productId,
+      });
+
+    return result[0];
+  }
+
+  async getUserFavoriteProduct(userId: string, productId: string) {
+    return await this.drizzleService.db.query.favoriteProducts.findFirst({
+      columns: {
+        id: true,
+        userId: true,
+        productId: true,
+      },
+
+      where: and(
+        eq(favoriteProducts.userId, userId),
+        eq(favoriteProducts.productId, productId),
+      ),
+    });
+  }
+
+  private buildProductQueryOptions(
+    filters: SQL[] = [],
+    userId?: string,
+    includeSellerDetails = false,
+    limit?: number,
+    offset?: number,
+  ) {
+    const queryOptions: any = {
       columns: {
         id: true,
         name: true,
@@ -126,34 +206,19 @@ export class MarketplaceRepository {
         },
       },
       where: filters.length ? and(...filters) : undefined,
-      limit,
-      offset,
-      orderBy: (products, { desc }) => [desc(products.createdAt)],
-    });
+    };
 
-    return result;
-  }
+    if (limit !== undefined) {
+      queryOptions.limit = limit;
+    }
 
-  async getProductById(id: string): Promise<Product> {
-    const result = await this.drizzleService.db.query.products.findFirst({
-      columns: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        marketType: true,
-        sellerId: true,
-        sellerType: true,
-        countryId: true,
-        cityId: true,
-      },
-      with: {
-        topic: {
-          columns: {
-            id: true,
-            name: true,
-          },
-        },
+    if (offset !== undefined) {
+      queryOptions.offset = offset;
+    }
+
+    if (includeSellerDetails) {
+      queryOptions.with = {
+        ...queryOptions.with,
         userSeller: {
           columns: {
             id: true,
@@ -168,17 +233,22 @@ export class MarketplaceRepository {
             avatar: true,
           },
         },
-        images: {
-          columns: {
-            id: true,
-            mediaUrl: true,
-            mediaType: true,
-          },
-        },
-      },
-      where: eq(products.id, id),
-    });
+      };
+    }
 
-    return result as unknown as Product;
+    // Add favorites check if userId is provided
+    if (userId) {
+      queryOptions.extras = (products, { sql }) => ({
+        isFavorited: sql<boolean>`
+        EXISTS (
+          SELECT 1 FROM favorite_products
+          WHERE favorite_products.product_id = ${products.id}
+            AND favorite_products.user_id = ${userId}
+        )
+      `.as('is_favorited'),
+      });
+    }
+
+    return queryOptions;
   }
 }

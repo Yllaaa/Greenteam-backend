@@ -20,8 +20,8 @@ export class CommunityService {
     return await this.pagesService.getAllPages(query, userId);
   }
 
-  async getAllProducts(query: GetAllProductsDto) {
-    return this.marketplaceService.getAllProducts(query);
+  async getAllProducts(query: GetAllProductsDto, userId: string) {
+    return this.marketplaceService.getAllProducts(query, userId);
   }
 
   async getAllEvents(query: GetEventsDto, userId: string) {

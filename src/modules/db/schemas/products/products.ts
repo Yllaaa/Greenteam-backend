@@ -64,6 +64,17 @@ export const products = pgTable(
   ],
 );
 
+export const favoriteProducts = pgTable('favorite_products', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .references(() => users.id)
+    .notNull(),
+  productId: uuid('product_id')
+    .references(() => products.id)
+    .notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const productsRelations = relations(products, ({ many, one }) => ({
   topic: one(topics, {
     fields: [products.topicId],

@@ -10,7 +10,7 @@ export * from './events/events';
 export * from './groups/groups';
 export * from './pages/pages';
 export * from './challenges/challenges';
-export * from './groups/group-members/group-members';
+export * from './groups/group-members';
 export * from './chat/chat';
 export * from './challenges/challenges';
 export * from './admins/admins';

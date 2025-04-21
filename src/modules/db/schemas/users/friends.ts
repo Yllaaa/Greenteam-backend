@@ -22,10 +22,10 @@ export const friendRequests = pgTable('friend_requests', {
 
 export const friends = pgTable('friends', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
+  userOneId: uuid('user_one_id')
     .notNull()
     .references(() => users.id),
-  friendId: uuid('friend_id')
+  userTwoId: uuid('user_two_id')
     .notNull()
     .references(() => users.id),
   since: timestamp('since').defaultNow().notNull(),
@@ -42,13 +42,13 @@ export const friendRequestsRelations = relations(friendRequests, ({ one }) => ({
   }),
 }));
 
-export const friendsRelations = relations(friends, ({ one }) => ({
-  user: one(users, {
-    fields: [friends.userId],
+export const mutualFriendsRelations = relations(friends, ({ one }) => ({
+  userOne: one(users, {
+    fields: [friends.userOneId],
     references: [users.id],
   }),
-  friend: one(users, {
-    fields: [friends.friendId],
+  userTwo: one(users, {
+    fields: [friends.userTwoId],
     references: [users.id],
   }),
 }));

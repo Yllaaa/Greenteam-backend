@@ -16,7 +16,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
-@Controller('users')
+@Controller('')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 

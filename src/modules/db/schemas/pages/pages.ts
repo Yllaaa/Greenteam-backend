@@ -104,6 +104,7 @@ export const pagesFollowers = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id),
+    followedAt: timestamp('followed_at').defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.pageId, table.userId] })],
 );

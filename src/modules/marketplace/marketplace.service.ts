@@ -56,12 +56,15 @@ export class MarketplaceService {
     return { message: 'Product created successfully' };
   }
 
-  async getAllProducts(query: GetAllProductsDto) {
-    return this.marketplaceRepository.getAllProducts(query);
+  async getAllProducts(query: GetAllProductsDto, userId: string) {
+    return this.marketplaceRepository.getAllProducts(query, userId);
   }
 
-  async getProductById(productId: string) {
-    const product = await this.marketplaceRepository.getProductById(productId);
+  async getProductById(productId: string, userId: string) {
+    const product = await this.marketplaceRepository.getProductById(
+      productId,
+      userId,
+    );
     if (!product) {
       throw new BadRequestException('Product not found');
     }
@@ -81,6 +84,38 @@ export class MarketplaceService {
       userSeller: undefined,
       pageSeller: undefined,
     };
+  }
+  async toggleFavoriteProduct(userId: string, productId: string) {
+    const product = await this.marketplaceRepository.getProductById(
+      productId,
+      userId,
+    );
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    }
+    const existingFavorite =
+      await this.marketplaceRepository.getUserFavoriteProduct(
+        userId,
+        productId,
+      );
+
+    if (existingFavorite) {
+      await this.marketplaceRepository.unfavoriteProduct(userId, productId);
+      return {
+        isFavorited: false,
+        productId,
+        userId,
+      };
+    } else {
+      const newFavorite = await this.marketplaceRepository.favoriteProduct(
+        userId,
+        productId,
+      );
+      return {
+        isFavorited: true,
+        ...newFavorite,
+      };
+    }
   }
 
   private validateSellerType(sellerType: SellerType) {
