@@ -82,6 +82,32 @@ export class MarketplaceService {
       pageSeller: undefined,
     };
   }
+  async toggleFavoriteProduct(userId: string, productId: string) {
+    // Check if the product is already favorited
+    const existingFavorite =
+      await this.marketplaceRepository.getUserFavoriteProduct(
+        userId,
+        productId,
+      );
+
+    if (existingFavorite) {
+      await this.marketplaceRepository.unfavoriteProduct(userId, productId);
+      return {
+        isFavorited: false,
+        productId,
+        userId,
+      };
+    } else {
+      const newFavorite = await this.marketplaceRepository.favoriteProduct(
+        userId,
+        productId,
+      );
+      return {
+        isFavorited: true,
+        ...newFavorite,
+      };
+    }
+  }
 
   private validateSellerType(sellerType: SellerType) {
     if (sellerType !== 'user') {

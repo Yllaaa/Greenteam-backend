@@ -63,6 +63,12 @@ export const products = pgTable(
     index('product_district_id_idx').on(t.cityId),
   ],
 );
+export const favoriteProducts = pgTable('favorite_products', {
+  id: serial('id').primaryKey().notNull(),
+  userId: uuid('user_id').notNull(),
+  productId: uuid('product_id').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
 export const productsRelations = relations(products, ({ many, one }) => ({
   topic: one(topics, {

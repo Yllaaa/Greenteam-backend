@@ -1,0 +1,1 @@
+ALTER TABLE "pages_followers" ADD COLUMN "followed_at" timestamp DEFAULT now() NOT NULL;

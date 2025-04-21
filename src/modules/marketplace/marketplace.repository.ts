@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
 import {
   entitiesMedia,
+  favoriteProducts,
   MarketType,
   MediaParentType,
   MediaType,
@@ -180,5 +181,53 @@ export class MarketplaceRepository {
     });
 
     return result as unknown as Product;
+  }
+
+  async favoriteProduct(userId: string, productId: string) {
+    const result = await this.drizzleService.db
+      .insert(favoriteProducts)
+      .values({
+        userId,
+        productId,
+      })
+      .returning({
+        id: favoriteProducts.id,
+        userId: favoriteProducts.userId,
+        productId: favoriteProducts.productId,
+      });
+
+    return result[0];
+  }
+  async unfavoriteProduct(userId: string, productId: string) {
+    const result = await this.drizzleService.db
+      .delete(favoriteProducts)
+      .where(
+        and(
+          eq(favoriteProducts.userId, userId),
+          eq(favoriteProducts.productId, productId),
+        ),
+      )
+      .returning({
+        id: favoriteProducts.id,
+        userId: favoriteProducts.userId,
+        productId: favoriteProducts.productId,
+      });
+
+    return result[0];
+  }
+
+  async getUserFavoriteProduct(userId: string, productId: string) {
+    return await this.drizzleService.db.query.favoriteProducts.findFirst({
+      columns: {
+        id: true,
+        userId: true,
+        productId: true,
+      },
+
+      where: and(
+        eq(favoriteProducts.userId, userId),
+        eq(favoriteProducts.productId, productId),
+      ),
+    });
   }
 }

@@ -48,3 +48,5 @@ export const reactionTypeEnum = pgEnum('reaction_type', [
   'do',
   'sign',
 ]);
+
+export type ReactionType = (typeof reactionTypeEnum.enumValues)[number];

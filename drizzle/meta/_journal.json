@@ -120,6 +120,27 @@
       "when": 1744965337113,
       "tag": "0016_flippant_sentinels",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1745247095632,
+      "tag": "0017_violet_giant_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1745253391407,
+      "tag": "0018_lumpy_sleepwalker",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1745259823279,
+      "tag": "0019_purple_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

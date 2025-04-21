@@ -53,4 +53,11 @@ export class MarketplaceController {
   async getProductById(@Param('id') id: string) {
     return this.marketplaceService.getProductById(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('products/:productId/toggle-favorite')
+  async toggleFavorite(@Req() req, @Param('productId') productId: string) {
+    const userId = req.user.id;
+    return this.marketplaceService.toggleFavoriteProduct(userId, productId);
+  }
 }
