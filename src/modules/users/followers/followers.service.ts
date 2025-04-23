@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FollowersRepository } from './Followers.repository';
+import { FollowersRepository } from './followers.repository';
 
 @Injectable()
 export class FollowersService {
