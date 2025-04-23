@@ -64,7 +64,7 @@ export class ProfileController {
     return await this.profileService.toggleFollowUser(username, userId);
   }
 
-  @Put('me')
+  @Put('profile')
   async updateProfile(
     @Req() req,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))

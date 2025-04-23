@@ -1,0 +1,1 @@
+ALTER TABLE "group_notes" ADD CONSTRAINT "unique_note_group_id" UNIQUE("group_id");

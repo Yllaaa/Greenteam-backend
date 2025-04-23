@@ -1,10 +1,88 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
-import { entitiesMedia, groupMembers, groups, pages, pagesFollowers, posts, postSubTopics, publicationsComments, publicationsReactions, users } from '../../db/schemas/schema';
-import { eq, or, sql, and, SQL, exists, desc, inArray, ne } from 'drizzle-orm';
+import {
+  entitiesMedia,
+  followers,
+  groupMembers,
+  groups,
+  pages,
+  pagesFollowers,
+  posts,
+  postSubTopics,
+  publicationsComments,
+  publicationsReactions,
+  userBlocks,
+  userPoints,
+  users,
+} from '../../db/schemas/schema';
+import {
+  eq,
+  or,
+  sql,
+  and,
+  SQL,
+  exists,
+  desc,
+  inArray,
+  ne,
+  sum,
+} from 'drizzle-orm';
 @Injectable()
 export class ProfileRepository {
-  constructor(private readonly drizzleService: DrizzleService) { }
+  constructor(private readonly drizzleService: DrizzleService) {}
+
+  async getUserProfile(id: string, currentUserId?: string) {
+    const user = await this.drizzleService.db.query.users.findFirst({
+      where: eq(users.id, id),
+      columns: {
+        id: true,
+        fullName: true,
+        username: true,
+        avatar: true,
+        cover: true,
+        bio: true,
+        joinedAt: true,
+      },
+      extras: currentUserId
+        ? {
+            isFollowing: sql<boolean>`
+          EXISTS (
+            SELECT 1 FROM ${followers}
+            WHERE ${followers.followerId} = ${currentUserId}
+            AND ${followers.followingId} = ${id}
+          )
+        `.as('isFollowing'),
+
+            isFollower: sql<boolean>`
+          EXISTS (
+            SELECT 1 FROM ${followers}
+            WHERE ${followers.followerId} = ${id}
+            AND ${followers.followingId} = ${currentUserId}
+          )
+        `.as('isFollower'),
+
+            isBlocked: sql<boolean>`
+          EXISTS (
+            SELECT 1 FROM ${userBlocks}
+            WHERE ${userBlocks.userId} = ${currentUserId}
+            AND ${userBlocks.blockedId} = ${id}
+            AND ${userBlocks.blockedEntityType} = 'user'
+          )
+        `.as('isBlocked'),
+          }
+        : undefined,
+    });
+
+    return user;
+  }
+
+  async getUserScore(userId: string) {
+    const result = await this.drizzleService.db
+      .select({ totalPoints: sum(userPoints.points) })
+      .from(userPoints)
+      .where(eq(userPoints.userId, userId));
+    return Number(result[0]?.totalPoints) ?? 0;
+  }
 
   async getUserByUsername(username: string) {
     return await this.drizzleService.db.query.users.findFirst({
@@ -14,9 +92,6 @@ export class ProfileRepository {
         email: true,
         fullName: true,
         username: true,
-        avatar: true,
-        bio: true,
-        joinedAt: true,
       },
     });
   }
@@ -95,8 +170,6 @@ export class ProfileRepository {
     return userGroups;
   }
 
-
-
   async getUserLikedDislikedPosts(
     userId: string,
     mainTopicId?: number,
@@ -149,16 +222,30 @@ export class ProfileRepository {
           avatar: users.avatar,
         },
         commentCount: this.commentCountQuery,
-        likeCount: sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as('like_count'),
-        dislikeCount: sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as('dislike_count'),
+        likeCount:
+          sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
+            'like_count',
+          ),
+        dislikeCount:
+          sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as(
+            'dislike_count',
+          ),
         userReactionType: userReactions.reactionType,
-        hasDoReaction: sql<boolean>`${userReactions.reactionType} = 'do'`.as('has_do_reaction'),
+        hasDoReaction: sql<boolean>`${userReactions.reactionType} = 'do'`.as(
+          'has_do_reaction',
+        ),
       })
       .from(posts)
       .innerJoin(userReactions, eq(posts.id, userReactions.reactionableId))
       .leftJoin(users, eq(posts.creatorId, users.id))
-      .leftJoin(publicationsComments, eq(posts.id, publicationsComments.publicationId))
-      .leftJoin(reactionsAggregation, eq(posts.id, reactionsAggregation.reactionableId))
+      .leftJoin(
+        publicationsComments,
+        eq(posts.id, publicationsComments.publicationId),
+      )
+      .leftJoin(
+        reactionsAggregation,
+        eq(posts.id, reactionsAggregation.reactionableId),
+      )
       .groupBy(
         posts.id,
         posts.content,
@@ -193,7 +280,6 @@ export class ProfileRepository {
     COUNT(DISTINCT ${publicationsComments.id})
   `.as('comment_count');
 
-
   async getUserCommentedPosts(
     userId: string,
     filtration: {
@@ -203,7 +289,7 @@ export class ProfileRepository {
     pagination: {
       limit?: number;
       page?: number;
-    }
+    },
   ) {
     const { mainTopicId, subTopicId } = filtration;
     const { limit = 10, page = 1 } = pagination;
@@ -219,8 +305,8 @@ export class ProfileRepository {
       .where(
         and(
           eq(publicationsComments.userId, userId),
-          eq(publicationsComments.publicationType, 'post')
-        )
+          eq(publicationsComments.publicationType, 'post'),
+        ),
       );
 
     if (!userComments.length) {
@@ -228,7 +314,7 @@ export class ProfileRepository {
     }
 
     // Get unique post IDs
-    const postIds = [...new Set(userComments.map(c => c.postId))];
+    const postIds = [...new Set(userComments.map((c) => c.postId))];
 
     // Build conditions for filtering posts
     const conditions = [inArray(posts.id, postIds)];
@@ -263,7 +349,7 @@ export class ProfileRepository {
     }
 
     // Get filtered post IDs
-    const filteredPostIds = filteredPosts.map(post => post.id);
+    const filteredPostIds = filteredPosts.map((post) => post.id);
 
     // Get detailed information for each post
     const result = await Promise.all(
@@ -298,8 +384,8 @@ export class ProfileRepository {
           .where(
             and(
               eq(entitiesMedia.parentId, postId),
-              eq(entitiesMedia.parentType, 'post')
-            )
+              eq(entitiesMedia.parentType, 'post'),
+            ),
           );
 
         // Get ALL user's comments for this post
@@ -322,8 +408,8 @@ export class ProfileRepository {
             and(
               eq(publicationsComments.publicationId, postId),
               eq(publicationsComments.publicationType, 'post'),
-              eq(publicationsComments.userId, userId)
-            )
+              eq(publicationsComments.userId, userId),
+            ),
           )
           .orderBy(desc(publicationsComments.createdAt));
 
@@ -347,8 +433,8 @@ export class ProfileRepository {
             and(
               eq(publicationsComments.publicationId, postId),
               eq(publicationsComments.publicationType, 'post'),
-              ne(publicationsComments.userId, userId)
-            )
+              ne(publicationsComments.userId, userId),
+            ),
           )
           .orderBy(desc(publicationsComments.createdAt))
           .limit(5);
@@ -356,12 +442,12 @@ export class ProfileRepository {
         return {
           post: {
             ...post,
-            media
+            media,
           },
           userComments, // All user's comments for this post
           otherComments, // Up to 5 other comments
         };
-      })
+      }),
     );
 
     return result;

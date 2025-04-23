@@ -1,6 +1,9 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+  ConflictException,
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,6 +11,7 @@ import { NotesRepositry } from './notes.repository';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { GroupMembersService } from '../group-members/group-members.service';
 import { GroupsService } from '../groups/groups.service';
+import { UpsertGroupNoteDto } from './dto/upsert-note.dto';
 
 @Injectable()
 export class NotesService {
@@ -16,43 +20,19 @@ export class NotesService {
     private readonly groupMembersService: GroupMembersService,
     private readonly groupService: GroupsService,
   ) {}
-  async createNote(
-    createNoteDto: CreateNoteDto,
-    groupId: string,
-    userId: string,
-  ) {
-    return this.notesRepository.create(createNoteDto, groupId, userId);
+  async upsertNote(dto: UpsertGroupNoteDto, groupId: string, userId: string) {
+    const [group] = await this.groupService.getGroupById(groupId);
+    if (group.ownerId !== userId) {
+      throw new ForbiddenException('You are not authorized to edit this note');
+    }
+    return this.notesRepository.upsertGroupNote(dto, groupId, userId);
   }
 
-  async getAllNotes(groupId: string, userId: string) {
-    const notes = await this.notesRepository.findAll(groupId);
-
-    return notes.map((note) => ({
-      ...note,
-      isCreator: note.creator.id === userId,
-    }));
-  }
-
-  async getNoteById(id: string, userId: string) {
-    const note = await this.notesRepository.findById(id);
+  async getNoteByGroupId(groupId: string) {
+    const note = await this.notesRepository.findByGroupId(groupId);
     if (!note) {
       throw new NotFoundException(`Note not found`);
     }
-    return { ...note, isCreator: note.creator.id === userId };
-  }
-
-  async deleteNote(id: string, groupId: string, userId: string) {
-    const existingNote = await this.notesRepository.findById(id);
-    if (!existingNote) {
-      throw new NotFoundException(`Note not found`);
-    }
-    const [group] = await this.groupService.getGroupById(groupId);
-    if (existingNote.creator.id !== userId && group.ownerId !== userId) {
-      throw new UnauthorizedException(
-        'You are not authorized to delete this note',
-      );
-    }
-    await this.notesRepository.delete(id);
-    return { message: 'Note deleted successfully' };
+    return note;
   }
 }

@@ -169,6 +169,20 @@
       "when": 1745346746772,
       "tag": "0023_bumpy_jane_foster",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1745389622880,
+      "tag": "0024_odd_captain_britain",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1745420851153,
+      "tag": "0025_wet_caretaker",
+      "breakpoints": true
     }
   ]
 }

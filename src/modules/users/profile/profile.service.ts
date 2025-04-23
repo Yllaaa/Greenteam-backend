@@ -17,10 +17,25 @@ export class ProfileService {
   ) {}
 
   async getUserByUsername(username: string, userId: string) {
-    const user_data = await this.profileRepository.getUserByUsername(username);
+    const user = await this.profileRepository.getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const userData = await this.profileRepository.getUserProfile(
+      user.id,
+      userId,
+    );
+
+    const isMyProfile = userData?.id === userId;
+
+    const userScore = isMyProfile
+      ? await this.profileRepository.getUserScore(userData.id)
+      : undefined;
+
     return {
-      user_data,
-      is_my_profile: user_data?.id === userId,
+      userData,
+      userScore,
+      isMyProfile,
     };
   }
 
