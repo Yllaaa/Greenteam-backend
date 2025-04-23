@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FollowersService } from './followers.service';
-import { FollowersRepository } from './Followers.repository';
+import { FollowersRepository } from './followers.repository';
 
 @Module({
   controllers: [],
