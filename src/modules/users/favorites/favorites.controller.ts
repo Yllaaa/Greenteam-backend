@@ -29,7 +29,7 @@ export class FavoritesController {
   @Get('friends-posts')
   async getFriendsPosts(@Query() paginationDto: PaginationDto, @Req() req) {
     const userId = req.user.id;
-    return await this.favoritesService.getUserFriendsPosts(
+    return await this.favoritesService.getUserFollowingsPosts(
       userId,
       paginationDto,
     );

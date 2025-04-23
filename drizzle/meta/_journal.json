@@ -162,6 +162,13 @@
       "when": 1745263490080,
       "tag": "0022_needy_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1745346746772,
+      "tag": "0023_bumpy_jane_foster",
+      "breakpoints": true
     }
   ]
 }

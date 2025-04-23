@@ -14,14 +14,14 @@ export class FavoritesService {
     return this.favoritesRepository.getUserLikedPosts(userId, pagination);
   }
 
-  async getUserFriendsPosts(
+  async getUserFollowingsPosts(
     userId: string,
     pagination?: {
       limit?: number;
       page?: number;
     },
   ) {
-    return this.favoritesRepository.getFriendsPosts(userId, pagination);
+    return this.favoritesRepository.getFollowingsPosts(userId, pagination);
   }
 
   async getFollowedPagesPosts(

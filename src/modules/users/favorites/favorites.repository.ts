@@ -5,7 +5,7 @@ import {
   entitiesMedia,
   events,
   favoriteProducts,
-  friends,
+  followers,
   groupMembers,
   groups,
   MediaType,
@@ -213,32 +213,29 @@ export class FavoritesRepository {
     return data;
   }
 
-  async getFriendsPosts(
+  async getFollowingsPosts(
     userId: string,
     pagination?: { limit?: number; page?: number },
   ) {
     const { limit, offset } = this.getPaginationParams(pagination);
 
-    const friendsSubquery = this.drizzleService.db
+    const followingsSubquery = this.drizzleService.db
       .select({
-        friendId: sql<string>`
-          CASE 
-            WHEN ${friends.userOneId} = ${userId} THEN ${friends.userTwoId}
-            WHEN ${friends.userTwoId} = ${userId} THEN ${friends.userOneId}
-          END
-        `.as('friend_id'),
+        followingId: followers.followingId,
       })
-      .from(friends)
-      .where(or(eq(friends.userOneId, userId), eq(friends.userTwoId, userId)))
-      .as('friends_list');
+      .from(followers)
+      .where(eq(followers.followerId, userId))
+      .as('followings_list');
 
     const condition = and(
       eq(posts.creatorType, 'user'),
-      sql`${posts.creatorId} IN (SELECT ${friendsSubquery.friendId} FROM ${friendsSubquery})`,
+      sql`${posts.creatorId} IN (SELECT ${followingsSubquery.followingId} FROM ${followingsSubquery})`,
     );
+
     if (!condition) {
       throw new Error('Condition must be defined');
     }
+
     const queryBuilder = this.buildPostQuery(userId, condition);
     const data = await queryBuilder.limit(limit).offset(offset).execute();
 

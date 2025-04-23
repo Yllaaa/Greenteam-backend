@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
 import {
+  followers,
   groupMembers,
   publicationsComments,
   publicationsReactions,
@@ -62,7 +63,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   doPost: many(usersDoPosts),
   groupMembers: many(groupMembers),
   conversations: many(conversations),
+  followers: many(followers, { relationName: 'followers' }),
+  following: many(followers, { relationName: 'following' }),
   messages: many(messages),
 }));
 
-export * from './friends';
+export * from './followers';
