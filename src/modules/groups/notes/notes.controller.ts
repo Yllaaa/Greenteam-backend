@@ -14,48 +14,28 @@ import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RequireGroupMembership } from 'src/modules/groups/decorators/group-member.decorator';
+import { UpsertGroupNoteDto } from './dto/upsert-note.dto';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
 export class NotesController {
   constructor(private readonly notesService: NotesService) {}
 
-  @Post('create-note')
+  @Post('upsert-note')
   @RequireGroupMembership()
   async createNote(
-    @Body() createNoteDto: CreateNoteDto,
+    @Body() createNoteDto: UpsertGroupNoteDto,
     @Param('groupId') groupId: string,
     @Req() req,
   ) {
     const userId = req.user.id;
-    return this.notesService.createNote(createNoteDto, groupId, userId);
+    return await this.notesService.upsertNote(createNoteDto, groupId, userId);
   }
 
-  @Get()
+  @Get('')
   @RequireGroupMembership()
-  async getAllNotes(@Param('groupId') groupId: string, @Req() req) {
+  async getNoteById(@Param('groupId') groupId: string, @Req() req) {
     const userId = req.user.id;
-    return this.notesService.getAllNotes(groupId, userId);
-  }
-
-  @Get(':id')
-  @RequireGroupMembership()
-  async getNoteById(
-    @Param('id') id: string,
-    @Param('groupId') groupId: string,
-    @Req() req,
-  ) {
-    const userId = req.user.id;
-    return this.notesService.getNoteById(id, userId);
-  }
-
-  @Delete(':id/delete-note')
-  async deleteNote(
-    @Param('id') id: string,
-    @Param('groupId') groupId: string,
-    @Req() req,
-  ) {
-    const userId = req.user.id;
-    return this.notesService.deleteNote(id, groupId, userId);
+    return this.notesService.getNoteByGroupId(groupId);
   }
 }

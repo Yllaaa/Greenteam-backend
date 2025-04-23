@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
 import {
+  followers,
   groupMembers,
   publicationsComments,
   publicationsReactions,
@@ -37,6 +38,7 @@ export const users = pgTable(
     username: varchar('username', { length: 255 }).notNull().unique(),
     bio: varchar('bio', { length: 255 }),
     avatar: varchar('avatar', { length: 255 }),
+    cover: varchar('cover', { length: 255 }),
     phoneNumber: varchar('phone_number', { length: 255 }),
     googleId: varchar('google_id', { length: 255 }),
     passwordResetToken: varchar('password_reset_token', { length: 255 }),
@@ -62,7 +64,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   doPost: many(usersDoPosts),
   groupMembers: many(groupMembers),
   conversations: many(conversations),
+  followers: many(followers, { relationName: 'followers' }),
+  following: many(followers, { relationName: 'following' }),
   messages: many(messages),
 }));
 
-export * from './friends';
+export * from './followers';

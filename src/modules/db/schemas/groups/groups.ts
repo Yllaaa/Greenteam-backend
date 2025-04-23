@@ -8,6 +8,7 @@ import {
   uniqueIndex,
   serial,
   integer,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { users } from '../users/users';
 import { topics } from '../topics/topics';
@@ -71,6 +72,7 @@ export const groupNotes = pgTable(
   },
   (table) => {
     return {
+      uniqueGroupId: unique('unique_note_group_id').on(table.groupId),
       groupNoteIdx: uniqueIndex('group_note_idx').on(table.title),
     };
   },

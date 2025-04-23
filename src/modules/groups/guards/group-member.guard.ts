@@ -16,7 +16,7 @@ export class GroupMemberGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.id; // Assuming you have user data from authentication
+    const userId = request.user?.id;
     const groupId = request.params.groupId || request.body.groupId;
 
     if (!userId || !groupId) {

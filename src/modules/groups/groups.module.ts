@@ -7,13 +7,12 @@ import { GroupPostsModule } from './posts/posts.module';
 import { GroupEventsModule } from './events/group-events.module';
 import { RouterModule } from '@nestjs/core';
 import { NotesModule } from './notes/notes.module';
-import path from 'path';
 
 const groupRoutes = [
   { path: ':groupId/posts', module: GroupPostsModule },
   { path: ':groupId/members', module: GroupMembersModule },
   { path: ':groupId/events', module: GroupEventsModule },
-  { path: ':groupId/notes', module: NotesModule },
+  { path: ':groupId/note', module: NotesModule },
 ];
 
 @Module({
