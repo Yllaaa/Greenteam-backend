@@ -46,29 +46,29 @@ export class ProfileRepository {
       extras: currentUserId
         ? {
             isFollowing: sql<boolean>`
-          EXISTS (
-            SELECT 1 FROM ${followers}
-            WHERE ${followers.followerId} = ${currentUserId}
-            AND ${followers.followingId} = ${id}
-          )
-        `.as('isFollowing'),
+        EXISTS (
+          SELECT 1 FROM ${followers}
+          WHERE ${followers.followerId} = ${currentUserId}
+          AND ${followers.followingId} = ${id}
+        )
+      `.as('isFollowing'),
 
             isFollower: sql<boolean>`
-          EXISTS (
-            SELECT 1 FROM ${followers}
-            WHERE ${followers.followerId} = ${id}
-            AND ${followers.followingId} = ${currentUserId}
-          )
-        `.as('isFollower'),
+        EXISTS (
+          SELECT 1 FROM ${followers}
+          WHERE ${followers.followerId} = ${id}
+          AND ${followers.followingId} = ${currentUserId}
+        )
+      `.as('isFollower'),
 
             isBlocked: sql<boolean>`
-          EXISTS (
-            SELECT 1 FROM ${userBlocks}
-            WHERE ${userBlocks.userId} = ${currentUserId}
-            AND ${userBlocks.blockedId} = ${id}
-            AND ${userBlocks.blockedEntityType} = 'user'
-          )
-        `.as('isBlocked'),
+        EXISTS (
+          SELECT 1 FROM ${userBlocks}
+          WHERE ${userBlocks.userId} = ${currentUserId}
+          AND ${userBlocks.blockedId} = ${id}
+          AND ${userBlocks.blockedEntityType} = 'user'
+        )
+      `.as('isBlocked'),
           }
         : undefined,
     });
@@ -97,17 +97,24 @@ export class ProfileRepository {
   }
 
   async updateProfile(
+    updateData: {
+      fullName: string;
+      bio: string;
+      username: string;
+      avatar: string;
+      cover: string;
+    },
     userId: string,
-    updateData: Partial<typeof users.$inferInsert>,
   ) {
-    // Ensure only specific fields can be updated
     const allowedFields = {
       fullName: updateData.fullName,
       bio: updateData.bio,
       avatar: updateData.avatar,
+      cover: updateData.cover,
+      username: updateData.username,
     };
 
-    return await this.drizzleService.db
+    const [updatedUser] = await this.drizzleService.db
       .update(users)
       .set({
         ...allowedFields,
@@ -120,7 +127,9 @@ export class ProfileRepository {
         username: users.username,
         bio: users.bio,
         avatar: users.avatar,
+        cover: users.cover,
       });
+    return updatedUser;
   }
 
   async getUserOwnPages(userId: string) {
@@ -196,11 +205,11 @@ export class ProfileRepository {
       .select({
         reactionableId: publicationsReactions.reactionableId,
         likeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
-        `.as('like_count'),
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+      `.as('like_count'),
         dislikeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
-        `.as('dislike_count'),
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+      `.as('dislike_count'),
       })
       .from(publicationsReactions)
       .groupBy(publicationsReactions.reactionableId)
@@ -277,8 +286,8 @@ export class ProfileRepository {
   }
 
   private readonly commentCountQuery = sql<number>`
-    COUNT(DISTINCT ${publicationsComments.id})
-  `.as('comment_count');
+  COUNT(DISTINCT ${publicationsComments.id})
+`.as('comment_count');
 
   async getUserCommentedPosts(
     userId: string,

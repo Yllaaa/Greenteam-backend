@@ -57,6 +57,45 @@ export class PagesRepository {
       .returning();
   }
 
+  async updatePage(
+    page: {
+      topicId: number;
+      countryId: number;
+      cityId: number;
+      category: PageCategoryType;
+      name: string;
+      description: string;
+      slug: string;
+      why: string;
+      how: string;
+      what: string;
+      avatar?: string;
+      cover?: string;
+      websiteUrl?: string;
+    },
+    slug: string,
+  ) {
+    return await this.drizzleService.db
+      .update(pages)
+      .set({
+        name: page.name,
+        description: page.description,
+        slug: page.slug,
+        topicId: page.topicId,
+        countryId: page.countryId,
+        cityId: page.cityId,
+        category: page.category,
+        why: page.why,
+        how: page.how,
+        what: page.what,
+        avatar: page.avatar,
+        cover: page.cover,
+        websiteUrl: page.websiteUrl,
+      })
+      .where(eq(pages.slug, slug))
+      .returning();
+  }
+
   async checkSlugTaken(slug: string) {
     const page = await this.drizzleService.db.query.pages.findFirst({
       where: eq(pages.slug, slug),

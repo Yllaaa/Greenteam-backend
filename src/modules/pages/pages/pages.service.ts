@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PagesRepository } from './pages.repository';
 import { CreatePageDto } from './dto/create-pages.dto';
@@ -9,6 +10,7 @@ import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { CommonService } from 'src/modules/common/common.service';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
+import { UpdatePageDto } from './dto/update-page.dto';
 
 @Injectable()
 export class PagesService {
@@ -55,6 +57,47 @@ export class PagesService {
   async checkSlugTaken(slug: string) {
     return await this.pagesRepository.checkSlugTaken(slug);
   }
+
+  async updatePage(
+    data: { page: UpdatePageDto; images: any },
+    slug: string,
+    userId: string,
+  ) {
+    const { page, images } = data;
+    const { avatar, cover } = images;
+
+    const pageData = await this.pagesRepository.getPageBySlug(slug);
+    if (!pageData) {
+      throw new NotFoundException(`Page with slug ${slug} not found`);
+    }
+
+    if (pageData.ownerId !== userId) {
+      throw new ForbiddenException('You are not the owner of this page');
+    }
+
+    let uploadedAvatar;
+    if (avatar) {
+      uploadedAvatar = await this.uploadMediaService.uploadSingleImage(
+        avatar[0],
+        'profiles',
+      );
+    }
+    let uploadedCover;
+    if (cover) {
+      uploadedCover = await this.uploadMediaService.uploadSingleImage(
+        cover[0],
+        'profiles',
+      );
+    }
+    const pageToUpdate = {
+      ...page,
+      avatar: uploadedAvatar?.location,
+      cover: uploadedCover?.location,
+    };
+
+    return await this.pagesRepository.updatePage(pageToUpdate, slug);
+  }
+
   async getAllPages(query: GetAllPagesDto, userId: string) {
     return await this.pagesRepository.getAllPages(query, userId);
   }

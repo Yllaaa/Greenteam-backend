@@ -8,12 +8,14 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
 import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 import { FollowersService } from '../followers/followers.service';
+import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 
 @Injectable()
 export class ProfileService {
   constructor(
     private profileRepository: ProfileRepository,
     private followersService: FollowersService,
+    private uploadMediaService: UploadMediaService,
   ) {}
 
   async getUserByUsername(username: string, userId: string) {
@@ -39,17 +41,45 @@ export class ProfileService {
     };
   }
 
-  async updateProfile(userId: string, updateData: UpdateProfileDto) {
-    const updatedUser = await this.profileRepository.updateProfile(
-      userId,
-      updateData,
-    );
-    if (!updatedUser || updatedUser.length === 0) {
-      throw new NotFoundException('User not found');
+  async updateProfile(
+    data: { dto: UpdateProfileDto; images: any },
+    userId: string,
+  ) {
+    const { dto, images } = data;
+    const { avatar, cover } = images;
+
+    if (dto.username) {
+      const existingUser = await this.profileRepository.getUserByUsername(
+        dto.username,
+      );
+      if (existingUser) {
+        throw new BadRequestException(
+          'Username already taken, please choose another one.',
+        );
+      }
     }
-    return {
-      user: updatedUser[0],
+    let uploadedAvatar;
+    if (avatar) {
+      uploadedAvatar = await this.uploadMediaService.uploadSingleImage(
+        avatar[0],
+        'profiles',
+      );
+    }
+    let uploadedCover;
+    if (cover) {
+      uploadedCover = await this.uploadMediaService.uploadSingleImage(
+        cover[0],
+        'profiles',
+      );
+    }
+
+    const updateData = {
+      ...dto,
+      avatar: uploadedAvatar?.location,
+      cover: uploadedCover?.location,
     };
+
+    return await this.profileRepository.updateProfile(updateData, userId);
   }
 
   async getUserOwnPages(userId: string) {
