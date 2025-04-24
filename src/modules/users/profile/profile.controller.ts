@@ -7,15 +7,19 @@ import {
   Put,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
+import { FilterGetPostsDto } from './dto/get-posts.dto';
 import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 import { FollowersService } from '../followers/followers.service';
+import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-media/interceptors/validate-profileImages.interceptor';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -34,19 +38,25 @@ export class ProfileController {
     return await this.profileService.getUserOwnGroups(userId);
   }
 
-  @Get('posts')
-  async getPosts(@Query() dto: FilterLikedPostsDto, @Req() req) {
+  @Get('reacted-posts')
+  async getLikedPosts(@Query() dto: FilterGetPostsDto, @Req() req) {
     const userId = req.user.id;
-    return this.profileService.getUserLikedDislikedPosts(dto, userId);
+    return this.profileService.getUserReactedPosts(dto, userId);
   }
 
   @Get('commented-posts')
-  async getUserCommentedPosts(
-    @Query(new ValidationPipe({ transform: true })) dto: FilterUserCommentsDto,
-    @Req() req,
-  ) {
+  async getUserCommentedPosts(@Query() dto: FilterUserCommentsDto, @Req() req) {
     const userId = req.user.id;
     return this.profileService.getUserComments(dto, userId);
+  }
+  @Get(':username/posts')
+  async getPosts(
+    @Query() dto: FilterGetPostsDto,
+    @Req() req,
+    @Param('username') username: string,
+  ) {
+    const userId = req.user.id;
+    return this.profileService.getUserPosts(username, dto, userId);
   }
 
   @Get(':username')
@@ -65,12 +75,21 @@ export class ProfileController {
   }
 
   @Put('profile')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'cover', maxCount: 1 },
+    ]),
+  )
+  @UseInterceptors(ValidateProfileImagesInterceptor)
   async updateProfile(
     @Req() req,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-    updateData: UpdateProfileDto,
+    @Body()
+    dto: UpdateProfileDto,
+    @UploadedFiles()
+    images: { avatar?: Express.Multer.File[]; cover?: Express.Multer.File[] },
   ) {
     const userId: string = req.user.id;
-    return await this.profileService.updateProfile(userId, updateData);
+    return await this.profileService.updateProfile({ dto, images }, userId);
   }
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Param,
   Post,
+  Put,
   Get,
   Req,
   UseGuards,
@@ -22,6 +23,7 @@ import { Response } from 'express';
 import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-media/interceptors/validate-profileImages.interceptor';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
+import { UpdatePageDto } from './dto/update-page.dto';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
@@ -56,6 +58,29 @@ export class PagesController {
     return await this.pagesService.getAllPages(query, userId);
   }
 
+  @Put(':slug')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'cover', maxCount: 1 },
+    ]),
+  )
+  @UseInterceptors(ValidateProfileImagesInterceptor)
+  async updatePage(
+    @Param('slug') slug: string,
+    @Body() data: UpdatePageDto,
+    @Req() req,
+    @UploadedFiles()
+    images: { avatar?: Express.Multer.File[]; cover?: Express.Multer.File[] },
+  ) {
+    const userId = req.user.id;
+    return await this.pagesService.updatePage(
+      { page: data, images },
+      slug,
+      userId,
+    );
+  }
+
   @Get(':slug')
   async getPageById(@Param('slug') slug: string, @Req() req) {
     const userId = req.user.id;
@@ -85,7 +110,6 @@ export class PagesController {
 
   @Delete(':slug/contacts/:id')
   async deletePageContact(
-    @Param('slug') pageSlug: string,
     @Param('id') contactId: string,
     @Req() req,
     @Res() res: Response,

@@ -5,6 +5,7 @@ import {
   followers,
   groupMembers,
   groups,
+  MediaType,
   pages,
   pagesFollowers,
   posts,
@@ -46,29 +47,29 @@ export class ProfileRepository {
       extras: currentUserId
         ? {
             isFollowing: sql<boolean>`
-          EXISTS (
-            SELECT 1 FROM ${followers}
-            WHERE ${followers.followerId} = ${currentUserId}
-            AND ${followers.followingId} = ${id}
-          )
-        `.as('isFollowing'),
+        EXISTS (
+          SELECT 1 FROM ${followers}
+          WHERE ${followers.followerId} = ${currentUserId}
+          AND ${followers.followingId} = ${id}
+        )
+      `.as('isFollowing'),
 
             isFollower: sql<boolean>`
-          EXISTS (
-            SELECT 1 FROM ${followers}
-            WHERE ${followers.followerId} = ${id}
-            AND ${followers.followingId} = ${currentUserId}
-          )
-        `.as('isFollower'),
+        EXISTS (
+          SELECT 1 FROM ${followers}
+          WHERE ${followers.followerId} = ${id}
+          AND ${followers.followingId} = ${currentUserId}
+        )
+      `.as('isFollower'),
 
             isBlocked: sql<boolean>`
-          EXISTS (
-            SELECT 1 FROM ${userBlocks}
-            WHERE ${userBlocks.userId} = ${currentUserId}
-            AND ${userBlocks.blockedId} = ${id}
-            AND ${userBlocks.blockedEntityType} = 'user'
-          )
-        `.as('isBlocked'),
+        EXISTS (
+          SELECT 1 FROM ${userBlocks}
+          WHERE ${userBlocks.userId} = ${currentUserId}
+          AND ${userBlocks.blockedId} = ${id}
+          AND ${userBlocks.blockedEntityType} = 'user'
+        )
+      `.as('isBlocked'),
           }
         : undefined,
     });
@@ -97,17 +98,24 @@ export class ProfileRepository {
   }
 
   async updateProfile(
+    updateData: {
+      fullName: string;
+      bio: string;
+      username: string;
+      avatar: string;
+      cover: string;
+    },
     userId: string,
-    updateData: Partial<typeof users.$inferInsert>,
   ) {
-    // Ensure only specific fields can be updated
     const allowedFields = {
       fullName: updateData.fullName,
       bio: updateData.bio,
       avatar: updateData.avatar,
+      cover: updateData.cover,
+      username: updateData.username,
     };
 
-    return await this.drizzleService.db
+    const [updatedUser] = await this.drizzleService.db
       .update(users)
       .set({
         ...allowedFields,
@@ -120,7 +128,9 @@ export class ProfileRepository {
         username: users.username,
         bio: users.bio,
         avatar: users.avatar,
+        cover: users.cover,
       });
+    return updatedUser;
   }
 
   async getUserOwnPages(userId: string) {
@@ -170,7 +180,7 @@ export class ProfileRepository {
     return userGroups;
   }
 
-  async getUserLikedDislikedPosts(
+  async getUserReactedPosts(
     userId: string,
     mainTopicId?: number,
     pagination?: {
@@ -181,7 +191,6 @@ export class ProfileRepository {
     const { limit = 10, page = 1 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
 
-    // Get all posts that the user has reacted to
     const userReactions = this.drizzleService.db
       .select({
         reactionableId: publicationsReactions.reactionableId,
@@ -191,36 +200,64 @@ export class ProfileRepository {
       .where(eq(publicationsReactions.userId, userId))
       .as('user_reactions');
 
-    // Aggregated reactions for all users
     const reactionsAggregation = this.drizzleService.db
       .select({
         reactionableId: publicationsReactions.reactionableId,
         likeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
-        `.as('like_count'),
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+      `.as('like_count'),
         dislikeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
-        `.as('dislike_count'),
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+      `.as('dislike_count'),
       })
       .from(publicationsReactions)
       .groupBy(publicationsReactions.reactionableId)
       .as('reactions_agg');
 
-    // Query builder for the main query
     const queryBuilder = this.drizzleService.db
       .select({
         post: {
           id: posts.id,
           content: posts.content,
           createdAt: posts.createdAt,
-          creatorType: posts.creatorType,
         },
         author: {
-          id: users.id,
-          username: users.username,
-          fullName: users.fullName,
-          avatar: users.avatar,
+          id: sql<string>`CASE 
+                    WHEN ${posts.creatorType} = 'page' THEN ${pages.id}
+                    ELSE ${users.id}
+                  END`,
+          name: sql<string>`CASE 
+                    WHEN ${posts.creatorType} = 'page' THEN ${pages.name}
+                    ELSE ${users.fullName}
+                  END`,
+          avatar: sql<string>`CASE 
+                    WHEN ${posts.creatorType} = 'page' THEN ${pages.avatar}
+                    ELSE ${users.avatar}
+                  END`,
+          username: sql<string>`CASE 
+                    WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
+                    ELSE ${users.username}
+                  END`,
+          type: posts.creatorType,
         },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', ${entitiesMedia.id},
+            'mediaUrl', ${entitiesMedia.mediaUrl},
+            'mediaType', ${entitiesMedia.mediaType}
+          )
+        ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+        '[]'::jsonb
+      )
+      `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
@@ -238,6 +275,8 @@ export class ProfileRepository {
       .from(posts)
       .innerJoin(userReactions, eq(posts.id, userReactions.reactionableId))
       .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(pages, eq(posts.creatorId, pages.id))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
       .leftJoin(
         publicationsComments,
         eq(posts.id, publicationsComments.publicationId),
@@ -248,21 +287,15 @@ export class ProfileRepository {
       )
       .groupBy(
         posts.id,
-        posts.content,
-        posts.createdAt,
-        posts.creatorType,
-        posts.groupId,
         users.id,
-        users.fullName,
-        users.avatar,
-        users.username,
+        pages.id,
+        entitiesMedia.id,
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
         userReactions.reactionType,
       )
       .orderBy(desc(posts.createdAt));
 
-    // Apply additional filters if needed
     const conditions: SQL[] = [];
     if (mainTopicId) {
       conditions.push(eq(posts.mainTopicId, mainTopicId));
@@ -276,30 +309,23 @@ export class ProfileRepository {
     return data;
   }
 
-  private readonly commentCountQuery = sql<number>`
-    COUNT(DISTINCT ${publicationsComments.id})
-  `.as('comment_count');
-
   async getUserCommentedPosts(
     userId: string,
-    filtration: {
-      mainTopicId?: number;
-      subTopicId?: number;
-    },
-    pagination: {
+    mainTopicId?: number,
+    pagination?: {
       limit?: number;
       page?: number;
     },
   ) {
-    const { mainTopicId, subTopicId } = filtration;
-    const { limit = 10, page = 1 } = pagination;
-
+    const { limit = 10, page = 1 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
 
-    // First, get user comments on posts
-    const userComments = await this.drizzleService.db
+    const latestUserComments = this.drizzleService.db
       .select({
-        postId: publicationsComments.publicationId,
+        publicationId: publicationsComments.publicationId,
+        latestCommentDate: sql<Date>`MAX(${publicationsComments.createdAt})`.as(
+          'latest_comment_date',
+        ),
       })
       .from(publicationsComments)
       .where(
@@ -307,149 +333,295 @@ export class ProfileRepository {
           eq(publicationsComments.userId, userId),
           eq(publicationsComments.publicationType, 'post'),
         ),
-      );
+      )
+      .groupBy(publicationsComments.publicationId)
+      .as('latest_user_comments');
 
-    if (!userComments.length) {
-      return [];
+    const userComments = this.drizzleService.db
+      .select({
+        publicationId: publicationsComments.publicationId,
+        content: publicationsComments.content,
+        mediaUrl: publicationsComments.mediaUrl,
+        createdAt: publicationsComments.createdAt,
+        id: publicationsComments.id,
+      })
+      .from(publicationsComments)
+      .where(
+        and(
+          eq(publicationsComments.userId, userId),
+          eq(publicationsComments.publicationType, 'post'),
+        ),
+      )
+      .as('user_comments');
+
+    const reactionsAggregation = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        likeCount: sql<number>`
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+      `.as('like_count'),
+        dislikeCount: sql<number>`
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+      `.as('dislike_count'),
+      })
+      .from(publicationsReactions)
+      .groupBy(publicationsReactions.reactionableId)
+      .as('reactions_agg');
+
+    const queryBuilder = this.drizzleService.db
+      .select({
+        post: {
+          id: posts.id,
+          content: posts.content,
+          createdAt: posts.createdAt,
+        },
+        author: {
+          id: sql<string>`CASE 
+                  WHEN ${posts.creatorType} = 'page' THEN ${pages.id}
+                  ELSE ${users.id}
+                END`,
+          name: sql<string>`CASE 
+                  WHEN ${posts.creatorType} = 'page' THEN ${pages.name}
+                  ELSE ${users.fullName}
+                END`,
+          avatar: sql<string>`CASE 
+                  WHEN ${posts.creatorType} = 'page' THEN ${pages.avatar}
+                  ELSE ${users.avatar}
+                END`,
+          username: sql<string>`CASE 
+                  WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
+                  ELSE ${users.username}
+                END`,
+          type: posts.creatorType,
+        },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', ${entitiesMedia.id},
+            'mediaUrl', ${entitiesMedia.mediaUrl},
+            'mediaType', ${entitiesMedia.mediaType}
+          )
+        ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+        '[]'::jsonb
+      )
+      `.as('media'),
+        //      latestCommentDate: latestUserComments.latestCommentDate,
+        userComments: sql<
+          Array<{
+            id: string;
+            content: string;
+            createdAt: Date;
+          }>
+        >`
+        jsonb_agg(
+          jsonb_build_object(
+            'id', ${userComments.id},
+            'content', ${userComments.content},
+            'createdAt', ${userComments.createdAt}
+          )
+          ORDER BY ${userComments.createdAt} DESC
+        )
+        `.as('user_comments'),
+      })
+      .from(posts)
+      .innerJoin(
+        latestUserComments,
+        eq(posts.id, latestUserComments.publicationId),
+      )
+      .innerJoin(userComments, eq(posts.id, userComments.publicationId))
+      .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(pages, eq(posts.creatorId, pages.id))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
+      .leftJoin(
+        reactionsAggregation,
+        eq(posts.id, reactionsAggregation.reactionableId),
+      )
+      .groupBy(
+        posts.id,
+        users.id,
+        pages.id,
+        latestUserComments.latestCommentDate,
+        reactionsAggregation.likeCount,
+        reactionsAggregation.dislikeCount,
+      )
+      .orderBy(desc(latestUserComments.latestCommentDate));
+
+    const conditions: SQL[] = [];
+    if (mainTopicId) {
+      conditions.push(eq(posts.mainTopicId, mainTopicId));
+    }
+    if (conditions.length > 0) {
+      queryBuilder.where(and(...conditions));
     }
 
-    // Get unique post IDs
-    const postIds = [...new Set(userComments.map((c) => c.postId))];
+    const paginatedQuery = queryBuilder.limit(limit).offset(offset);
+    const data = await paginatedQuery.execute();
+    return data;
+  }
 
-    // Build conditions for filtering posts
-    const conditions = [inArray(posts.id, postIds)];
+  async getUserPosts(
+    userId: string,
+    filters?: {
+      mainTopicId?: number;
+    },
+    pagination?: {
+      limit?: number;
+      page?: number;
+    },
+    currentUserId?: string,
+  ) {
+    const { mainTopicId } = filters || {};
+    const { limit = 10, page = 0 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+
+    const reactionsAggregation = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        likeCount: sql<number>`
+            COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+          `.as('like_count'),
+        dislikeCount: sql<number>`
+            COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+          `.as('dislike_count'),
+      })
+      .from(publicationsReactions)
+      .groupBy(publicationsReactions.reactionableId)
+      .as('reactions_agg');
+
+    const userReaction = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        userReactionType: sql<string | null>`
+            MAX(CASE 
+              WHEN ${publicationsReactions.reactionType} IN ('like', 'dislike') 
+              THEN ${publicationsReactions.reactionType}
+              ELSE NULL
+            END)
+          `.as('user_reaction_type'),
+        hasDoReaction: sql<boolean>`
+            BOOL_OR(${publicationsReactions.reactionType} = 'do')
+          `.as('has_do_reaction'),
+      })
+      .from(publicationsReactions)
+      .where(
+        currentUserId
+          ? eq(publicationsReactions.userId, currentUserId)
+          : sql`1=1`,
+      )
+      .groupBy(publicationsReactions.reactionableId)
+      .as('user_reaction');
+
+    const queryBuilder = this.drizzleService.db
+      .select({
+        post: {
+          id: posts.id,
+          content: posts.content,
+          createdAt: posts.createdAt,
+        },
+        author: {
+          id: users.id,
+          username: users.username,
+          fullName: users.fullName,
+          avatar: users.avatar,
+        },
+        media: sql<
+          Array<{
+            id: string;
+            mediaUrl: string;
+            mediaType: MediaType;
+          }>
+        >`
+        COALESCE(
+          jsonb_agg(
+            DISTINCT jsonb_build_object(
+              'id', ${entitiesMedia.id},
+              'mediaUrl', ${entitiesMedia.mediaUrl},
+              'mediaType', ${entitiesMedia.mediaType}
+            )
+          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+          '[]'::jsonb
+        )
+        `.as('media'),
+        commentCount: this.commentCountQuery,
+        likeCount:
+          sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
+            'like_count',
+          ),
+        dislikeCount:
+          sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as(
+            'dislike_count',
+          ),
+        userReactionType: sql<
+          string | null
+        >`COALESCE(${userReaction.userReactionType}, NULL)`.as(
+          'user_reaction_type',
+        ),
+        hasDoReaction:
+          sql<boolean>`COALESCE(${userReaction.hasDoReaction}, false)`.as(
+            'has_do_reaction',
+          ),
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.creatorId, users.id))
+      .leftJoin(
+        publicationsComments,
+        eq(posts.id, publicationsComments.publicationId),
+      )
+      .leftJoin(
+        reactionsAggregation,
+        eq(posts.id, reactionsAggregation.reactionableId),
+      )
+      .leftJoin(userReaction, eq(posts.id, userReaction.reactionableId))
+      .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
+      .groupBy(
+        posts.id,
+        posts.content,
+        posts.createdAt,
+        posts.groupId,
+        users.id,
+        users.fullName,
+        users.avatar,
+        users.username,
+        reactionsAggregation.likeCount,
+        reactionsAggregation.dislikeCount,
+        userReaction.userReactionType,
+        userReaction.hasDoReaction,
+      )
+      .orderBy(desc(posts.createdAt));
+
+    const conditions: SQL[] = [];
+
+    const cond = and(
+      eq(posts.creatorId, userId),
+      eq(posts.creatorType, 'user'),
+    );
+    if (cond) {
+      conditions.push(cond);
+    }
+
     if (mainTopicId) {
       conditions.push(eq(posts.mainTopicId, mainTopicId));
     }
 
-    // Execute different query based on subTopicId
-    let filteredPosts;
-
-    if (subTopicId) {
-      filteredPosts = await this.drizzleService.db
-        .select({ id: posts.id })
-        .from(posts)
-        .innerJoin(postSubTopics, eq(postSubTopics.postId, posts.id))
-        .where(and(...conditions, eq(postSubTopics.topicId, subTopicId)))
-        .orderBy(desc(posts.createdAt))
-        .limit(limit)
-        .offset(offset);
-    } else {
-      filteredPosts = await this.drizzleService.db
-        .select({ id: posts.id })
-        .from(posts)
-        .where(and(...conditions))
-        .orderBy(desc(posts.createdAt))
-        .limit(limit)
-        .offset(offset);
+    if (conditions.length > 0) {
+      queryBuilder.where(and(...conditions));
     }
 
-    if (!filteredPosts.length) {
-      return [];
-    }
+    const paginatedQuery = queryBuilder.limit(limit).offset(offset);
 
-    // Get filtered post IDs
-    const filteredPostIds = filteredPosts.map((post) => post.id);
+    const data = await paginatedQuery.execute();
 
-    // Get detailed information for each post
-    const result = await Promise.all(
-      filteredPostIds.map(async (postId) => {
-        // Get post details
-        const post = await this.drizzleService.db.query.posts.findFirst({
-          where: eq(posts.id, postId),
-          columns: {
-            id: true,
-            content: true,
-            createdAt: true,
-            creatorType: true,
-            mainTopicId: true,
-          },
-          with: {
-            user_creator: {
-              columns: {
-                id: true,
-                username: true,
-                fullName: true,
-                avatar: true,
-              },
-            },
-            mainTopic: true,
-          },
-        });
-
-        // Get post media
-        const media = await this.drizzleService.db
-          .select()
-          .from(entitiesMedia)
-          .where(
-            and(
-              eq(entitiesMedia.parentId, postId),
-              eq(entitiesMedia.parentType, 'post'),
-            ),
-          );
-
-        // Get ALL user's comments for this post
-        const userComments = await this.drizzleService.db
-          .select({
-            id: publicationsComments.id,
-            content: publicationsComments.content,
-            createdAt: publicationsComments.createdAt,
-            updatedAt: publicationsComments.updatedAt,
-            author: {
-              id: users.id,
-              username: users.username,
-              fullName: users.fullName,
-              avatar: users.avatar,
-            },
-          })
-          .from(publicationsComments)
-          .innerJoin(users, eq(publicationsComments.userId, users.id))
-          .where(
-            and(
-              eq(publicationsComments.publicationId, postId),
-              eq(publicationsComments.publicationType, 'post'),
-              eq(publicationsComments.userId, userId),
-            ),
-          )
-          .orderBy(desc(publicationsComments.createdAt));
-
-        // Get up to 5 other comments (excluding the user's comments)
-        const otherComments = await this.drizzleService.db
-          .select({
-            id: publicationsComments.id,
-            content: publicationsComments.content,
-            createdAt: publicationsComments.createdAt,
-            updatedAt: publicationsComments.updatedAt,
-            author: {
-              id: users.id,
-              username: users.username,
-              fullName: users.fullName,
-              avatar: users.avatar,
-            },
-          })
-          .from(publicationsComments)
-          .innerJoin(users, eq(publicationsComments.userId, users.id))
-          .where(
-            and(
-              eq(publicationsComments.publicationId, postId),
-              eq(publicationsComments.publicationType, 'post'),
-              ne(publicationsComments.userId, userId),
-            ),
-          )
-          .orderBy(desc(publicationsComments.createdAt))
-          .limit(5);
-
-        return {
-          post: {
-            ...post,
-            media,
-          },
-          userComments, // All user's comments for this post
-          otherComments, // Up to 5 other comments
-        };
-      }),
-    );
-
-    return result;
+    return data;
   }
+
+  private readonly commentCountQuery = sql<number>`
+  COUNT(DISTINCT ${publicationsComments.id})
+`.as('comment_count');
 }
