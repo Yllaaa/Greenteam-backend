@@ -20,22 +20,36 @@ import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 import { FollowersService } from '../followers/followers.service';
 import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-media/interceptors/validate-profileImages.interceptor';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { PaginationDto } from '../favorites/dto/paginations.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
 
-  @Get('pages')
-  async getUserOwnPages(@Req() req) {
+  @Get(':username/pages')
+  async getUserOwnPages(
+    @Req() req,
+    @Param('username') username: string,
+    @Query() pagination: PaginationDto,
+  ) {
     const userId: string = req.user.id;
-    return await this.profileService.getUserOwnPages(userId);
+    return await this.profileService.getUserPages(username, userId, pagination);
   }
 
-  @Get('groups')
-  async getUserOwnGroups(@Req() req) {
+  @Get(':username/groups')
+  async getUserOwnGroups(
+    @Req() req,
+    @Param('username') username: string,
+    @Query() pagination: PaginationDto,
+  ) {
     const userId: string = req.user.id;
-    return await this.profileService.getUserOwnGroups(userId);
+    console.log('userId', userId);
+    return await this.profileService.getUserGroups(
+      username,
+      userId,
+      pagination,
+    );
   }
 
   @Get('reacted-posts')
