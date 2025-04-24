@@ -159,6 +159,7 @@ export class PostsRepository {
           WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
           ELSE ${users.username}
         END`,
+          type: posts.creatorType,
         },
         media: sql<
           Array<{
@@ -315,6 +316,7 @@ export class PostsRepository {
             WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
             ELSE ${users.username}
           END`,
+          type: posts.creatorType,
         },
         media: sql<
           Array<{

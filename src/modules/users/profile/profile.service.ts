@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { ProfileRepository } from './profile.repository';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { FilterLikedPostsDto } from './dto/filter-liked-posts.dto';
+
 import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 import { FollowersService } from '../followers/followers.service';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { FilterGetPostsDto } from './dto/get-posts.dto';
 
 @Injectable()
 export class ProfileService {
@@ -82,6 +83,28 @@ export class ProfileService {
     return await this.profileRepository.updateProfile(updateData, userId);
   }
 
+  async getUserPosts(
+    username: string,
+    dto: FilterGetPostsDto,
+    userId?: string,
+  ) {
+    const user = await this.profileRepository.getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const posts = await this.profileRepository.getUserPosts(
+      user.id,
+      { mainTopicId: dto.mainTopicId },
+      {
+        page: dto.page,
+        limit: dto.limit,
+      },
+      userId,
+    );
+
+    return posts;
+  }
+
   async getUserOwnPages(userId: string) {
     const pages = await this.profileRepository.getUserOwnPages(userId);
     return { pages };
@@ -92,8 +115,8 @@ export class ProfileService {
     return { groups };
   }
 
-  async getUserLikedDislikedPosts(dto: FilterLikedPostsDto, userId: string) {
-    return await this.profileRepository.getUserLikedDislikedPosts(
+  async getUserReactedPosts(dto: FilterGetPostsDto, userId: string) {
+    return await this.profileRepository.getUserReactedPosts(
       userId,
       dto.mainTopicId,
       {
@@ -104,21 +127,16 @@ export class ProfileService {
   }
 
   async getUserComments(dto: FilterUserCommentsDto, userId: string) {
-    const result = await this.profileRepository.getUserCommentedPosts(
+    const posts = await this.profileRepository.getUserCommentedPosts(
       userId,
-      {
-        mainTopicId: dto.mainTopicId,
-        subTopicId: dto.subTopicId,
-      },
+      dto.mainTopicId,
       {
         limit: dto.limit,
         page: dto.page,
       },
     );
 
-    return {
-      items: result,
-    };
+    return posts;
   }
   async toggleFollowUser(username: string, userId: string) {
     const user = await this.profileRepository.getUserByUsername(username);
