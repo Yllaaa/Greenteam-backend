@@ -12,6 +12,7 @@ const usersRoutes = [
   { path: 'score', module: ScoreModule },
   { path: '/', module: ProfileModule },
   { path: 'favorites', module: FavoritesModule },
+  { path: 'actions', module: ActionsModule },
 ];
 @Module({
   imports: [
