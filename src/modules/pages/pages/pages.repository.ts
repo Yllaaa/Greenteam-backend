@@ -60,12 +60,9 @@ export class PagesRepository {
   async updatePage(
     page: {
       topicId: number;
-      countryId: number;
-      cityId: number;
       category: PageCategoryType;
       name: string;
       description: string;
-      slug: string;
       why: string;
       how: string;
       what: string;
@@ -80,10 +77,8 @@ export class PagesRepository {
       .set({
         name: page.name,
         description: page.description,
-        slug: page.slug,
         topicId: page.topicId,
-        countryId: page.countryId,
-        cityId: page.cityId,
+
         category: page.category,
         why: page.why,
         how: page.how,
