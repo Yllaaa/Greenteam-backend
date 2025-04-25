@@ -26,16 +26,6 @@ export class UpdatePageDto {
   description: string;
 
   @IsOptional()
-  @IsString()
-  @Length(3, 50, { message: 'Slug must be between 3 and 50 characters long' })
-  @Matches(/^[A-Za-z0-9_]+$/, {
-    message:
-      'Slug can only contain letters (A-Z, a-z), numbers (0-9), and underscores (_)',
-  })
-  @Type(() => String)
-  slug: string;
-
-  @IsOptional()
   @IsInt()
   @Type(() => Number)
   topicId: number;
@@ -67,14 +57,4 @@ export class UpdatePageDto {
   @IsOptional()
   @Type(() => String)
   what: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  countryId: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  cityId: number;
 }
