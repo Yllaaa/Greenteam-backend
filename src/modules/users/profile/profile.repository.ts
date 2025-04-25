@@ -5,11 +5,13 @@ import {
   followers,
   groupMembers,
   groups,
+  MarketType,
   MediaType,
   pages,
   pagesFollowers,
   posts,
   postSubTopics,
+  products,
   publicationsComments,
   publicationsReactions,
   topics,
@@ -29,7 +31,11 @@ import {
   ne,
   sum,
 } from 'drizzle-orm';
+import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
+import { EventResponse } from 'src/modules/events/events/interfaces/events.interface';
+import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { PaginationDto } from '../favorites/dto/paginations.dto';
+
 @Injectable()
 export class ProfileRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
@@ -724,6 +730,112 @@ export class ProfileRepository {
     return data;
   }
 
+
+  async getUserCreatedEvents(
+    userId: string,
+    dto: GetEventsDto,
+  ): Promise<EventResponse[]> {
+    const { page, limit, category, countryId, cityId } = dto;
+    const offset = Math.max(0, (page - 1) * limit);
+    
+    const userEvents = await this.drizzleService.db.query.events.findMany({
+      columns: {
+        id: true,
+        title: true,
+        description: true,
+        location: true,
+        startDate: true,
+        endDate: true,
+        category: true,
+        posterUrl: true,
+        hostedBy: true,
+      },
+      offset: offset,
+      limit: limit,
+      orderBy: (events, { desc }) => [desc(events.createdAt)],
+      where: (events, { and, eq }) =>
+        and(
+          eq(events.creatorId, userId),
+          eq(events.creatorType, 'user'),
+          category ? eq(events.category, category) : undefined,
+          cityId ? eq(events.cityId, cityId) : undefined,
+          countryId ? eq(events.countryId, countryId) : undefined,
+        ),
+      with: {
+        userCreator: {
+          columns: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+    
+    return userEvents as unknown as EventResponse[];
+  }
+
+  async getUserCreatedProducts(
+    userId: string,
+    dto: GetAllProductsDto,
+  ) {
+    const { page = 1, limit = 10, topicId, countryId, cityId, marketType } = dto;
+    const offset = Math.max(0, (page - 1) * limit);
+    
+    const query = this.drizzleService.db
+      .select({
+        id: products.id,
+        name: products.name,
+        description: products.description,
+        price: products.price,
+        marketType: products.marketType,
+        isHidden: products.isHidden,
+        topicId: products.topicId,
+        countryId: products.countryId,
+        cityId: products.cityId,
+        createdAt: products.createdAt,
+        images: sql<Array<{ id: string; mediaUrl: string; mediaType: MediaType }>>`
+          COALESCE(
+            jsonb_agg(
+              DISTINCT jsonb_build_object(
+                'id', ${entitiesMedia.id},
+                'mediaUrl', ${entitiesMedia.mediaUrl},
+                'mediaType', ${entitiesMedia.mediaType}
+              )
+            ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+            '[]'::jsonb
+          )
+        `.as('images'),
+      })
+      .from(products)
+      .leftJoin(
+        entitiesMedia,
+        and(
+          eq(products.id, entitiesMedia.parentId),
+          eq(entitiesMedia.parentType, 'product')
+        )
+      )
+      .where(
+        and(
+          eq(products.sellerId, userId),
+          eq(products.sellerType, 'user'),
+          topicId ? eq(products.topicId, topicId) : undefined,
+          countryId ? eq(products.countryId, countryId) : undefined,
+          cityId ? eq(products.cityId, cityId) : undefined,
+          marketType ? eq(products.marketType, marketType as MarketType) : undefined
+        )
+      )
+      .groupBy(products.id)
+      .orderBy(desc(products.createdAt))
+      .limit(limit)
+      .offset(offset);
+    
+    const userProducts = await query.execute();
+    
+    return userProducts;
+  }
+  
   private readonly commentCountQuery = sql<number>`
   COUNT(DISTINCT ${publicationsComments.id})
 `.as('comment_count');
