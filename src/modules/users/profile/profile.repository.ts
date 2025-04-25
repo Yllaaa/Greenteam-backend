@@ -14,6 +14,7 @@ import {
   products,
   publicationsComments,
   publicationsReactions,
+  topics,
   userBlocks,
   userPoints,
   users,
@@ -33,6 +34,7 @@ import {
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { EventResponse } from 'src/modules/events/events/interfaces/events.interface';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
+import { PaginationDto } from '../favorites/dto/paginations.dto';
 
 @Injectable()
 export class ProfileRepository {
@@ -184,6 +186,107 @@ export class ProfileRepository {
       .groupBy(groups.id);
 
     return userGroups;
+  }
+
+  async getUserPages(
+    ownerId: string,
+    userId: string,
+    pagination?: PaginationDto,
+  ) {
+    const { limit = 10, page = 1 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+
+    const pagesList = await this.drizzleService.db.query.pages.findMany({
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        why: true,
+        what: true,
+        how: true,
+        avatar: true,
+        cover: true,
+        category: true,
+      },
+      with: {
+        topic: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: (pages, { desc }) => [desc(pages.createdAt)],
+      limit,
+      offset,
+      where: eq(pages.ownerId, ownerId),
+      extras: {
+        followersCount: sql<number>`(
+          SELECT CAST(count(*) AS INTEGER)
+          FROM ${pagesFollowers} pf
+          WHERE pf.page_id = ${pages.id}
+        )`
+          .mapWith(Number)
+          .as('followers_count'),
+        isFollowing: sql<boolean>`(
+          SELECT EXISTS(
+            SELECT 1
+            FROM ${pagesFollowers} pf
+            WHERE pf.page_id = ${pages.id} AND pf.user_id = ${userId}
+          )
+        )`
+          .mapWith(Boolean)
+          .as('is_following'),
+      },
+    });
+    return pagesList;
+  }
+
+  async getUserGroups(
+    ownerId: string,
+    userId: string,
+    pagination?: PaginationDto,
+  ) {
+    const { limit = 10, page = 1 } = pagination || {};
+    const offset = Math.max(0, (page - 1) * limit);
+    const selectObj: any = {
+      id: groups.id,
+      name: groups.name,
+      description: groups.description,
+      banner: groups.banner,
+      topic: {
+        topicId: topics.id,
+        topicName: topics.name,
+      },
+      memberCount:
+        sql`cast(count(distinct ${groupMembers.userId}) as integer)`.as(
+          'member_count',
+        ),
+    };
+    if (userId) {
+      selectObj.isUserMember = sql`
+           case when exists (
+             select 1 from ${groupMembers}
+             where ${groupMembers.groupId} = ${groups.id}
+             and ${groupMembers.userId} = ${userId}
+           ) then true else false end
+         `.as('is_user_member');
+    }
+
+    let whereConditions: SQL<unknown> | undefined;
+    whereConditions = eq(groups.ownerId, ownerId);
+
+    const groupsWithMetadata = await this.drizzleService.db
+      .select(selectObj)
+      .from(groups)
+      .leftJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+      .leftJoin(topics, eq(topics.id, groups.topicId))
+      .where(whereConditions)
+      .groupBy(groups.id, topics.id, topics.name)
+      .limit(limit ?? 10)
+
+      .offset(offset);
+    return groupsWithMetadata;
   }
 
   async getUserReactedPosts(

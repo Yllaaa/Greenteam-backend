@@ -12,6 +12,8 @@ import { UploadMediaService } from 'src/modules/common/upload-media/upload-media
 import { FilterGetPostsDto } from './dto/get-posts.dto';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
+import { PaginationDto } from '../favorites/dto/paginations.dto';
+
 
 @Injectable()
 export class ProfileService {
@@ -115,6 +117,40 @@ export class ProfileService {
   async getUserOwnGroups(userId: string) {
     const groups = await this.profileRepository.getUserOwnGroups(userId);
     return { groups };
+  }
+
+  async getUserPages(
+    username: string,
+    userId: string,
+    pagination: PaginationDto,
+  ) {
+    const user = await this.profileRepository.getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const pages = await this.profileRepository.getUserPages(
+      user.id,
+      userId,
+      pagination,
+    );
+    return pages;
+  }
+
+  async getUserGroups(
+    username: string,
+    userId: string,
+    pagination: PaginationDto,
+  ) {
+    const user = await this.profileRepository.getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const groups = await this.profileRepository.getUserGroups(
+      user.id,
+      userId,
+      pagination,
+    );
+    return groups;
   }
 
   async getUserReactedPosts(dto: FilterGetPostsDto, userId: string) {

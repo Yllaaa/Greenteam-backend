@@ -22,6 +22,8 @@ import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-medi
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
+import { PaginationDto } from '../favorites/dto/paginations.dto';
+
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -41,16 +43,29 @@ export class ProfileController {
     return this.profileService.getAllEvents(query, userId);
   }
 
-  @Get('pages')
-  async getUserOwnPages(@Req() req) {
+  @Get(':username/pages')
+  async getUserOwnPages(
+    @Req() req,
+    @Param('username') username: string,
+    @Query() pagination: PaginationDto,
+  ) {
     const userId: string = req.user.id;
-    return await this.profileService.getUserOwnPages(userId);
+    return await this.profileService.getUserPages(username, userId, pagination);
   }
 
-  @Get('groups')
-  async getUserOwnGroups(@Req() req) {
+  @Get(':username/groups')
+  async getUserOwnGroups(
+    @Req() req,
+    @Param('username') username: string,
+    @Query() pagination: PaginationDto,
+  ) {
     const userId: string = req.user.id;
-    return await this.profileService.getUserOwnGroups(userId);
+    console.log('userId', userId);
+    return await this.profileService.getUserGroups(
+      username,
+      userId,
+      pagination,
+    );
   }
 
   @Get('reacted-posts')
