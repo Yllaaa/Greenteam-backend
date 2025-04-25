@@ -10,6 +10,8 @@ import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 import { FollowersService } from '../followers/followers.service';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { FilterGetPostsDto } from './dto/get-posts.dto';
+import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
+import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 
 @Injectable()
 export class ProfileService {
@@ -145,5 +147,13 @@ export class ProfileService {
     }
 
     return await this.followersService.toggleFollow(user.id, userId);
+  }
+
+  async getAllProducts(query: GetAllProductsDto, userId: string) {
+    return this.profileRepository.getUserCreatedProducts(userId, query);
+  }
+
+  async getAllEvents(query: GetEventsDto, userId: string) {
+    return this.profileRepository.getUserCreatedEvents(userId, query);
   }
 }

@@ -20,11 +20,26 @@ import { FilterUserCommentsDto } from './dto/filter-comments.dto';
 import { FollowersService } from '../followers/followers.service';
 import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-media/interceptors/validate-profileImages.interceptor';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
+import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class ProfileController {
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: ProfileService) { }
+
+  @Get('products')
+  async getAllProducts(@Query() query: GetAllProductsDto, @Req() req) {
+    const userId = req.user.id;
+    console.log(userId);
+    return this.profileService.getAllProducts(query, userId);
+  }
+
+  @Get('events')
+  async getAllEvents(@Query() query: GetEventsDto, @Req() req) {
+    const userId = req.user.id;
+    return this.profileService.getAllEvents(query, userId);
+  }
 
   @Get('pages')
   async getUserOwnPages(@Req() req) {
