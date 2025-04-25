@@ -123,6 +123,7 @@ export class FavoritesRepository {
             WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
             ELSE ${users.username}
           END`,
+          type: posts.creatorType,
         },
         media: this.getMediaAggregation(),
         commentCount: this.commentCountQuery,
@@ -389,6 +390,7 @@ export class FavoritesRepository {
         category: events.category,
         posterUrl: events.posterUrl,
         hostedBy: events.hostedBy,
+        creatorType: events.creatorType,
         userCreator: {
           id: users.id,
           fullName: users.fullName,
