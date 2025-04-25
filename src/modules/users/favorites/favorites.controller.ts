@@ -45,7 +45,7 @@ export class FavoritesController {
       paginationDto,
     );
   }
-  @Get('pages')
+  @Get('followed-pages')
   async getFollowedPages(@Query() paginationDto: PaginationDto, @Req() req) {
     const userId = req.user.id;
     return await this.favoritesService.getFollowedPages(userId, paginationDto);
@@ -62,7 +62,8 @@ export class FavoritesController {
       paginationDto,
     );
   }
-  @Get('groups')
+
+  @Get('joined-groups')
   async getJoinedGroups(@Query() paginationDto: PaginationDto, @Req() req) {
     const userId = req.user.id;
     return await this.favoritesService.getUserJoinedGroups(
