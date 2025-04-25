@@ -14,7 +14,6 @@ import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.d
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { PaginationDto } from '../favorites/dto/paginations.dto';
 
-
 @Injectable()
 export class ProfileService {
   constructor(
@@ -185,11 +184,59 @@ export class ProfileService {
     return await this.followersService.toggleFollow(user.id, userId);
   }
 
-  async getAllProducts(query: GetAllProductsDto, userId: string) {
-    return this.profileRepository.getUserCreatedProducts(userId, query);
+  async getAllProducts(
+    username: string,
+    query: GetAllProductsDto,
+    userId: string,
+  ) {
+    const user = await this.profileRepository.getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.profileRepository.getUserCreatedProducts(
+      user.id,
+      query,
+      userId,
+    );
   }
 
-  async getAllEvents(query: GetEventsDto, userId: string) {
-    return this.profileRepository.getUserCreatedEvents(userId, query);
+  async getAllEvents(
+    username: string,
+    query: GetEventsDto,
+    currentUserId: string,
+  ) {
+    const user = await this.profileRepository.getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const events = await this.profileRepository.getUserCreatedEvents(
+      user.id,
+      query,
+      currentUserId,
+    );
+    return await Promise.all(
+      events.map(async (event) => {
+        const hostName = await this.GetEventHostName(event);
+        console.log('hostName', hostName);
+        const { userCreator, pageCreator, ...rest } = event;
+
+        return {
+          ...rest,
+          hostName,
+        };
+      }),
+    );
+  }
+
+  private async GetEventHostName(event) {
+    const hostedByStr = String(event.hostedBy);
+
+    if (hostedByStr === 'Greenteam') {
+      return 'Greenteam';
+    } else if (hostedByStr === 'Global') {
+      return 'Global';
+    }
+
+    return event?.userCreator?.fullName || 'community';
   }
 }

@@ -24,23 +24,29 @@ import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.d
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { PaginationDto } from '../favorites/dto/paginations.dto';
 
-
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class ProfileController {
-  constructor(private profileService: ProfileService) { }
+  constructor(private profileService: ProfileService) {}
 
-  @Get('products')
-  async getAllProducts(@Query() query: GetAllProductsDto, @Req() req) {
+  @Get(':username/products')
+  async getAllProducts(
+    @Query() query: GetAllProductsDto,
+    @Req() req,
+    @Param('username') username: string,
+  ) {
     const userId = req.user.id;
-    console.log(userId);
-    return this.profileService.getAllProducts(query, userId);
+    return this.profileService.getAllProducts(username, query, userId);
   }
 
-  @Get('events')
-  async getAllEvents(@Query() query: GetEventsDto, @Req() req) {
+  @Get(':username/events')
+  async getAllEvents(
+    @Query() query: GetEventsDto,
+    @Req() req,
+    @Param('username') username: string,
+  ) {
     const userId = req.user.id;
-    return this.profileService.getAllEvents(query, userId);
+    return this.profileService.getAllEvents(username, query, userId);
   }
 
   @Get(':username/pages')

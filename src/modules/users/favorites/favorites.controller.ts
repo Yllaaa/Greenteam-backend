@@ -72,7 +72,7 @@ export class FavoritesController {
     );
   }
 
-  @Get('events')
+  @Get('joined-events')
   async getJoinedEvents(@Query() paginationDto: PaginationDto, @Req() req) {
     const userId = req.user.id;
     return await this.favoritesService.getUserJoinedEvents(
@@ -81,7 +81,7 @@ export class FavoritesController {
     );
   }
 
-  @Get('products')
+  @Get('fav-products')
   async getFavoriteProducts(@Query() paginationDto: PaginationDto, @Req() req) {
     const userId = req.user.id;
     return await this.favoritesService.getUserFavoriteProducts(

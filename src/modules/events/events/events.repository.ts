@@ -75,6 +75,8 @@ export class EventsRepository {
         category: true,
         posterUrl: true,
         hostedBy: true,
+        creatorId: true,
+        creatorType: true,
       },
       offset: offset,
       limit: limit,
