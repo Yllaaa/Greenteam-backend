@@ -10,6 +10,7 @@ import {
   Param,
   UseGuards,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import {
   AnyFilesInterceptor,
@@ -45,12 +46,24 @@ export class PostsController {
   @Get()
   async getPosts(@Query() dto: GetPostsDto, @Req() req) {
     const userId = req.user.id;
-    return this.postsService.getPosts(dto, userId);
+    const posts = await this.postsService.getPosts(dto, userId);
+
+    return posts.map((post) => ({
+      ...post,
+      isAuthor: post.author?.id === userId,
+    }));
   }
 
   @Get(':id')
   async getPost(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     return this.postsService.getPostInDetails(id, userId);
+  }
+
+  @Delete(':id')
+  async deletePost(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    await this.postsService.deletePost(id, userId);
+    return { message: 'Post deleted successfully' };
   }
 }

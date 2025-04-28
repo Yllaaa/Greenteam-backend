@@ -29,6 +29,20 @@ import { PaginationDto } from '../favorites/dto/paginations.dto';
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
 
+  @Get(':username/posts')
+  async getPosts(
+    @Query() dto: FilterGetPostsDto,
+    @Req() req,
+    @Param('username') username: string,
+  ) {
+    const userId = req.user.id;
+    const posts = await this.profileService.getUserPosts(username, dto, userId);
+    return posts.map((post) => ({
+      ...post,
+      isAuthor: post.author?.id === userId,
+    }));
+  }
+
   @Get(':username/products')
   async getAllProducts(
     @Query() query: GetAllProductsDto,
@@ -36,7 +50,15 @@ export class ProfileController {
     @Param('username') username: string,
   ) {
     const userId = req.user.id;
-    return this.profileService.getAllProducts(username, query, userId);
+    const products = await this.profileService.getAllProducts(
+      username,
+      query,
+      userId,
+    );
+    return products.map((product) => ({
+      ...product,
+      isAuthor: product.sellerId === userId,
+    }));
   }
 
   @Get(':username/events')
@@ -46,7 +68,15 @@ export class ProfileController {
     @Param('username') username: string,
   ) {
     const userId = req.user.id;
-    return this.profileService.getAllEvents(username, query, userId);
+    const events = await this.profileService.getAllEvents(
+      username,
+      query,
+      userId,
+    );
+    return events.map((event) => ({
+      ...event,
+      isAuthor: event.creatorId === userId,
+    }));
   }
 
   @Get(':username/pages')
@@ -84,15 +114,6 @@ export class ProfileController {
   async getUserCommentedPosts(@Query() dto: FilterUserCommentsDto, @Req() req) {
     const userId = req.user.id;
     return this.profileService.getUserComments(dto, userId);
-  }
-  @Get(':username/posts')
-  async getPosts(
-    @Query() dto: FilterGetPostsDto,
-    @Req() req,
-    @Param('username') username: string,
-  ) {
-    const userId = req.user.id;
-    return this.profileService.getUserPosts(username, dto, userId);
   }
 
   @Get(':username')
