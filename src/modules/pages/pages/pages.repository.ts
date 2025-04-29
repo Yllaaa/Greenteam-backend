@@ -9,6 +9,7 @@ import {
   pagesContacts,
   pagesFollowers,
   posts,
+  products,
 } from 'src/modules/db/schemas/schema';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
@@ -341,5 +342,24 @@ export class PagesRepository {
     return await this.drizzleService.db
       .delete(pages)
       .where(and(eq(pages.id, pageId), eq(pages.ownerId, userId)));
+  }
+  async deletePagePosts(pageId: string) {
+    return await this.drizzleService.db
+      .delete(posts)
+      .where(and(eq(posts.creatorId, pageId), eq(posts.creatorType, 'page')));
+  }
+
+  async deletePageEvents(pageId: string) {
+    return await this.drizzleService.db
+      .delete(events)
+      .where(and(eq(events.creatorId, pageId), eq(events.creatorType, 'page')));
+  }
+
+  async deletePageProducts(pageId: string) {
+    return await this.drizzleService.db
+      .delete(products)
+      .where(
+        and(eq(products.sellerId, pageId), eq(products.sellerType, 'page')),
+      );
   }
 }

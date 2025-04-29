@@ -217,6 +217,10 @@ export class PagesService {
     if (page.ownerId !== userId) {
       throw new ForbiddenException('You are not the owner of this page');
     }
-    return await this.pagesRepository.deletePage(page.id, userId);
+    await this.pagesRepository.deletePage(page.id, userId);
+    await this.pagesRepository.deletePagePosts(page.id);
+    await this.pagesRepository.deletePageEvents(page.id);
+    await this.pagesRepository.deletePageProducts(page.id);
+    return { message: 'Page deleted successfully' };
   }
 }
