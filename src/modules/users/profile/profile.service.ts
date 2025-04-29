@@ -105,7 +105,12 @@ export class ProfileService {
       userId,
     );
 
-    return posts;
+    return posts.map((post) => {
+      return {
+        ...post,
+        isAuthor: post.author?.id === userId,
+      };
+    });
   }
 
   async getUserOwnPages(userId: string) {
@@ -193,11 +198,17 @@ export class ProfileService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return this.profileRepository.getUserCreatedProducts(
+    const products = await this.profileRepository.getUserCreatedProducts(
       user.id,
       query,
       userId,
     );
+    return products.map((product) => {
+      return {
+        ...product,
+        isAuthor: product.sellerId === userId,
+      };
+    });
   }
 
   async getAllEvents(
@@ -223,6 +234,7 @@ export class ProfileService {
         return {
           ...rest,
           hostName,
+          isAuthor: event.creatorId === currentUserId,
         };
       }),
     );

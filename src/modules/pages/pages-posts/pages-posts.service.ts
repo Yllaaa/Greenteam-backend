@@ -30,7 +30,7 @@ export class PagesPostsService {
     if (!page) {
       throw new NotFoundException('Page not found');
     }
-    return await this.postsRepository.getFilteredPosts(
+    const posts = await this.postsRepository.getFilteredPosts(
       {
         mainTopicId: dto.mainTopicId,
         subTopicId: dto.subTopicId,
@@ -42,6 +42,10 @@ export class PagesPostsService {
       currentUserId,
       page.id,
     );
+    return posts.map((post) => ({
+      ...post,
+      isAuthor: page.ownerId === currentUserId,
+    }));
   }
 
   async getPostById(postId: string, slug: string, currentUserId: string) {

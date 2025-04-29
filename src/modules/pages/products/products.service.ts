@@ -135,11 +135,15 @@ export class ProductsService {
       throw new NotFoundException('Page not found');
     }
 
-    return await this.marketplaceRepository.getAllProducts(
+    const products = await this.marketplaceRepository.getAllProducts(
       query,
       userId,
       page.id,
     );
+    return products.map((product) => ({
+      ...product,
+      isAuthor: page.ownerId === userId,
+    }));
   }
 
   async deleteProduct(productId: string, slug: string, userId: string) {

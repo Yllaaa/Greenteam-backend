@@ -68,7 +68,7 @@ export class MarketplaceService {
     );
     return products.map((product) => ({
       ...product,
-      isSeller: product.sellerId === userId,
+      isAuthor: product.sellerId === userId,
     }));
   }
 
