@@ -127,7 +127,6 @@ export class PagesController {
   @Delete(':slug')
   async deletePage(@Param('slug') slug: string, @Req() req) {
     const userId = req.user.id;
-    await this.pagesService.deletePage(slug, userId);
-    return { message: 'Page deleted successfully' };
+    return await this.pagesService.deletePage(slug, userId);
   }
 }
