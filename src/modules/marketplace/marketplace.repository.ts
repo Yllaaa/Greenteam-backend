@@ -124,6 +124,12 @@ export class MarketplaceRepository {
     return result as unknown as Product;
   }
 
+  async deleteProduct(id: string, userId: string) {
+    return await this.drizzleService.db
+      .delete(products)
+      .where(and(eq(products.id, id), eq(products.sellerId, userId)));
+  }
+
   async favoriteProduct(userId: string, productId: string) {
     const result = await this.drizzleService.db
       .insert(favoriteProducts)

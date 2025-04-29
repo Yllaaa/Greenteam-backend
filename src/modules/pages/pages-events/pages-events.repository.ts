@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { desc, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { events } from 'src/modules/db/schemas/schema';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { EventResponse } from 'src/modules/events/events/interfaces/events.interface';
@@ -59,5 +59,11 @@ export class PagesEventsRepository {
       },
     });
     return returnedEvents as unknown as EventResponse[];
+  }
+
+  async deleteEvent(id: string, userId: string) {
+    return await this.drizzleService.db
+      .delete(events)
+      .where(and(eq(events.id, id), eq(events.creatorId, userId)));
   }
 }

@@ -54,6 +54,7 @@ export class EventsService {
         return {
           ...rest,
           hostName,
+          isAuthor: event.creatorId === userId,
         };
       }),
     );
@@ -91,6 +92,18 @@ export class EventsService {
       throw new NotFoundException('User has not joined this event');
     }
     return await this.eventsRepository.removeUserJoinedEvent(eventId, userId);
+  }
+  async deleteEvent(id: string, userId: string) {
+    const event = await this.eventsRepository.getEventById(id);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    if (event.creatorId !== userId) {
+      throw new BadRequestException('You are not the creator of this event');
+    }
+
+    return await this.eventsRepository.deleteEvent(id, userId);
   }
 
   private async GetEventHostName(event) {

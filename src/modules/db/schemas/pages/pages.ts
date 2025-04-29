@@ -79,7 +79,7 @@ export const pagesContacts = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     pageId: uuid('page_id')
       .notNull()
-      .references(() => pages.id),
+      .references(() => pages.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 256 }).notNull(),
     title: varchar('title', { length: 256 }).notNull(),
     email: varchar('email', { length: 256 }).notNull(),
@@ -100,10 +100,10 @@ export const pagesFollowers = pgTable(
   {
     pageId: uuid('page_id')
       .notNull()
-      .references(() => pages.id),
+      .references(() => pages.id, { onDelete: 'cascade' }),
     userId: uuid('user_id')
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: 'cascade' }),
     followedAt: timestamp('followed_at').defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.pageId, table.userId] })],

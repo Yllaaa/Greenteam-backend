@@ -9,6 +9,7 @@ import {
   Param,
   UseInterceptors,
   UploadedFiles,
+  Delete,
 } from '@nestjs/common';
 import { MarketplaceService } from './marketplace.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -56,7 +57,12 @@ export class MarketplaceController {
     return this.marketplaceService.getProductById(id, userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Delete('products/:id')
+  async deleteProduct(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    return this.marketplaceService.deleteProduct(id, userId);
+  }
+
   @Post('products/:productId/toggle-favorite')
   async toggleFavorite(@Req() req, @Param('productId') productId: string) {
     const userId = req.user.id;

@@ -10,6 +10,7 @@ import {
   BadRequestException,
   UploadedFiles,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { PagesPostsService } from './pages-posts.service';
@@ -63,5 +64,18 @@ export class PagesPostsController {
       },
       slug,
     );
+  }
+
+  @Delete(':postId')
+  async deletePost(
+    @Param('postId') postId: string,
+    @Param('slug') slug: string,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    await this.pagesPostsService.deletePost(postId, slug, userId);
+    return {
+      message: 'Post deleted successfully',
+    };
   }
 }

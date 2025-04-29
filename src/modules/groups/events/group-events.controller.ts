@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -60,5 +61,15 @@ export class GroupEventsController {
       eventId,
       userId,
     );
+  }
+
+  @Delete('/:eventId')
+  async deleteGroupEvent(
+    @Param('groupId') groupId: string,
+    @Param('eventId') eventId: string,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    return this.groupEventsService.deleteGroupEvent(groupId, eventId, userId);
   }
 }

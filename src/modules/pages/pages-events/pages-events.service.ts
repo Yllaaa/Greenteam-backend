@@ -76,4 +76,20 @@ export class PagesEventsService {
   async getEventDetails(id: string, userId: string) {
     return await this.eventsRepository.getEventDetails(id, userId);
   }
+
+  async deleteEvent(id: string, slug: string, userId: string) {
+    const page = await this.pagesService.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+    const event = await this.eventsRepository.getEventById(id);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    if (event.creatorId !== page.id || page.ownerId !== userId) {
+      throw new UnauthorizedException('You are not the owner of this event');
+    }
+    return await this.eventsRepository.deleteEvent(id, userId);
+  }
 }

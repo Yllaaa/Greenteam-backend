@@ -52,7 +52,13 @@ export class GroupsService {
   }
 
   async getAllGroups(query: GetAllGroupsDtos, userId?: string) {
-    return this.groupsRepository.getAllGroups(query, userId);
+    const groups = await this.groupsRepository.getAllGroups(query, userId);
+    return groups.map((group) => {
+      return {
+        ...group,
+        isOwner: group.groupOwnerId === userId,
+      };
+    });
   }
 
   async getGroupDetails(groupId: string, userId: string) {
@@ -104,19 +110,16 @@ export class GroupsService {
   }
 
   async deleteGroup(groupId: string, userId: string) {
-    const group = await this.groupsRepository.getGroupById(groupId);
-
-    if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found.`);
+    const [group] = await this.groupsRepository.getGroupById(groupId);
+    if (!group) {
+      throw new NotFoundException('Group not found');
     }
-
-    if (group[0].ownerId !== userId) {
+    if (group.ownerId !== userId) {
       throw new ForbiddenException(
-        'Only the group owner can delete this group.',
+        'You are not authorized to delete this group',
       );
     }
-
-    const deletedGroup = await this.groupsRepository.deleteGroup(groupId);
+    await this.groupsRepository.deleteGroup(groupId, userId);
     return { message: 'Group deleted successfully' };
   }
 }

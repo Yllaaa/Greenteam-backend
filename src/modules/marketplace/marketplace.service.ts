@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { MarketplaceRepository } from './marketplace.repository';
 import { CommonRepository } from '../common/common.repository';
 import {
@@ -57,7 +62,14 @@ export class MarketplaceService {
   }
 
   async getAllProducts(query: GetAllProductsDto, userId: string) {
-    return this.marketplaceRepository.getAllProducts(query, userId);
+    const products = await this.marketplaceRepository.getAllProducts(
+      query,
+      userId,
+    );
+    return products.map((product) => ({
+      ...product,
+      isSeller: product.sellerId === userId,
+    }));
   }
 
   async getProductById(productId: string, userId: string) {
@@ -116,6 +128,23 @@ export class MarketplaceService {
         ...newFavorite,
       };
     }
+  }
+
+  async deleteProduct(productId: string, userId: string) {
+    const product = await this.marketplaceRepository.getProductById(
+      productId,
+      userId,
+    );
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    if (product.sellerId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this product',
+      );
+    }
+    await this.marketplaceRepository.deleteProduct(productId, userId);
+    return { message: 'Product deleted successfully' };
   }
 
   private validateSellerType(sellerType: SellerType) {

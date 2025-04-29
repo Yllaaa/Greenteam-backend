@@ -98,4 +98,19 @@ export class PagesPostsService {
 
     return newPost;
   }
+
+  async deletePost(postId: string, slug: string, userId: string) {
+    const page = await this.pagesService.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+    const post = await this.postsRepository.getPostById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    if (page.ownerId !== userId) {
+      throw new BadRequestException('You are not the owner of this page');
+    }
+    return this.postsRepository.deletePost(postId, page.id);
+  }
 }

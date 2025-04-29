@@ -53,7 +53,9 @@ export const events = pgTable(
     priority: smallint('priority').notNull().default(0),
     countryId: integer('country_id').references(() => countries.id),
     cityId: integer('city_id').references(() => cities.id),
-    groupId: uuid('group_id').references(() => groups.id),
+    groupId: uuid('group_id').references(() => groups.id, {
+      onDelete: 'cascade',
+    }),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [
@@ -89,7 +91,7 @@ export const usersJoinedEvent = pgTable(
       .references(() => users.id),
     eventId: uuid('event_id')
       .notNull()
-      .references(() => events.id),
+      .references(() => events.id, { onDelete: 'cascade' }),
   },
   (table) => [primaryKey({ columns: [table.eventId, table.userId] })],
 );

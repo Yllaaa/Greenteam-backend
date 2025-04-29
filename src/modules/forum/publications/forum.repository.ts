@@ -241,4 +241,15 @@ export class ForumRepository {
 
     return processedResults;
   }
+
+  async deletePublication(publicationId: string, userId: string) {
+    return await this.drizzleService.db
+      .delete(forumPublications)
+      .where(
+        and(
+          eq(forumPublications.id, publicationId),
+          eq(forumPublications.authorId, userId),
+        ),
+      );
+  }
 }

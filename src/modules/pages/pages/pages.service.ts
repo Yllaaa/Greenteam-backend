@@ -99,7 +99,13 @@ export class PagesService {
   }
 
   async getAllPages(query: GetAllPagesDto, userId: string) {
-    return await this.pagesRepository.getAllPages(query, userId);
+    const pages = await this.pagesRepository.getAllPages(query, userId);
+    return pages.map((page) => {
+      return {
+        ...page,
+        isOwner: page.ownerId === userId,
+      };
+    });
   }
 
   async getPageDetails(slug: string, userId: string) {
@@ -201,5 +207,16 @@ export class PagesService {
 
   async getPageMetadata(pageId: string) {
     return await this.pagesRepository.getPageMetadata(pageId);
+  }
+
+  async deletePage(slug: string, userId: string) {
+    const page = await this.pagesRepository.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException(`Page with slug ${slug} not found`);
+    }
+    if (page.ownerId !== userId) {
+      throw new ForbiddenException('You are not the owner of this page');
+    }
+    return await this.pagesRepository.deletePage(page.id, userId);
   }
 }

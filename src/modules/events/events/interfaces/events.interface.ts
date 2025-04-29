@@ -15,6 +15,8 @@ export interface EventResponse {
   groupId: string | null;
   priority: number;
   isJoined?: boolean;
+  creatorId: string;
+  creatorType: 'user' | 'page' | 'group';
   userCreator?: {
     id: string;
     fullName: string;

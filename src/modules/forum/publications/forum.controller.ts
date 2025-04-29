@@ -5,9 +5,11 @@ import {
   Post,
   Query,
   Req,
+  Param,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 import { ForumService } from './forum.service';
 import {
@@ -56,5 +58,12 @@ export class ForumController {
       { limit: query.limit ?? 10, page: query.page ?? 1 },
       userId,
     );
+  }
+
+  @Delete('/:id')
+  async deletePublication(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    await this.forumService.deletePublication(id, userId);
+    return { message: 'Publication deleted successfully' };
   }
 }

@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { CommonRepository } from 'src/modules/common/common.repository';
 import {
   MarketType,
@@ -119,12 +125,41 @@ export class ProductsService {
     return { message: 'Product created successfully' };
   }
 
-  async getPageProducts(query: GetPageProductsDto, slug: string) {
+  async getPageProducts(
+    query: GetPageProductsDto,
+    slug: string,
+    userId: string,
+  ) {
+    const page = await this.pagesService.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+
+    return await this.marketplaceRepository.getAllProducts(
+      query,
+      userId,
+      page.id,
+    );
+  }
+
+  async deleteProduct(productId: string, slug: string, userId: string) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
       throw new BadRequestException('Invalid page slug');
     }
 
-    return await this.marketplaceRepository.getAllProducts(query, page.id);
+    const product = await this.marketplaceRepository.getProductById(productId);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (product.sellerId !== page.id || page.ownerId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this product',
+      );
+    }
+
+    await this.marketplaceRepository.deleteProduct(productId, page.id);
+    return { message: 'Product deleted successfully' };
   }
 }

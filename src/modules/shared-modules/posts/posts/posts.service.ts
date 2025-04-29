@@ -124,4 +124,16 @@ export class PostsService {
       await this.postsRepository.insertPostMedia(mediaEntries);
     }
   }
+
+  async deletePost(postId: string, userId: string) {
+    const post = await this.getPostById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.creatorId !== userId) {
+      throw new BadRequestException('You are not allowed to delete this post');
+    }
+    await this.postsRepository.deletePost(postId, userId);
+  }
 }
