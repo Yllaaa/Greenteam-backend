@@ -123,4 +123,11 @@ export class PagesController {
   async addPageFollower(@Param('slug') slug: string, @Req() req) {
     return await this.pagesService.togglePageFollow(slug, req.user);
   }
+
+  @Delete(':slug')
+  async deletePage(@Param('slug') slug: string, @Req() req) {
+    const userId = req.user.id;
+    await this.pagesService.deletePage(slug, userId);
+    return { message: 'Page deleted successfully' };
+  }
 }

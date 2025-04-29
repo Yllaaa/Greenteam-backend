@@ -9,6 +9,7 @@ import {
   Param,
   UseInterceptors,
   UploadedFiles,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { ProductsService } from './products.service';
@@ -47,7 +48,23 @@ export class ProductsController {
   async getPageProducts(
     @Query() getPageProductsDto: GetPageProductsDto,
     @Param('slug') slug: string,
+    @Req() req,
   ) {
-    return this.productsService.getPageProducts(getPageProductsDto, slug);
+    const userId = req.user.id;
+    return this.productsService.getPageProducts(
+      getPageProductsDto,
+      slug,
+      userId,
+    );
+  }
+
+  @Delete(':id')
+  async deleteProduct(
+    @Param('id') id: string,
+    @Req() request: any,
+    @Param('slug') slug: string,
+  ) {
+    const userId = request.user.id;
+    return this.productsService.deleteProduct(id, slug, userId);
   }
 }

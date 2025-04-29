@@ -11,7 +11,7 @@ export const groupMembers = pgTable(
       .references(() => users.id),
     groupId: uuid('group_id')
       .notNull()
-      .references(() => groups.id),
+      .references(() => groups.id, { onDelete: 'cascade' }),
     joinedAt: timestamp('joined_at').defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.groupId] })],

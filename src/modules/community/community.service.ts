@@ -29,6 +29,6 @@ export class CommunityService {
   }
 
   async getAllGroups(query: GetAllGroupsDtos, userId: string) {
-    return this.groupsService.getAllGroups(query, userId);
+    await this.groupsService.getAllGroups(query, userId);
   }
 }

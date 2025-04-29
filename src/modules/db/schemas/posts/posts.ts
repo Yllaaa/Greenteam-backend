@@ -22,7 +22,9 @@ export const posts = pgTable('posts', {
     .notNull(),
   creatorType: creatorTypeEnum('creator_type').notNull(),
   creatorId: uuid('creator_id').notNull(),
-  groupId: uuid('group_id').references(() => groups.id),
+  groupId: uuid('group_id').references(() => groups.id, {
+    onDelete: 'cascade',
+  }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

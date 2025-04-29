@@ -50,6 +50,13 @@ export class EventsController {
     return await this.eventsService.getEventDetails(id, userId);
   }
 
+  @Delete('/:id')
+  async deleteEvent(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id;
+    await this.eventsService.deleteEvent(id, userId);
+    return { message: 'Event deleted' };
+  }
+
   @Post('/:id/join')
   async joinEvent(@Param('id') id, @Req() req) {
     const userId = req.user.id;

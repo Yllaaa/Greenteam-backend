@@ -39,4 +39,11 @@ export class EventsGroupRepository {
       },
     });
   }
+
+  async deleteGroupEvent(groupId: string, eventId: string) {
+    return await this.drizzleService.db
+      .delete(events)
+      .where(and(eq(events.id, eventId), eq(events.groupId, groupId)))
+      .returning();
+  }
 }

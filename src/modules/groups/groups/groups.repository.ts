@@ -44,6 +44,7 @@ export class GroupsRepository {
       name: groups.name,
       description: groups.description,
       banner: groups.banner,
+      ownerId: groups.ownerId,
       topic: {
         topicId: topics.id,
         topicName: topics.name,
@@ -188,10 +189,10 @@ export class GroupsRepository {
       .returning();
   }
 
-  async deleteGroup(groupId: string) {
+  async deleteGroup(groupId: string, userId: string) {
     return await this.drizzle.db
       .delete(groups)
-      .where(eq(groups.id, groupId))
+      .where(and(eq(groups.id, groupId), eq(groups.ownerId, userId)))
       .returning();
   }
 }

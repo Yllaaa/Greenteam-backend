@@ -121,6 +121,7 @@ export class PagesRepository {
         avatar: true,
         cover: true,
         category: true,
+        ownerId: true,
       },
       with: {
         topic: {
@@ -334,5 +335,11 @@ export class PagesRepository {
         topicId: true,
       },
     });
+  }
+
+  async deletePage(pageId: string, userId: string) {
+    return await this.drizzleService.db
+      .delete(pages)
+      .where(and(eq(pages.id, pageId), eq(pages.ownerId, userId)));
   }
 }

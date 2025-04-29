@@ -9,6 +9,7 @@ import { and, asc, desc, eq, isNull, sql, SQL } from 'drizzle-orm';
 import { CreateEventDto } from '../events/dto/events.dto';
 import { EventResponse } from './interfaces/events.interface';
 import { GetEventsDto } from './dto/getEvents.dto';
+import e from 'express';
 
 @Injectable()
 export class EventsRepository {
@@ -296,5 +297,11 @@ export class EventsRepository {
       });
 
     return !!userJoined;
+  }
+
+  async deleteEvent(id: string, userId: string) {
+    return await this.drizzleService.db
+      .delete(events)
+      .where(and(eq(events.id, id), eq(events.creatorId, userId)));
   }
 }

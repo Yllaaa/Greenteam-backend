@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ForumRepository } from './forum.repository';
 import {
   CreateForumPublicationDto,
@@ -63,7 +68,10 @@ export class ForumService {
       currentUserId,
     );
 
-    return results;
+    return results.map((publication) => ({
+      ...publication,
+      isAuthor: currentUserId === publication.author?.id,
+    }));
   }
 
   async getPublication(publicationId: string) {
@@ -101,5 +109,19 @@ export class ForumService {
     if (mediaEntries.length) {
       await this.forumRepository.insertPublicationMedia(mediaEntries);
     }
+  }
+
+  async deletePublication(publicationId: string, userId: string) {
+    const publication =
+      await this.forumRepository.findPublicationById(publicationId);
+    if (!publication) {
+      throw new NotFoundException('Publication not found');
+    }
+    if (publication.authorId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to delete this publication',
+      );
+    }
+    await this.forumRepository.deletePublication(publicationId, userId);
   }
 }

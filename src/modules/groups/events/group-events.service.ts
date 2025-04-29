@@ -91,4 +91,29 @@ export class GroupEventsService {
 
     return event;
   }
+
+  async deleteGroupEvent(groupId: string, eventId: string, userId: string) {
+    const group = await this.groupsRepository.getGroupById(groupId);
+
+    if (!group || !group.length) {
+      throw new NotFoundException(`Group with ID ${groupId} not found`);
+    }
+
+    const event = await this.eventsRepository.getEventDetails(
+      eventId,
+      userId,
+      groupId,
+    );
+
+    if (!event) {
+      throw new NotFoundException(`Event not found`);
+    }
+    if (group[0].ownerId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this event',
+      );
+    }
+
+    return this.eventsGroupRepository.deleteGroupEvent(eventId, groupId);
+  }
 }

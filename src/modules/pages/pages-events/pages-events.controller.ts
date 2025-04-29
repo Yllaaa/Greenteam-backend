@@ -11,6 +11,7 @@ import {
   Body,
   UploadedFile,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { PagesEventsService } from './pages-events.service';
@@ -59,5 +60,16 @@ export class PagesEventsController {
   async getEventDetail(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     return await this.pagesEventsService.getEventDetails(id, userId);
+  }
+
+  @Delete('/:id')
+  async deleteEvent(
+    @Param('id') id: string,
+    @Param('slug') slug: string,
+    @Req() req,
+  ) {
+    const userId = req.user.id;
+    await this.pagesEventsService.deleteEvent(id, slug, userId);
+    return { message: 'Event deleted' };
   }
 }
