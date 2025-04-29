@@ -69,6 +69,7 @@ export class PagesEventsService {
       return {
         ...rest,
         hostName: pageCreator?.name ?? 'Unknown Host',
+        isAuthor: page.ownerId === userId,
       };
     });
   }
