@@ -26,6 +26,7 @@ import { UpdateGroupDto } from './dtos/update-group.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { ValidateBannerInterceptor } from 'src/modules/common/upload-media/interceptors/validate-groupBanner.interceptor';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)

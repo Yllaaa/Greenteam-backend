@@ -30,19 +30,19 @@ export class GroupsService {
     const { dto, banner } = data;
     const existingGroup = await this.groupsRepository.getGroupByName(dto.name);
     if (existingGroup) {
-      throw new BadRequestException(
-        'Group name already taken, please choose another one.',
-      );
+      throw new BadRequestException('groups.groups.errors.GROUP_NAME_TAKEN');
     }
+
     await this.commonService.validateLocation(dto.countryId, dto.cityId);
+
     let uploadedImage;
-    console.log('banner', banner);
     if (banner && banner.size > 0) {
       uploadedImage = await this.uploadMediaService.uploadSingleImage(
         banner,
         'group_banners',
       );
     }
+
     const [newGroup] = await this.groupsRepository.createGroup(
       { dto, bannerUrl: uploadedImage?.location },
       userId,
@@ -53,18 +53,16 @@ export class GroupsService {
 
   async getAllGroups(query: GetAllGroupsDtos, userId?: string) {
     const groups = await this.groupsRepository.getAllGroups(query, userId);
-    return groups.map((group) => {
-      return {
-        ...group,
-        isOwner: group.groupOwnerId === userId,
-      };
-    });
+    return groups.map((group) => ({
+      ...group,
+      isOwner: group.groupOwnerId === userId,
+    }));
   }
 
   async getGroupDetails(groupId: string, userId: string) {
     const group = await this.groupsRepository.getGroupDetails(groupId, userId);
     if (!group) {
-      throw new NotFoundException(`Group with ID ${groupId} not found.`);
+      throw new NotFoundException('groups.groups.errors.GROUP_NOT_FOUND');
     }
     return group;
   }
@@ -76,28 +74,29 @@ export class GroupsService {
   ) {
     const { dto, banner } = data;
     const group = await this.groupsRepository.getGroupById(groupId);
-
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found.`);
+      throw new NotFoundException('groups.groups.errors.GROUP_NOT_FOUND');
     }
 
     if (group[0].ownerId !== userId) {
       throw new ForbiddenException(
-        'Only the group owner can update this group.',
+        'groups.groups.errors.UNAUTHORIZED_GROUP_ACTION',
       );
     }
 
     let uploadedImage;
     if (banner) {
-      const uploadedImage = await this.uploadMediaService.uploadSingleImage(
+      uploadedImage = await this.uploadMediaService.uploadSingleImage(
         banner,
         'group_banners',
       );
     }
+
     const updateData = {
       ...dto,
       ...(uploadedImage && { bannerUrl: uploadedImage.location }),
     };
+
     const updateGroup = await this.groupsRepository.updateGroup(
       groupId,
       updateData,
@@ -112,14 +111,17 @@ export class GroupsService {
   async deleteGroup(groupId: string, userId: string) {
     const [group] = await this.groupsRepository.getGroupById(groupId);
     if (!group) {
-      throw new NotFoundException('Group not found');
+      throw new NotFoundException('groups.groups.errors.GROUP_NOT_FOUND');
     }
+
     if (group.ownerId !== userId) {
       throw new ForbiddenException(
-        'You are not authorized to delete this group',
+        'groups.groups.errors.UNAUTHORIZED_GROUP_ACTION',
       );
     }
+
     await this.groupsRepository.deleteGroup(groupId, userId);
-    return { message: 'Group deleted successfully' };
+
+    return { message: 'groups.groups.notifications.GROUP_DELETED' };
   }
 }

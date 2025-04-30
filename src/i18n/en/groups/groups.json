@@ -1,0 +1,18 @@
+{
+  "errors": {
+    "GROUP_NAME_TAKEN": "Group name already taken, please choose another one.",
+    "GROUP_NOT_FOUND": "Group not found.",
+    "UNAUTHORIZED_GROUP_ACTION": "You are not authorized to perform this action."
+  },
+  "validations": {
+    "NAME_REQUIRED": "Group name is required.",
+    "NAME_LENGTH": "Group name must be between 3 and 50 characters.",
+    "DESCRIPTION_LENGTH": "Description cannot exceed 500 characters."
+  },
+  "notifications": {
+    "GROUP_CREATED": "Group created successfully!",
+    "GROUP_JOINED": "You have joined the group!",
+    "GROUP_LEFT": "You have left the group.",
+    "GROUP_UPDATED": "Group information updated successfully."
+  }
+}
