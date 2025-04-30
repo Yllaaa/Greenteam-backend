@@ -24,6 +24,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { UploadMediaModule } from './modules/common/upload-media/upload-media.module';
 import { CommunityModule } from './modules/community/community.module';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { I18nExceptionFilter } from './modules/common/filters/i18n-exception.filter';
+import {
+  AcceptLanguageResolver,
+  HeaderResolver,
+  I18nModule,
+  QueryResolver,
+} from 'nestjs-i18n';
+import { I18nResponseInterceptor } from './modules/common/filters/i18n-response.interceptor';
 @Global()
 @Module({
   imports: [
@@ -38,6 +47,19 @@ import { CommunityModule } from './modules/community/community.module';
     }),
     CommonModule,
     PagesModule,
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: join(__dirname, 'i18n'),
+        watch: true,
+        includeSubfolders: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang'] },
+        { use: HeaderResolver, options: ['x-custom-lang'] },
+        AcceptLanguageResolver,
+      ],
+    }),
     EventsModule,
     UsersModule,
     SharedModulesModule,
@@ -62,7 +84,11 @@ import { CommunityModule } from './modules/community/community.module';
     CommunityModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_FILTER, useClass: I18nExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: I18nResponseInterceptor },
+  ],
   exports: [
     DrizzleModule,
     PointingSystemModule,

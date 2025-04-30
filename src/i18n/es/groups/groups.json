@@ -1,0 +1,18 @@
+{
+  "errors": {
+    "GROUP_NAME_TAKEN": "El nombre del grupo ya está en uso, por favor elige otro.",
+    "GROUP_NOT_FOUND": "Grupo no encontrado.",
+    "UNAUTHORIZED_GROUP_ACTION": "No estás autorizado para realizar esta acción."
+  },
+  "validations": {
+    "NAME_REQUIRED": "El nombre del grupo es obligatorio.",
+    "NAME_LENGTH": "El nombre del grupo debe tener entre 3 y 50 caracteres.",
+    "DESCRIPTION_LENGTH": "La descripción no puede exceder los 500 caracteres."
+  },
+  "notifications": {
+    "GROUP_CREATED": "¡Grupo creado con éxito!",
+    "GROUP_JOINED": "¡Te has unido al grupo!",
+    "GROUP_LEFT": "Has abandonado el grupo.",
+    "GROUP_UPDATED": "Información del grupo actualizada con éxito."
+  }
+}
