@@ -106,33 +106,71 @@ export class AuthService {
 
   async googleLogin(profile: any) {
     try {
+      console.log('Processing Google login for:', profile.email);
+
+      // Validate required fields
+      if (!profile || !profile.email) {
+        throw new BadRequestException('Invalid Google profile data');
+      }
+
       let user = await this.authRepository.getUserByEmail(profile.email);
+      console.log('User lookup result:', {
+        exists: !!user,
+        hasGoogleId: user?.googleId ? true : false,
+      });
 
       if (user && !user.googleId) {
+        console.log('Updating existing user with Google ID');
         await this.userService.updateUserGoogleId(user.id, profile.googleId);
       }
 
       if (!user) {
+        console.log('Creating new user from Google profile');
         const baseUsername = profile.email.split('@')[0];
-        const username = await this.generateUniqueUsername(baseUsername);
+
+        // Add a timeout to username generation
+        let username;
+        try {
+          username = await Promise.race([
+            this.generateUniqueUsername(baseUsername),
+            new Promise((_, reject) =>
+              setTimeout(
+                () => reject(new Error('Username generation timed out')),
+                5000,
+              ),
+            ),
+          ]);
+        } catch (error) {
+          console.error('Username generation failed:', error);
+          // Fallback to a deterministic username if generation fails
+          username = `${baseUsername}_${Date.now().toString().slice(-6)}`;
+        }
 
         const newUser = {
           email: profile.email,
-          fullName: profile.fullName,
+          fullName: profile.fullName || 'Google User',
           googleId: profile.googleId,
           username,
-          password: await argon2.hash(crypto.randomBytes(32).toString('hex')),
-          avatar: profile.picture,
+          password: await argon2.hash(crypto.randomBytes(16).toString('hex')),
+          avatar: profile.picture || null,
           isEmailVerified: true,
         };
 
+        console.log('Attempting to create user with username:', username);
         const createdUsers = await this.authRepository.createUser(newUser);
         user = createdUsers[0];
+        console.log('User created successfully', { userId: user.id });
       }
 
-      return this.generateToken(user);
+      const token = await this.generateToken(user);
+      console.log('Token generated successfully');
+      return token;
     } catch (error) {
-      throw new UnauthorizedException('Failed to authenticate with Google');
+      console.error('Google login error:', error);
+      throw new UnauthorizedException(
+        'Failed to authenticate with Google: ' +
+          (error.message || 'Unknown error'),
+      );
     }
   }
 
