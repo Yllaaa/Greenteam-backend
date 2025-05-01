@@ -56,13 +56,22 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
-    const user = req.user;
-    const response = await this.authService.googleLogin(user);
-    console.log('response', response);
+    try {
+      const user = req.user;
+      console.log('Google auth callback received:', {
+        email: user?.email,
+        googleId: user?.googleId,
+      });
+      const response = await this.authService.googleLogin(user);
+      console.log('response', response);
 
-    this.setAuthCookie(res, response?.accessToken);
+      this.setAuthCookie(res, response?.accessToken);
 
-    res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
+      res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
+    } catch (error) {
+      console.error('Google auth error:', error);
+      res.redirect(`${process.env.APP_URL}/auth/error?message=login_failed`);
+    }
   }
 
   @Get('verify/:token')
