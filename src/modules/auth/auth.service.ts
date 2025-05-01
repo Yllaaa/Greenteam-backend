@@ -106,71 +106,48 @@ export class AuthService {
 
   async googleLogin(profile: any) {
     try {
-      console.log('Processing Google login for:', profile.email);
-
-      // Validate required fields
-      if (!profile || !profile.email) {
-        throw new BadRequestException('Invalid Google profile data');
-      }
+      console.log(`Processing Google login for: ${profile.email}`);
 
       let user = await this.authRepository.getUserByEmail(profile.email);
-      console.log('User lookup result:', {
-        exists: !!user,
-        hasGoogleId: user?.googleId ? true : false,
-      });
 
       if (user && !user.googleId) {
-        console.log('Updating existing user with Google ID');
         await this.userService.updateUserGoogleId(user.id, profile.googleId);
       }
 
       if (!user) {
-        console.log('Creating new user from Google profile');
         const baseUsername = profile.email.split('@')[0];
+        const username = await this.generateUniqueUsername(baseUsername);
 
-        // Add a timeout to username generation
-        let username;
-        try {
-          username = await Promise.race([
-            this.generateUniqueUsername(baseUsername),
-            new Promise((_, reject) =>
-              setTimeout(
-                () => reject(new Error('Username generation timed out')),
-                5000,
-              ),
-            ),
-          ]);
-        } catch (error) {
-          console.error('Username generation failed:', error);
-          // Fallback to a deterministic username if generation fails
-          username = `${baseUsername}_${Date.now().toString().slice(-6)}`;
-        }
+        const randomPassword = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await argon2.hash(randomPassword);
 
         const newUser = {
           email: profile.email,
-          fullName: profile.fullName || 'Google User',
+          fullName:
+            profile.fullName ||
+            profile.displayName ||
+            profile.name ||
+            'Google User',
           googleId: profile.googleId,
           username,
-          password: await argon2.hash(crypto.randomBytes(16).toString('hex')),
+          password: hashedPassword,
           avatar: profile.picture || null,
           isEmailVerified: true,
         };
 
-        console.log('Attempting to create user with username:', username);
         const createdUsers = await this.authRepository.createUser(newUser);
         user = createdUsers[0];
-        console.log('User created successfully', { userId: user.id });
       }
 
       const token = await this.generateToken(user);
-      console.log('Token generated successfully');
       return token;
     } catch (error) {
-      console.error('Google login error:', error);
-      throw new UnauthorizedException(
-        'Failed to authenticate with Google: ' +
-          (error.message || 'Unknown error'),
-      );
+      let errorMessage = 'Failed to authenticate with Google';
+      if (error.message) {
+        errorMessage += `: ${error.message}`;
+      }
+
+      throw new UnauthorizedException(errorMessage);
     }
   }
 
@@ -326,25 +303,37 @@ export class AuthService {
 
     return { rawToken, hashedToken };
   }
+
   private async generateUniqueUsername(baseUsername: string): Promise<string> {
-    let username = baseUsername;
-    let counter = 0;
-    let isUnique = false;
+    const sanitizedBase = baseUsername
+      .replace(/[^a-zA-Z0-9_]/g, '')
+      .slice(0, 20);
 
-    while (!isUnique) {
-      if (counter > 0) {
-        username = `${baseUsername}${counter}`;
-      }
+    for (let counter = 0; counter < 5; counter++) {
+      const usernameToTry =
+        counter === 0 ? sanitizedBase : `${sanitizedBase}${counter}`;
 
-      const existingUser =
-        await this.authRepository.getUserByUsername(username);
-      if (!existingUser) {
-        isUnique = true;
-      } else {
-        counter++;
+      try {
+        const existingUser = await Promise.race([
+          this.authRepository.getUserByUsername(usernameToTry),
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Username lookup timed out')),
+              2000,
+            ),
+          ),
+        ]);
+
+        if (!existingUser) {
+          return usernameToTry;
+        }
+      } catch (error) {
+        console.error(`Error checking username ${usernameToTry}:`, error);
+        break;
       }
     }
 
-    return username;
+    const timestamp = Date.now().toString().slice(-6);
+    return `${sanitizedBase}_${timestamp}`;
   }
 }
