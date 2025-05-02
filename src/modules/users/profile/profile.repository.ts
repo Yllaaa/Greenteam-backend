@@ -430,6 +430,15 @@ export class ProfileRepository {
     const { limit = 10, page = 1 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
 
+    const userReactions = this.drizzleService.db
+      .select({
+        reactionableId: publicationsReactions.reactionableId,
+        reactionType: publicationsReactions.reactionType,
+      })
+      .from(publicationsReactions)
+      .where(eq(publicationsReactions.userId, userId))
+      .as('user_reactions');
+
     const latestUserComments = this.drizzleService.db
       .select({
         publicationId: publicationsComments.publicationId,
@@ -539,6 +548,19 @@ export class ProfileRepository {
           ORDER BY ${userComments.createdAt} DESC
         )
         `.as('user_comments'),
+        commentCount: this.commentCountQuery,
+        likeCount:
+          sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
+            'like_count',
+          ),
+        dislikeCount:
+          sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as(
+            'dislike_count',
+          ),
+        userReactionType: userReactions.reactionType,
+        hasDoReaction: sql<boolean>`${userReactions.reactionType} = 'do'`.as(
+          'has_do_reaction',
+        ),
       })
       .from(posts)
       .innerJoin(
@@ -548,6 +570,11 @@ export class ProfileRepository {
       .innerJoin(userComments, eq(posts.id, userComments.publicationId))
       .leftJoin(users, eq(posts.creatorId, users.id))
       .leftJoin(pages, eq(posts.creatorId, pages.id))
+      .leftJoin(
+        publicationsComments,
+        eq(posts.id, publicationsComments.publicationId),
+      )
+      .leftJoin(userReactions, eq(posts.id, userReactions.reactionableId))
       .leftJoin(entitiesMedia, eq(posts.id, entitiesMedia.parentId))
       .leftJoin(
         reactionsAggregation,
@@ -560,6 +587,8 @@ export class ProfileRepository {
         latestUserComments.latestCommentDate,
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
+        userReactions.reactionType,
+        userComments.id,
       )
       .orderBy(desc(latestUserComments.latestCommentDate));
 
