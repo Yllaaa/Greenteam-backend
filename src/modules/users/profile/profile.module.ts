@@ -7,7 +7,7 @@ import { FollowersModule } from '../followers/followers.module';
 @Module({
   controllers: [ProfileController],
   providers: [ProfileService, ProfileRepository],
-  exports: [ProfileService],
+  exports: [ProfileService, ProfileRepository],
   imports: [FollowersModule],
 })
 export class ProfileModule {}

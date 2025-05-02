@@ -79,8 +79,8 @@ export class GroupPostsService {
     if (!group || !group.length) {
       throw new NotFoundException(`Group with ID ${groupId} not found.`);
     }
-
-    return this.postsRepository.getFilteredPosts(
+    const groupOwner = group[0].ownerId;
+    const posts = await this.postsRepository.getFilteredPosts(
       {
         mainTopicId: filter.mainTopicId,
         subTopicId: filter.subTopicId,
@@ -92,6 +92,12 @@ export class GroupPostsService {
       },
       userId,
     );
+    return posts.map((post) => {
+      return {
+        ...post,
+        isAuthor: post.author.id === userId || post.author.id === groupOwner,
+      };
+    });
   }
 
   async getPostInDetails(postId: string, userId: string) {

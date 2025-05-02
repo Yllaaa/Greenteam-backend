@@ -58,12 +58,8 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     try {
       const user = req.user;
-      console.log('Google auth callback received:', {
-        email: user?.email,
-        googleId: user?.googleId,
-      });
+
       const response = await this.authService.googleLogin(user);
-      console.log('response', response);
 
       this.setAuthCookie(res, response?.accessToken);
 

@@ -33,6 +33,7 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 import { I18nResponseInterceptor } from './modules/common/filters/i18n-response.interceptor';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 @Global()
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { I18nResponseInterceptor } from './modules/common/filters/i18n-response.
     MarketplaceModule,
     UploadMediaModule,
     CommunityModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -94,6 +96,7 @@ import { I18nResponseInterceptor } from './modules/common/filters/i18n-response.
     PointingSystemModule,
     BullMQModule,
     CommonModule,
+    UsersModule,
     UploadMediaModule,
   ],
 })

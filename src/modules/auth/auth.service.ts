@@ -106,14 +106,11 @@ export class AuthService {
 
   async googleLogin(profile: any) {
     try {
-      console.log(`Processing Google login for: ${profile.email}`);
-
       let user = await this.authRepository.getUserByEmail(profile.email);
 
-      if (user && !user.googleId) {
+      if (user && (!user.googleId || !user.isEmailVerified)) {
         await this.userService.updateUserGoogleId(user.id, profile.googleId);
       }
-
       if (!user) {
         const baseUsername = profile.email.split('@')[0];
         const username = await this.generateUniqueUsername(baseUsername);

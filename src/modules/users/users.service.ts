@@ -9,6 +9,10 @@ export class UsersService {
     return await this.usersRepository.getMe(userId);
   }
 
+  async getUserById(userId: string) {
+    return await this.usersRepository.getUserById(userId);
+  }
+
   async updateUserGoogleId(userId: string, googleId: string) {
     return await this.usersRepository.updateUserGoogleId(userId, googleId);
   }

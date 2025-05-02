@@ -61,15 +61,23 @@ export class GroupEventsService {
   async getGroupEvents(
     groupId: string,
     pagination: { page: number; limit: number },
+    userId?: string,
   ) {
     const { page, limit } = pagination;
     const group = await this.groupsRepository.getGroupById(groupId);
-
+    const groupOwner = group[0].ownerId;
     if (!group || !group.length) {
       throw new NotFoundException(`Group with ID ${groupId} not found`);
     }
 
-    return this.eventsGroupRepository.getGroupEvents(groupId, { page, limit });
+    const events = await this.eventsGroupRepository.getGroupEvents(groupId, {
+      page,
+      limit,
+    });
+    return events.map((event) => ({
+      ...event,
+      isAuthor: groupOwner === userId,
+    }));
   }
 
   async getGroupEventDetails(groupId: string, eventId: string, userId: string) {

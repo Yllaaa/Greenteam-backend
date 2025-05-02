@@ -12,7 +12,7 @@ import { users } from '../schema';
 import { relations } from 'drizzle-orm';
 
 export const interactionTypeEnum = pgEnum('interaction_type', [
-  'like',
+  'reaction',
   'comment',
   'reply',
   'followed_user',
@@ -20,6 +20,7 @@ export const interactionTypeEnum = pgEnum('interaction_type', [
   'joined_group',
   'joined_event',
 ]);
+export type InteractionType = (typeof interactionTypeEnum.enumValues)[number];
 
 export const notifications = pgTable(
   'notifications',
@@ -31,7 +32,8 @@ export const notifications = pgTable(
     actorId: uuid('actor_id').references(() => users.id),
     type: interactionTypeEnum('type').notNull(),
     metadata: jsonb('metadata').notNull(),
-    message: text('message'),
+    messageEn: text('message_en').notNull(),
+    messageEs: text('message_es').notNull(),
     isRead: boolean('is_read').default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },
