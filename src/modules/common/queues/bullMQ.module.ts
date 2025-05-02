@@ -3,6 +3,7 @@ import { MailJobModule } from './mails/mail-job.module';
 import { QueuesService } from './queues.service';
 import { PointsQueueProcessor } from './queues.processor';
 import { BullModule } from '@nestjs/bullmq';
+import { NotificationQueueModule } from './notification-queue/notification-queue.module';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { BullModule } from '@nestjs/bullmq';
         removeOnFail: false,
       },
     }),
+
+    NotificationQueueModule,
   ],
   controllers: [],
   providers: [QueuesService, PointsQueueProcessor],

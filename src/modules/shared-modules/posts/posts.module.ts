@@ -7,6 +7,7 @@ import { PostCommentsModule } from './comments/post-comments.module';
 import { PostReactionsModule } from './reactions/post-reactions.module';
 import { RouterModule } from '@nestjs/core';
 import { CommentsModule } from '../comments/comments.module';
+import { NotificationsModule } from 'src/modules/notifications/notifications.module';
 
 const postsRoutes = [
   { path: '/', module: PostCommentsModule },
@@ -21,6 +22,7 @@ const postsRoutes = [
     PostCommentsModule,
     PostReactionsModule,
     CommentsModule,
+
     RouterModule.register([
       { path: 'posts', module: PostsModule, children: postsRoutes },
     ]),

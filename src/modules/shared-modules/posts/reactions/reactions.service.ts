@@ -9,6 +9,9 @@ import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { PostsService } from '../posts/posts.service';
 import { Action } from 'src/modules/pointing-system/pointing-system.repository';
 import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
+import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
+import { UsersService } from 'src/modules/users/users.service';
+import { NotificationsService } from 'src/modules/notifications/notifications.service';
 @Injectable()
 export class ReactionsService {
   private readonly allowedReactions = {
@@ -22,14 +25,18 @@ export class ReactionsService {
     private readonly challengesService: ChallengesService,
     private readonly queuesService: QueuesService,
     private readonly postsService: PostsService,
-    private readonly pointingSystemService: PointingSystemService,
+    private readonly usersService: UsersService,
+    private readonly notificationQueueService: NotificationQueueService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async toggleReaction(userId: string, dto: CreateReactionDto) {
-    const topicId =
+    const post =
       dto.reactionableType === ReactionableTypeEnum.POST
-        ? (await this.postsService.getPostById(dto.reactionableId)).mainTopicId
+        ? await this.postsService.getPostById(dto.reactionableId)
         : undefined;
+    const topicId = post?.mainTopicId;
+    const postCreatorId = post?.creatorId;
     if (!this.isReactionValid(dto.reactionableType, dto.reactionType)) {
       throw new BadRequestException(
         `Invalid reaction type "${dto.reactionType}" for ${dto.reactionableType}.`,
@@ -38,7 +45,7 @@ export class ReactionsService {
 
     return dto.reactionType === 'do'
       ? this.handleDoReaction(userId, dto, topicId)
-      : this.handleStandardReaction(userId, dto, topicId);
+      : this.handleStandardReaction(userId, dto, topicId, postCreatorId);
   }
 
   private async handleDoReaction(
@@ -94,6 +101,7 @@ export class ReactionsService {
     userId: string,
     dto: CreateReactionDto,
     topicId?: number,
+    postCreatorId?: string,
   ) {
     const existingReaction = await this.reactionsRepository.findUserReaction(
       userId,
@@ -122,6 +130,7 @@ export class ReactionsService {
           userId,
           dto,
         );
+
         return { action: 'updated', type: updated.reactionType };
       }
     }
@@ -130,6 +139,31 @@ export class ReactionsService {
     if (dto.reactionableType == ReactionableTypeEnum.POST && topicId) {
       const action: Action = { id: reaction.id, type: dto.reactionType };
       await this.queuesService.addPointsJob(userId, topicId, action);
+    }
+
+    if (
+      postCreatorId &&
+      postCreatorId !== userId &&
+      dto.reactionableType === ReactionableTypeEnum.POST
+    ) {
+      const userInfo = await this.getUserInfo(userId);
+      const userName = userInfo.name || 'Someone';
+
+      const reactionMessages = this.getReactionMessages(
+        dto.reactionType,
+        userName,
+      );
+
+      await this.notificationQueueService.addCreateNotificationJob({
+        recipientId: postCreatorId,
+        actorId: userId,
+        type: 'reaction',
+        metadata: {
+          postId: dto.reactionableId,
+        },
+        messageEn: reactionMessages.en,
+        messageEs: reactionMessages.es,
+      });
     }
     return { action: 'added' };
   }
@@ -141,5 +175,29 @@ export class ReactionsService {
     return (
       this.allowedReactions[reactionableType]?.includes(reactionType) ?? false
     );
+  }
+  private getReactionMessages(reactionType: string, userName: string) {
+    switch (reactionType) {
+      case 'like':
+        return {
+          en: `${userName} liked your post`,
+          es: `A ${userName} le gustó tu publicación`,
+        };
+      default:
+        return {
+          en: `${userName} reacted to your post`,
+          es: `${userName} reaccionó a tu publicación`,
+        };
+    }
+  }
+  private async getUserInfo(userId: string) {
+    const user = await this.usersService.getUserById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return {
+      id: user.id,
+      name: user.fullName,
+    };
   }
 }
