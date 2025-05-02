@@ -42,11 +42,17 @@ export class GroupEventsController {
   async getGroupEvents(
     @Param('groupId') groupId: string,
     @Query() queryParams: GetEventsDto,
+    @Req() req,
   ) {
-    return this.groupEventsService.getGroupEvents(groupId, {
-      page: queryParams.page,
-      limit: queryParams.limit,
-    });
+    const userId = req.user.id;
+    return this.groupEventsService.getGroupEvents(
+      groupId,
+      {
+        page: queryParams.page,
+        limit: queryParams.limit,
+      },
+      userId,
+    );
   }
 
   @Get('/:eventId')
