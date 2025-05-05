@@ -239,6 +239,13 @@
       "when": 1746417354695,
       "tag": "0033_supreme_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1746461629633,
+      "tag": "0034_chemical_black_tom",
+      "breakpoints": true
     }
   ]
 }
