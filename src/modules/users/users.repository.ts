@@ -30,6 +30,7 @@ export class UsersRepository {
         avatar: true,
         cover: true,
         bio: true,
+        languagePreference: true,
         joinedAt: true,
       },
     });

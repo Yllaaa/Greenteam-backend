@@ -11,11 +11,12 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 import { NotificationsRepository } from './notifications.repository';
 import { GetNotificationsDto } from './dto/get-notifications.to';
 import { InteractionType } from '../db/schemas/schema';
-
+import { NotificationSocketService } from './notification-socket.service';
 @Injectable()
 export class NotificationsService {
   constructor(
     private readonly notificationsRepository: NotificationsRepository,
+    private readonly notificationSocketService: NotificationSocketService,
     private readonly i18n: I18nService,
   ) {}
 
@@ -55,9 +56,19 @@ export class NotificationsService {
     metadata: Record<string, any>;
     messageEn: string;
     messageEs: string;
+    userLang?: string;
   }) {
-    const { recipientId, actorId, type, metadata, messageEn, messageEs } = data;
-    return this.notificationsRepository.createNotification(
+    const {
+      recipientId,
+      actorId,
+      type,
+      metadata,
+      messageEn,
+      messageEs,
+      userLang = 'en',
+    } = data;
+
+    const result = await this.notificationsRepository.createNotification(
       recipientId,
       actorId,
       type,
@@ -65,5 +76,24 @@ export class NotificationsService {
       messageEn,
       messageEs,
     );
+
+    const message = userLang === 'es' ? messageEs : messageEn;
+
+    const notification = {
+      id: result[0].id,
+      message,
+      isRead: false,
+      metadata,
+      type,
+      actor: { id: actorId },
+      createdAt: result[0].createdAt,
+    };
+
+    await this.notificationSocketService.sendNotification(
+      recipientId,
+      notification,
+    );
+
+    return result;
   }
 }
