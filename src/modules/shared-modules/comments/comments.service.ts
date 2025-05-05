@@ -7,6 +7,7 @@ import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
 import { UsersService } from 'src/modules/users/users.service';
+import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
 
 @Injectable()
 export class CommentsService {
@@ -15,26 +16,12 @@ export class CommentsService {
     private readonly repliesRepository: RepliesRepository,
     private readonly queuesService: QueuesService,
     private readonly userService: UsersService,
-    private readonly notificationQueueService: NotificationQueueService, // Add notification queue service
+    private readonly notificationQueueService: NotificationQueueService,
   ) {}
 
   private async getUserInfo(userId: string) {
     const user = await this.userService.getUserById(userId);
     return user;
-  }
-
-  private getCommentMessages(userName: string) {
-    return {
-      en: `${userName} commented on your post`,
-      es: `${userName} comentó en tu publicación`,
-    };
-  }
-
-  private getReplyMessages(userName: string) {
-    return {
-      en: `${userName} replied to your comment`,
-      es: `${userName} respondió a tu comentario`,
-    };
   }
 
   async createComment(
@@ -97,7 +84,8 @@ export class CommentsService {
     if (publicationCreatorId && publicationCreatorId !== userId) {
       const userInfo = await this.getUserInfo(userId);
       const userName = userInfo?.fullName || 'Someone';
-      const commentMessages = this.getCommentMessages(userName);
+
+      const notificationMessages = getNotificationMessage('comment', userName);
 
       await this.notificationQueueService.addCreateNotificationJob({
         recipientId: publicationCreatorId,
@@ -108,8 +96,8 @@ export class CommentsService {
           commentId: newComment.id,
           publicationType: commentDto.publicationType,
         },
-        messageEn: commentMessages.en,
-        messageEs: commentMessages.es,
+        messageEn: notificationMessages.en,
+        messageEs: notificationMessages.es,
       });
     }
 
@@ -134,7 +122,8 @@ export class CommentsService {
     if (comment.author.id !== userId) {
       const userInfo = await this.getUserInfo(userId);
       const userName = userInfo?.fullName || 'Someone';
-      const replyMessages = this.getReplyMessages(userName);
+
+      const notificationMessages = getNotificationMessage('reply', userName);
 
       await this.notificationQueueService.addCreateNotificationJob({
         recipientId: comment.author.id,
@@ -146,8 +135,8 @@ export class CommentsService {
           publicationId: comment.publicationId,
           publicationType: dto.publicationType,
         },
-        messageEn: replyMessages.en,
-        messageEs: replyMessages.es,
+        messageEn: notificationMessages.en,
+        messageEs: notificationMessages.es,
       });
     }
 
