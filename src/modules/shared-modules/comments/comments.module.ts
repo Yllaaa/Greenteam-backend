@@ -5,7 +5,7 @@ import { CommentsService } from './comments.service';
 import { NotificationQueueModule } from 'src/modules/common/queues/notification-queue/notification-queue.module';
 
 @Module({
-  imports: [NotificationQueueModule],
+  imports: [],
   providers: [CommentsRepository, RepliesRepository, CommentsService],
   controllers: [],
   exports: [CommentsService, RepliesRepository],

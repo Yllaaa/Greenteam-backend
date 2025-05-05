@@ -9,12 +9,7 @@ import { NotificationQueueModule } from 'src/modules/common/queues/notification-
 import { NotificationsModule } from 'src/modules/notifications/notifications.module';
 
 @Module({
-  imports: [
-    ReactionsModule,
-    ChallengesModule,
-    NotificationQueueModule,
-    NotificationsModule,
-  ],
+  imports: [ReactionsModule, ChallengesModule, NotificationsModule],
   controllers: [ReactionsController],
   providers: [ReactionsService, PostsService, PostsRepository],
 })

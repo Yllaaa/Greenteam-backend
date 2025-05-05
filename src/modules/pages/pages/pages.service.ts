@@ -11,6 +11,9 @@ import { UploadMediaService } from 'src/modules/common/upload-media/upload-media
 import { CommonService } from 'src/modules/common/common.service';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
+import { UsersService } from 'src/modules/users/users.service';
+import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
 
 @Injectable()
 export class PagesService {
@@ -18,6 +21,8 @@ export class PagesService {
     private readonly pagesRepository: PagesRepository,
     private readonly uploadMediaService: UploadMediaService,
     private readonly commonService: CommonService,
+    private readonly usersService: UsersService,
+    private readonly notificationQueueService: NotificationQueueService,
   ) {}
 
   async createPage(data: { page: CreatePageDto; images: any }, user: any) {
@@ -184,16 +189,32 @@ export class PagesService {
     if (!page) {
       throw new NotFoundException(`Page with slug ${slug} not found`);
     }
+
     const pageId = page.id;
+    const pageOwnerId = page.ownerId;
+    const pageName = page.name;
+
     const existingFollow = await this.pagesRepository.getPageFollower(
       pageId,
       user.id,
     );
+
     if (existingFollow) {
       await this.pagesRepository.removePageFollower(pageId, user.id);
       return { success: true, followed: false };
     }
+
     await this.pagesRepository.addPageFollower(pageId, user.id);
+
+    if (pageOwnerId && pageOwnerId !== user.id) {
+      await this.sendPageFollowNotification(
+        user.id,
+        pageOwnerId,
+        pageId,
+        pageName,
+      );
+    }
+
     return { success: true, followed: true };
   }
 
@@ -222,5 +243,43 @@ export class PagesService {
     await this.pagesRepository.deletePageEvents(page.id);
     await this.pagesRepository.deletePageProducts(page.id);
     return { message: 'Page deleted successfully' };
+  }
+
+  private async getUserInfo(userId: string) {
+    const user = await this.usersService.getUserById(userId);
+    return user;
+  }
+
+  private async sendPageFollowNotification(
+    followerId: string,
+    pageOwnerId: string,
+    pageId: string,
+    pageName: string,
+  ): Promise<void> {
+    try {
+      const followerInfo = await this.getUserInfo(followerId);
+      const followerName = followerInfo?.fullName || 'Someone';
+
+      const notificationMessages = getNotificationMessage(
+        'followed_page',
+        followerName,
+        { pageName },
+      );
+
+      await this.notificationQueueService.addCreateNotificationJob({
+        recipientId: pageOwnerId,
+        actorId: followerId,
+        type: 'followed_page',
+        metadata: {
+          followerId: followerId,
+          pageId: pageId,
+          pageName: pageName,
+        },
+        messageEn: notificationMessages.en,
+        messageEs: notificationMessages.es,
+      });
+    } catch (error) {
+      console.error('Failed to send page follow notification:', error);
+    }
   }
 }
