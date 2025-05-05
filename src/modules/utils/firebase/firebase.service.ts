@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
-import path from 'path';
 import { InteractionType } from 'src/modules/db/schemas/schema';
 
 @Injectable()
@@ -13,10 +12,7 @@ export class FirebaseService implements OnModuleInit {
 
   onModuleInit() {
     try {
-      const serviceAccount = path.resolve(
-        __dirname,
-        './firebase-service-account.json',
-      );
+      const serviceAccount = this.configService.get('FIREBASE_SERVICE_ACCOUNT');
 
       if (!serviceAccount) {
         this.logger.warn(
@@ -27,16 +23,13 @@ export class FirebaseService implements OnModuleInit {
 
       let serviceAccountJson;
       try {
-        // Try to parse if it's a JSON string
         serviceAccountJson = JSON.parse(serviceAccount);
       } catch (e) {
-        // If not a JSON string, assume it's a path to a service account file
         serviceAccountJson = serviceAccount;
       }
 
       this.firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccountJson),
-        databaseURL: this.configService.get('FIREBASE_DATABASE_URL'),
       });
 
       this.logger.log('Firebase initialized successfully');
@@ -85,13 +78,11 @@ export class FirebaseService implements OnModuleInit {
       await admin.messaging().send(message);
       this.logger.debug(`Push notification sent to ${token}`);
     } catch (error) {
-      // Handle token-not-registered and similar Firebase errors
       if (
         error.code === 'messaging/invalid-registration-token' ||
         error.code === 'messaging/registration-token-not-registered'
       ) {
         this.logger.warn(`Invalid or expired FCM token: ${token}`);
-        // You might want to delete this token from your database here
       } else {
         this.logger.error(
           `Failed to send push notification to ${token}:`,
@@ -100,65 +91,6 @@ export class FirebaseService implements OnModuleInit {
       }
     }
   }
-
-  /**
-   * Send push notifications to multiple devices
-   */
-  //   async sendMulticastPushNotification(
-  //     tokens: string[],
-  //     title: string,
-  //     body: string,
-  //     data: Record<string, string> = {},
-  //   ): Promise<void> {
-  //     if (!this.firebaseApp || tokens.length === 0) {
-  //       return;
-  //     }
-
-  //     try {
-  //       const chunkSize = 500;
-  //       for (let i = 0; i < tokens.length; i += chunkSize) {
-  //         const chunk = tokens.slice(i, i + chunkSize);
-
-  //         const message: admin.messaging.MulticastMessage = {
-  //           tokens: chunk,
-  //           notification: {
-  //             title,
-  //             body,
-  //           },
-  //           data,
-  //           android: {
-  //             priority: 'high',
-  //           },
-  //           apns: {
-  //             payload: {
-  //               aps: {
-  //                 contentAvailable: true,
-  //                 sound: 'default',
-  //               },
-  //             },
-  //           },
-  //         };
-
-  //         const response = await admin.messaging().sendMulticast(message);
-  //         this.logger.debug(
-  //           `Multicast push notification sent. Success: ${response.successCount}, Failure: ${response.failureCount}`,
-  //         );
-
-  //         // Handle failures if needed
-  //         if (response.failureCount > 0) {
-  //           const failedTokens = response.responses
-  //             .map((resp, idx) => (resp.success ? null : chunk[idx]))
-  //             .filter(Boolean);
-
-  //           this.logger.warn(
-  //             `Failed to send notifications to ${failedTokens.length} tokens`,
-  //           );
-  //         }
-  //       }
-  //     } catch (error) {
-  //       this.logger.error('Failed to send multicast push notification:', error);
-  //     }
-  //   }
 
   generatePushNotificationContent(
     type: InteractionType,

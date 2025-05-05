@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { NotificationQueueService } from './notification-queue.service';
 import { NotificationQueueProcessor } from './notification-queue.processor';
 import { NotificationsModule } from 'src/modules/notifications/notifications.module';
+import { FirebaseModule } from 'src/modules/utils/firebase/firebase.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { NotificationsModule } from 'src/modules/notifications/notifications.mod
       },
     }),
     NotificationsModule,
+    FirebaseModule,
   ],
   providers: [NotificationQueueService, NotificationQueueProcessor],
   exports: [NotificationQueueService],
