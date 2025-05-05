@@ -5,6 +5,8 @@ import { CommentsRepository } from 'src/modules/shared-modules/comments/reposito
 import { RepliesRepository } from 'src/modules/shared-modules/comments/repositories/replies.repository';
 import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { PointingSystemService } from 'src/modules/pointing-system/pointing-system.service';
+import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
+import { UsersService } from 'src/modules/users/users.service';
 
 @Injectable()
 export class CommentsService {
@@ -12,7 +14,28 @@ export class CommentsService {
     private readonly commentsRepository: CommentsRepository,
     private readonly repliesRepository: RepliesRepository,
     private readonly queuesService: QueuesService,
+    private readonly userService: UsersService,
+    private readonly notificationQueueService: NotificationQueueService, // Add notification queue service
   ) {}
+
+  private async getUserInfo(userId: string) {
+    const user = await this.userService.getUserById(userId);
+    return user;
+  }
+
+  private getCommentMessages(userName: string) {
+    return {
+      en: `${userName} commented on your post`,
+      es: `${userName} comentó en tu publicación`,
+    };
+  }
+
+  private getReplyMessages(userName: string) {
+    return {
+      en: `${userName} replied to your comment`,
+      es: `${userName} respondió a tu comentario`,
+    };
+  }
 
   async createComment(
     publicationId: string,
@@ -23,6 +46,7 @@ export class CommentsService {
     },
   ): Promise<Comment> {
     let topicId: number | null;
+    let publicationCreatorId: string | null = null;
 
     if (
       commentDto.publicationType ===
@@ -36,6 +60,7 @@ export class CommentsService {
         throw new NotFoundException('Publication not found');
       }
       topicId = publication.mainTopicId;
+      publicationCreatorId = publication.authorId;
     } else if (
       commentDto.publicationType ===
       ('post' as unknown as SQL<'forum_publication' | 'post' | 'event'>)
@@ -45,24 +70,49 @@ export class CommentsService {
         throw new NotFoundException('Post not found');
       }
       topicId = post.mainTopicId;
+      publicationCreatorId = post.creatorId;
     } else {
       topicId = null;
     }
+
     const newComment = await this.commentsRepository.createComment(
       { userId, content: commentDto.content, publicationId },
       commentDto.publicationType,
     );
+
     const comment = await this.commentsRepository.findById(
       newComment.id,
       commentDto.publicationType,
     );
+
     const action: Action = {
       id: newComment.id,
       type: 'comment',
     };
+
     if (topicId) {
       this.queuesService.addPointsJob(userId, topicId, action);
     }
+
+    if (publicationCreatorId && publicationCreatorId !== userId) {
+      const userInfo = await this.getUserInfo(userId);
+      const userName = userInfo?.fullName || 'Someone';
+      const commentMessages = this.getCommentMessages(userName);
+
+      await this.notificationQueueService.addCreateNotificationJob({
+        recipientId: publicationCreatorId,
+        actorId: userId,
+        type: 'comment',
+        metadata: {
+          publicationId: publicationId,
+          commentId: newComment.id,
+          publicationType: commentDto.publicationType,
+        },
+        messageEn: commentMessages.en,
+        messageEs: commentMessages.es,
+      });
+    }
+
     return comment as Comment;
   }
 
@@ -78,7 +128,29 @@ export class CommentsService {
       userId,
       content: dto.content,
     });
+
     const reply = await this.repliesRepository.findById(newReply.id);
+
+    if (comment.author.id !== userId) {
+      const userInfo = await this.getUserInfo(userId);
+      const userName = userInfo?.fullName || 'Someone';
+      const replyMessages = this.getReplyMessages(userName);
+
+      await this.notificationQueueService.addCreateNotificationJob({
+        recipientId: comment.author.id,
+        actorId: userId,
+        type: 'reply',
+        metadata: {
+          commentId: commentId,
+          replyId: newReply.id,
+          publicationId: comment.publicationId,
+          publicationType: dto.publicationType,
+        },
+        messageEn: replyMessages.en,
+        messageEs: replyMessages.es,
+      });
+    }
+
     return reply;
   }
 

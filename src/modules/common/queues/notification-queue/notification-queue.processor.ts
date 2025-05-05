@@ -1,16 +1,14 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
-import { NotificationsRepository } from 'src/modules/notifications/notifications.repository';
+import { NotificationsService } from 'src/modules/notifications/notifications.service';
 import { InteractionType } from 'src/modules/db/schemas/schema';
 
 @Processor('notificationsQueue')
 export class NotificationQueueProcessor extends WorkerHost {
   private readonly logger = new Logger(NotificationQueueProcessor.name);
 
-  constructor(
-    private readonly notificationRepository: NotificationsRepository,
-  ) {
+  constructor(private readonly notificationsService: NotificationsService) {
     super();
   }
 
@@ -24,15 +22,12 @@ export class NotificationQueueProcessor extends WorkerHost {
 
   async process(job: Job<any>): Promise<any> {
     this.logger.log(`Processing job ${job.id}: ${job.name}`);
-
     try {
       switch (job.name) {
         case 'createNotification':
           return await this.handleCreateNotification(job.data);
-
         case 'createBatchNotifications':
           return await this.handleBatchNotifications(job.data);
-
         default:
           const errorMsg = `Unknown job name: ${job.name}`;
           this.logger.warn(errorMsg);
@@ -51,25 +46,18 @@ export class NotificationQueueProcessor extends WorkerHost {
     recipientId: string;
     actorId: string;
     type: InteractionType;
-
     metadata: Record<string, any>;
     messageEn: string;
     messageEs: string;
+    userLang?: string;
   }) {
-    const { recipientId, actorId, type, metadata, messageEn, messageEs } = data;
-
+    const { recipientId, actorId } = data;
     this.logger.log(
       `Creating notification for user ${recipientId} about action by ${actorId}`,
     );
 
-    const result = await this.notificationRepository.createNotification(
-      recipientId,
-      actorId,
-      type,
-      metadata,
-      messageEn,
-      messageEs,
-    );
+    // Simply delegate to the notifications service
+    const result = await this.notificationsService.createNotification(data);
 
     this.logger.log(`Successfully created notification ${result[0].id}`);
     return result;
@@ -82,26 +70,36 @@ export class NotificationQueueProcessor extends WorkerHost {
     metadata: Record<string, any>;
     messageEn: string;
     messageEs: string;
+    userLangMap?: Record<string, string>; // Map of userId -> language preference
   }) {
-    const { recipientIds, actorId, type, metadata, messageEn, messageEs } =
-      data;
-
+    const {
+      recipientIds,
+      actorId,
+      type,
+      metadata,
+      messageEn,
+      messageEs,
+      userLangMap = {},
+    } = data;
     this.logger.log(
       `Creating batch notifications for ${recipientIds.length} users about action by ${actorId}`,
     );
 
     // Create notifications in parallel
     const results = await Promise.all(
-      recipientIds.map((recipientId) =>
-        this.notificationRepository.createNotification(
+      recipientIds.map(async (recipientId) => {
+        const userLang = userLangMap[recipientId] || 'en';
+
+        return this.notificationsService.createNotification({
           recipientId,
           actorId,
           type,
           metadata,
           messageEn,
           messageEs,
-        ),
-      ),
+          userLang,
+        });
+      }),
     );
 
     this.logger.log(

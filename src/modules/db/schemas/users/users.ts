@@ -28,6 +28,8 @@ export const userStatus = pgEnum('USER_STATUS', [
   'BANNED',
 ]);
 
+export const languageEnum = pgEnum('language_preference', ['en', 'es']);
+
 export const users = pgTable(
   'Users_accounts',
   {
@@ -47,6 +49,7 @@ export const users = pgTable(
     isEmailVerified: boolean('is_email_verified').default(false),
     verificationToken: varchar('verification_token', { length: 255 }),
     stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
+    languagePreference: languageEnum('language_preference').default('en'),
     joinedAt: timestamp('joined_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
