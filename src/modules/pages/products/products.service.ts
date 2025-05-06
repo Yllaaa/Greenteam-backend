@@ -40,17 +40,17 @@ export class ProductsService {
     userId: string,
   ) {
     if (data.sellerType != 'page') {
-      throw new BadRequestException('Invalid seller type');
+      throw new BadRequestException('pages.products.errors.INVALID_SELLER_TYPE');
     }
 
     const page = await this.pagesService.getPageBySlug(data.slug);
 
     if (!page) {
-      throw new BadRequestException('Invalid page ID');
+      throw new BadRequestException("pages.products.errors.INVALID_PAGE_ID");
     }
     if (page.ownerId !== userId) {
       throw new BadRequestException(
-        'You are not authorized to create a product for this page',
+        'pages.products.errors.UNAUTHORIZED_PRODUCT_CREATE',
       );
     }
 
@@ -59,7 +59,7 @@ export class ProductsService {
         typeof data.price === 'string' ? parseFloat(data.price) : data.price;
 
       if (isNaN(numericPrice) || numericPrice < 0) {
-        throw new BadRequestException('Price must be a valid positive number');
+        throw new BadRequestException('pages.products.errors.INVALID_PRICE');
       }
     }
 
@@ -67,13 +67,13 @@ export class ProductsService {
       data.marketType &&
       !['local_business', 'value_driven_business'].includes(data.marketType)
     ) {
-      throw new BadRequestException('Invalid market type');
+      throw new BadRequestException('pages.products.errors.INVALID_MARKET_TYPE');
     }
 
     if (data.topicId) {
       const topicExists = await this.commonRepository.topicExists(data.topicId);
       if (!topicExists) {
-        throw new BadRequestException('Invalid topic ID');
+        throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
       }
     }
 
@@ -82,14 +82,14 @@ export class ProductsService {
         page.countryId,
       );
       if (!countryExists) {
-        throw new BadRequestException('Invalid country ID');
+        throw new BadRequestException('pages.products.errors.INVALID_COUNTRY_ID');
       }
     }
 
     if (page.cityId) {
       if (!page.countryId) {
         throw new BadRequestException(
-          'Country ID is required when district is specified',
+          'pages.products.errors.COUNTRY_REQUIRED',
         );
       }
 
@@ -99,7 +99,7 @@ export class ProductsService {
       );
       if (!districtExists) {
         throw new BadRequestException(
-          'Invalid district or district does not belong to the specified country',
+          'pages.products.errors.INVALID_DISTRICT',
         );
       }
     }
@@ -122,7 +122,7 @@ export class ProductsService {
       }));
       await this.marketplaceRepository.insertProductImages(images);
     }
-    return { message: 'Product created successfully' };
+    return { message: 'pages.products.notifications.PRODUCT_CREATED' };
   }
 
   async getPageProducts(
@@ -132,7 +132,7 @@ export class ProductsService {
   ) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.products.errors.PAGE_NOT_FOUND');
     }
 
     const products = await this.marketplaceRepository.getAllProducts(
@@ -149,21 +149,21 @@ export class ProductsService {
   async deleteProduct(productId: string, slug: string, userId: string) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new BadRequestException('Invalid page slug');
+      throw new BadRequestException('pages.products.errors.INVALID_PAGE_SLUG');
     }
 
     const product = await this.marketplaceRepository.getProductById(productId);
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException('pages.products.errors.PRODUCT_NOT_FOUND');
     }
 
     if (product.sellerId !== page.id || page.ownerId !== userId) {
       throw new ForbiddenException(
-        'You are not authorized to delete this product',
+        'pages.products.errors.UNAUTHORIZED_PRODUCT_DELETE',
       );
     }
 
     await this.marketplaceRepository.deleteProduct(productId, page.id);
-    return { message: 'Product deleted successfully' };
+    return { message: 'pages.products.notifications.PRODUCT_DELETED' };
   }
 }

@@ -1,0 +1,10 @@
+{
+    "errors": {
+        "GROUP_MEMBERSHIP_NOT_FOUND": "Membership not found.",
+        "GROUP_FAIL_JOIN": "Failed to join group",
+        "NOT_GROUP_MEMBER": "You are not a member of this group, please join the group first"
+    },
+    "validations": {
+        "MEMBERSHIP_ALREADY_EXIST": "User is already a member of this group"
+    }
+}

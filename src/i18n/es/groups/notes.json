@@ -1,0 +1,6 @@
+{
+    "errors": {
+        "NOTE_NOT_FOUND": "Nota no encontrada.",
+        "UNAUTHORIZED_NOTED_ACTION": "No estás autorizado para editar esta nota."
+    }
+}

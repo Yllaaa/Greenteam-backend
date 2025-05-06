@@ -1,0 +1,13 @@
+{
+  "errors": {
+    "FILTER_CONFLICT": "You can only filter by main topic or sub topic",
+    "PAGE_NOT_FOUND": "Page not found",
+    "POST_NOT_FOUND": "Post not found",
+    "INVALID_CREATOR_TYPE": "Only page can create posts from here",
+    "NOT_PAGE_OWNER": "You are not the owner of this page"
+  },
+  "notifications": {
+    "POST_CREATED": "Post created successfully",
+    "POST_DELETED": "Post deleted successfully"
+  }
+}

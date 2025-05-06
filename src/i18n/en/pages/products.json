@@ -1,0 +1,21 @@
+{
+  "errors": {
+    "INVALID_SELLER_TYPE": "Invalid seller type",
+    "INVALID_PAGE_ID": "Invalid page ID",
+    "UNAUTHORIZED_PRODUCT_CREATE": "You are not authorized to create a product for this page",
+    "INVALID_PRICE": "Price must be a valid positive number",
+    "INVALID_MARKET_TYPE": "Invalid market type",
+    "INVALID_TOPIC_ID": "Invalid topic ID",
+    "INVALID_COUNTRY_ID": "Invalid country ID",
+    "COUNTRY_REQUIRED": "Country ID is required when district is specified",
+    "INVALID_DISTRICT": "Invalid district or district does not belong to the specified country",
+    "PAGE_NOT_FOUND": "Page not found",
+    "INVALID_PAGE_SLUG": "Invalid page slug",
+    "PRODUCT_NOT_FOUND": "Product not found",
+    "UNAUTHORIZED_PRODUCT_DELETE": "You are not authorized to delete this product"
+  },
+  "notifications": {
+    "PRODUCT_CREATED": "Product created successfully",
+    "PRODUCT_DELETED": "Product deleted successfully"
+  }
+}

@@ -10,6 +10,7 @@ import { EventsGroupRepository } from './group-events.repository';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { EventsService } from 'src/modules/events/events/events.service';
 import { CommonService } from 'src/modules/common/common.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class GroupEventsService {
@@ -19,7 +20,8 @@ export class GroupEventsService {
     private readonly eventsGroupRepository: EventsGroupRepository,
     private readonly uploadMediaService: UploadMediaService,
     private readonly commonService: CommonService,
-  ) {}
+    private readonly i18n: I18nService,
+  ) { }
 
   async createGroupEvent(
     groupId: string,
@@ -30,12 +32,14 @@ export class GroupEventsService {
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
-      throw new NotFoundException(`Group not found`);
+      throw new NotFoundException(
+        'groups.groups.errors.GROUP_NOT_FOUND'
+      );
     }
 
     if (group[0].ownerId !== userId) {
       throw new ForbiddenException(
-        'Only group owners can create events for this group',
+        'groups.events.errors.ONLY_OWNER_CREATE_EVENT'
       );
     }
     await this.commonService.validateLocation(data.countryId, data.cityId);
@@ -67,7 +71,11 @@ export class GroupEventsService {
     const group = await this.groupsRepository.getGroupById(groupId);
     const groupOwner = group[0].ownerId;
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found`);
+      throw new NotFoundException(
+        this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
+          args: { groupId }
+        })
+      );
     }
 
     const events = await this.eventsGroupRepository.getGroupEvents(groupId, {
@@ -84,7 +92,11 @@ export class GroupEventsService {
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found`);
+      throw new NotFoundException(
+        this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
+          args: { groupId }
+        })
+      );
     }
 
     const event = await this.eventsRepository.getEventDetails(
@@ -94,7 +106,8 @@ export class GroupEventsService {
     );
 
     if (!event) {
-      throw new NotFoundException(`Event not found`);
+      throw new NotFoundException('groups.events.errors.EVENT_NOT_FOUND'
+      );
     }
 
     return event;
@@ -104,7 +117,11 @@ export class GroupEventsService {
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found`);
+      throw new NotFoundException(
+        this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
+          args: { groupId }
+        })
+      );
     }
 
     const event = await this.eventsRepository.getEventDetails(
@@ -114,11 +131,13 @@ export class GroupEventsService {
     );
 
     if (!event) {
-      throw new NotFoundException(`Event not found`);
+      throw new NotFoundException(
+        'groups.events.errors.EVENT_NOT_FOUND'
+      );
     }
     if (group[0].ownerId !== userId) {
       throw new ForbiddenException(
-        'You are not authorized to delete this event',
+        'groups.events.errors.UNAUTHORIZED_EVENT_ACTION'
       );
     }
 

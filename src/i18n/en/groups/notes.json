@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "NOTE_NOT_FOUND": "Note not found.",
+    "UNAUTHORIZED_NOTED_ACTION": "You are not authorized to edit this note."
+  }
+}

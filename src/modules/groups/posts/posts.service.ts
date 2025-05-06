@@ -12,6 +12,7 @@ import { GetPostsDto } from '../../shared-modules/posts/posts/dto/get-posts.dto'
 import { CreateGroupPostDto } from './dtos/create-post.dto';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { PostsService } from 'src/modules/shared-modules/posts/posts/posts.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class GroupPostsService {
@@ -21,7 +22,8 @@ export class GroupPostsService {
     private readonly groupsRepository: GroupsRepository,
     private readonly groupMemberRepository: GroupMembersRepository,
     private readonly uploadMediaService: UploadMediaService,
-  ) {}
+    private readonly i18n: I18nService,
+  ) { }
 
   async createPost(
     data: {
@@ -38,7 +40,9 @@ export class GroupPostsService {
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found.`);
+      throw new NotFoundException(this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
+        args: { groupId }
+      }));
     }
 
     const newPost = await this.postsRepository.createPost(
@@ -71,13 +75,15 @@ export class GroupPostsService {
   async getGroupPosts(groupId: string, userId: string, filter: GetPostsDto) {
     if (filter.mainTopicId && filter.subTopicId) {
       throw new BadRequestException(
-        'You can only filter by main topic or sub topic',
+        'groups.posts.errors.FILTER_WITH_MAIN_AND_SUB_TOPIC',
       );
     }
 
     const group = await this.groupsRepository.getGroupById(groupId);
     if (!group || !group.length) {
-      throw new NotFoundException(`Group with ID ${groupId} not found.`);
+      throw new NotFoundException(this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
+        args: { groupId }
+      }));
     }
     const groupOwner = group[0].ownerId;
     const posts = await this.postsRepository.getFilteredPosts(
@@ -103,7 +109,7 @@ export class GroupPostsService {
   async getPostInDetails(postId: string, userId: string) {
     const post = await this.postsRepository.getPostInDetails(postId, userId);
     if (!post || !post.length) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('groups.posts.errors.POST_NOT_FOUND');
     }
     return post;
   }
@@ -112,15 +118,15 @@ export class GroupPostsService {
     const [group] = await this.groupsRepository.getGroupById(groupId);
     const post = await this.postsRepository.getPostById(postId);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('groups.posts.errors.POST_NOT_FOUND');
     }
     if (post.creatorId !== userId && group.ownerId !== userId) {
-      throw new ForbiddenException('You are not allowed to delete this post');
+      throw new ForbiddenException('groups.posts.errors.UNAUTHORIZED_POST_DELETION');
     }
 
     await this.postsRepository.deletePost(postId, post.creatorId);
     return {
-      message: 'Post deleted successfully',
+      message: 'groups.posts.notifications.POST_DELETED',
     };
   }
 }
