@@ -55,7 +55,7 @@ export class FollowersService {
         actorId: followerId,
         type: 'followed_user',
         metadata: {
-          followerId: followerId,
+          followerUsername: followerInfo?.username,
         },
         messageEn: notificationMessages.en,
         messageEs: notificationMessages.es,
