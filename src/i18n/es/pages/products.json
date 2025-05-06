@@ -1,0 +1,21 @@
+{
+    "errors": {
+        "INVALID_SELLER_TYPE": "Tipo de vendedor inválido",
+        "INVALID_PAGE_ID": "ID de página inválido",
+        "UNAUTHORIZED_PRODUCT_CREATE": "No estás autorizado para crear un producto para esta página",
+        "INVALID_PRICE": "El precio debe ser un número positivo válido",
+        "INVALID_MARKET_TYPE": "Tipo de mercado inválido",
+        "INVALID_TOPIC_ID": "ID de tema inválido",
+        "INVALID_COUNTRY_ID": "ID de país inválido",
+        "COUNTRY_REQUIRED": "El ID de país es requerido cuando se especifica un distrito",
+        "INVALID_DISTRICT": "Distrito inválido o el distrito no pertenece al país especificado",
+        "PAGE_NOT_FOUND": "Página no encontrada",
+        "INVALID_PAGE_SLUG": "Slug de página inválido",
+        "PRODUCT_NOT_FOUND": "Producto no encontrado",
+        "UNAUTHORIZED_PRODUCT_DELETE": "No estás autorizado para eliminar este producto"
+    },
+    "notifications": {
+        "PRODUCT_CREATED": "Producto creado exitosamente",
+        "PRODUCT_DELETED": "Producto eliminado exitosamente"
+    }
+}

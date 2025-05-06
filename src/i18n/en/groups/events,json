@@ -1,0 +1,14 @@
+{
+    "errors": {
+        "EVENT_NOT_FOUND": "Event not found",
+        "ONLY_OWNER_CREATE_EVENT": "Only group owners can create events for this group",
+        "UNAUTHORIZED_EVENT_ACTION": "You are not authorized to delete this event"
+    },
+    "validations": {
+        "INVALID_LOCATION": "Invalid location data"
+    },
+    "notifications": {
+        "EVENT_CREATED": "Event created successfully",
+        "EVENT_DELETED": "Event deleted successfully"
+    }
+}

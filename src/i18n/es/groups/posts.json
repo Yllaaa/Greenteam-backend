@@ -1,0 +1,11 @@
+{
+    "errors": {
+        "FILTER_WITH_MAIN_AND_SUB_TOPIC": "Solo puedes filtrar por tema principal o subtema",
+        "POST_NOT_FOUND": "Publicación no encontrada",
+        "UNAUTHORIZED_POST_DELETION": "No estás autorizado para eliminar esta publicación"
+    },
+    "notifications": {
+        "POST_CREATED": "¡Grupo creado exitosamente!",
+        "POST_DELETED": "Publicación eliminada exitosamente"
+    }
+}

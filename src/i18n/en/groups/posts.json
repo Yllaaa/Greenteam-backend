@@ -1,0 +1,11 @@
+{
+    "errors": {
+        "FILTER_WITH_MAIN_AND_SUB_TOPIC": "You can only filter by main topic or sub topic",
+        "POST_NOT_FOUND": "Post not found",
+        "UNAUTHORIZED_POST_DELETION": "You are not allowed to delete this post"
+    },
+    "notifications": {
+        "POST_CREATED": "Group created successfully!",
+        "POST_DELETED": "Post deleted successfully"
+    }
+}

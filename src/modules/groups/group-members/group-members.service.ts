@@ -20,13 +20,13 @@ export class GroupMembersService {
     try {
       const group = await this.groupMembersRepository.findGroup(groupId);
       if (!group) {
-        throw new NotFoundException('Group not found');
+        throw new NotFoundException('groups.groups.errors.GROUP_NOT_FOUND');
       }
 
       const existingMembership =
         await this.groupMembersRepository.findMembership(userId, groupId);
       if (existingMembership) {
-        throw new ConflictException('User is already a member of this group');
+        throw new ConflictException('groups.group-members.validations.MEMBERSHIP_ALREADY_EXIST');
       }
 
       await this.groupMembersRepository.createMembership(userId, groupId);
@@ -40,7 +40,7 @@ export class GroupMembersService {
         );
       }
 
-      return { message: 'Successfully joined the group' };
+      return { message: 'groups.groups.notifications.GROUP_JOINED' };
     } catch (error) {
       if (
         error instanceof ConflictException ||
@@ -48,7 +48,7 @@ export class GroupMembersService {
       ) {
         throw error;
       }
-      throw new Error('Failed to join group');
+      throw new Error('groups.group-members.errors.GROUP_FAIL_JOIN');
     }
   }
 
@@ -59,10 +59,10 @@ export class GroupMembersService {
     );
 
     if (!result) {
-      throw new NotFoundException('Membership not found');
+      throw new NotFoundException('groups.group-members.errors.GROUP_MEMBERSHIP_NOT_FOUND');
     }
 
-    return { message: 'Successfully left the group' };
+    return { message: 'groups.groups.notifications.GROUP_LEFT' };
   }
 
   async getGroupMembers(groupId: string) {

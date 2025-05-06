@@ -1,5 +1,6 @@
 {
   "errors": {
+    "GROUP_ID_NOT_FOUND": "Group with ID {groupId} not found",
     "GROUP_NAME_TAKEN": "Group name already taken, please choose another one.",
     "GROUP_NOT_FOUND": "Group not found.",
     "UNAUTHORIZED_GROUP_ACTION": "You are not authorized to perform this action."

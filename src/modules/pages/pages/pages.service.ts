@@ -11,16 +11,18 @@ import { UploadMediaService } from 'src/modules/common/upload-media/upload-media
 import { CommonService } from 'src/modules/common/common.service';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+
 import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
 import { UsersService } from 'src/modules/users/users.service';
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
-
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class PagesService {
   constructor(
     private readonly pagesRepository: PagesRepository,
     private readonly uploadMediaService: UploadMediaService,
     private readonly commonService: CommonService,
+    private readonly i18n: I18nService,
     private readonly usersService: UsersService,
     private readonly notificationQueueService: NotificationQueueService,
   ) {}
@@ -30,10 +32,12 @@ export class PagesService {
     const { avatar, cover } = images;
     const ownerId = user.id;
     if (page.slug.length > 50) {
-      throw new BadRequestException('Slug is too long');
+      throw new BadRequestException('pages.pages.validations.LONG_SLUG');
     }
     if (await this.pagesRepository.checkSlugTaken(page.slug)) {
-      throw new NotFoundException(`Slug ${page.slug} is already taken`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.validations.SLUG_TAKEN', {
+        args: { slug: page.slug }
+      }));
     }
     await this.commonService.validateLocation(page.countryId, page.cityId);
     let uploadedAvatar;
@@ -73,11 +77,13 @@ export class PagesService {
 
     const pageData = await this.pagesRepository.getPageBySlug(slug);
     if (!pageData) {
-      throw new NotFoundException(`Page with slug ${slug} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+        args: { slug }
+      }));
     }
 
     if (pageData.ownerId !== userId) {
-      throw new ForbiddenException('You are not the owner of this page');
+      throw new ForbiddenException('pages.pages.errors.NOT_AUTHORIZED');
     }
 
     let uploadedAvatar;
@@ -117,7 +123,9 @@ export class PagesService {
     const pageDetails = await this.pagesRepository.getPageDetails(slug, userId);
 
     if (!pageDetails) {
-      throw new NotFoundException(`Page with slug ${slug} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+        args: { slug }
+      }));
     }
 
     const isAdmin = pageDetails.ownerId === userId;
@@ -130,23 +138,27 @@ export class PagesService {
   async getPageOwnerId(pageId: string) {
     const page = await this.pagesRepository.getPageOwnerId(pageId);
     if (!page) {
-      throw new NotFoundException(`Page with ID ${pageId} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.PAGE_ID_NOT_FOUND', {
+        args: { pageId }
+      }));
     }
     return page.ownerId;
   }
 
   async addPageContact(
     contact: CreatePageContactDto,
-    pageSlug: string,
+    slug: string,
     userId: string,
   ) {
-    const page = await this.pagesRepository.getPageBySlug(pageSlug);
+    const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException(`Page with slug ${pageSlug} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+        args: { slug }
+      }));
     }
 
     if (page.ownerId !== userId) {
-      throw new BadRequestException('You are not the owner of this page');
+      throw new BadRequestException('pages.pages.errors.NOT_AUTHORIZED');
     }
 
     return await this.pagesRepository.addPageContact(contact, page.id);
@@ -155,7 +167,9 @@ export class PagesService {
   async getPageContactsBySlug(slug: string) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException(`Page with slug ${slug} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+        args: { slug }
+      }));
     }
     return await this.pagesRepository.getPageContacts(page?.id);
   }
@@ -169,12 +183,14 @@ export class PagesService {
   async deletePageContact(contactId: string, userId: string) {
     const contact = await this.pagesRepository.getPageContactById(contactId);
     if (!contact) {
-      throw new NotFoundException(`Contact with ID ${contactId} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.CONTACT_ID_NOT_FOUND', {
+        args: { contactId }
+      }));
     }
 
     const pageOwnerId = await this.getPageOwnerId(contact.pageId);
     if (pageOwnerId !== userId) {
-      throw new BadRequestException('You are not the owner of this page');
+      throw new BadRequestException('pages.pages.errors.NOT_AUTHORIZED');
     }
 
     return await this.pagesRepository.deletePageContact(contactId);
@@ -187,7 +203,9 @@ export class PagesService {
   async togglePageFollow(slug: string, user: any) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException(`Page with slug ${slug} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+        args: { slug }
+      }));
     }
 
     const pageId = page.id;
@@ -221,7 +239,9 @@ export class PagesService {
   async getPageById(pageId: string) {
     const page = await this.pagesRepository.getPageById(pageId);
     if (!page) {
-      throw new NotFoundException(`Page with ID ${pageId} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.PAGE_ID_NOT_FOUND', {
+        args: { pageId }
+      }));
     }
     return page;
   }
@@ -233,16 +253,18 @@ export class PagesService {
   async deletePage(slug: string, userId: string) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException(`Page with slug ${slug} not found`);
+      throw new NotFoundException(this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+        args: { slug }
+      }));
     }
     if (page.ownerId !== userId) {
-      throw new ForbiddenException('You are not the owner of this page');
+      throw new ForbiddenException('pages.pages.errors.NOT_AUTHORIZED');
     }
     await this.pagesRepository.deletePage(page.id, userId);
     await this.pagesRepository.deletePagePosts(page.id);
     await this.pagesRepository.deletePageEvents(page.id);
     await this.pagesRepository.deletePageProducts(page.id);
-    return { message: 'Page deleted successfully' };
+    return { message: 'pages.pages.notifications.PAGE_DELETED' };
   }
 
   private async getUserInfo(userId: string) {

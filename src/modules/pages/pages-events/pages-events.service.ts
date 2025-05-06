@@ -31,14 +31,14 @@ export class PagesEventsService {
   ) {
     const { dto } = event;
     if (dto.creatorType != ('page' as CreatorType)) {
-      throw new HttpException('Only pages can create events', 400);
+      throw new HttpException('pages.events.errors.INVALID_CREATOR_TYPE', 400);
     }
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.events.errors.PAGE_NOT_FOUND');
     }
     if (page.ownerId !== userId) {
-      throw new UnauthorizedException('You are not the owner of this page');
+      throw new UnauthorizedException('pages.events.errors.NOT_PAGE_OWNER');
     }
     await this.commonService.validateLocation(dto.countryId, dto.cityId);
     let uploadedImage;
@@ -57,7 +57,7 @@ export class PagesEventsService {
   async getEvents(dto: GetEventsDto, slug: string, userId) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.events.errors.PAGE_NOT_FOUND');
     }
     const events = await this.pagesEventsRepository.getEvents(
       dto,
@@ -81,15 +81,15 @@ export class PagesEventsService {
   async deleteEvent(id: string, slug: string, userId: string) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.pages.errors.PAGE_NOT_FOUND');
     }
     const event = await this.eventsRepository.getEventById(id);
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException('pages.events.errors.EVENT_NOT_FOUND');
     }
 
     if (event.creatorId !== page.id || page.ownerId !== userId) {
-      throw new UnauthorizedException('You are not the owner of this event');
+      throw new UnauthorizedException('pages.events.errors.NOT_EVENT_OWNER');
     }
     return await this.eventsRepository.deleteEvent(id, userId);
   }
