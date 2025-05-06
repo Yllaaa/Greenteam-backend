@@ -1,0 +1,18 @@
+{
+    "errors": {
+        "PAGE_NOT_FOUND": "Página no encontrada",
+        "NOT_AUTHORIZED": "No eres el propietario de esta página",
+        "SLUG_PAGE_NOT_FOUND": "Página con slug {slug} no encontrada",
+        "PAGE_ID_NOT_FOUND": "Página con ID {pageId} no encontrada",
+        "CONTACT_ID_NOT_FOUND": "Contacto con ID {contactId} no encontrado"
+    },
+    "validations": {
+        "LONG_SLUG": "El slug es demasiado largo",
+        "SLUG_TAKEN": "El slug {slug} ya está en uso",
+        "INVALID_PAGE_ID": "ID de página inválido",
+        "INVALID_SLUG_PAGE": "Slug de página inválido"
+    },
+    "notifications": {
+        "PAGE_DELETED": "Página eliminada exitosamente"
+    }
+}

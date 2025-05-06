@@ -29,7 +29,7 @@ export class GroupMemberGuard implements CanActivate {
     );
     if (!isMember) {
       throw new ForbiddenException(
-        'You are not a member of this group, please join the group first',
+        'groups.group-members.errors.NOT_GROUP_MEMBER'
       );
     }
 

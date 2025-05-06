@@ -1,0 +1,13 @@
+{
+    "errors": {
+        "INVALID_CREATOR_TYPE": "Solo las páginas pueden crear eventos",
+        "PAGE_NOT_FOUND": "Página no encontrada",
+        "NOT_PAGE_OWNER": "No eres el propietario de esta página",
+        "EVENT_NOT_FOUND": "Evento no encontrado",
+        "NOT_EVENT_OWNER": "No eres el propietario de este evento"
+    },
+    "notifications": {
+        "EVENT_CREATED": "Evento creado exitosamente",
+        "EVENT_DELETED": "Evento eliminado exitosamente"
+    }
+}

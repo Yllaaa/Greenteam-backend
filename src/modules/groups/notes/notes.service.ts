@@ -23,7 +23,7 @@ export class NotesService {
   async upsertNote(dto: UpsertGroupNoteDto, groupId: string, userId: string) {
     const [group] = await this.groupService.getGroupById(groupId);
     if (group.ownerId !== userId) {
-      throw new ForbiddenException('You are not authorized to edit this note');
+      throw new ForbiddenException('groups.notes.errors.UNAUTHORIZED_NOTED_ACTION');
     }
     return this.notesRepository.upsertGroupNote(dto, groupId, userId);
   }
@@ -31,7 +31,7 @@ export class NotesService {
   async getNoteByGroupId(groupId: string) {
     const note = await this.notesRepository.findByGroupId(groupId);
     if (!note) {
-      throw new NotFoundException(`Note not found`);
+      throw new NotFoundException(`groups.notes.errors.NOTE_NOT_FOUND`);
     }
     return note;
   }

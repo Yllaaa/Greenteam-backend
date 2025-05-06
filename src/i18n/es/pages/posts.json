@@ -1,0 +1,13 @@
+{
+    "errors": {
+        "FILTER_CONFLICT": "Solo puedes filtrar por tema principal o subtema",
+        "PAGE_NOT_FOUND": "Página no encontrada",
+        "POST_NOT_FOUND": "Publicación no encontrada",
+        "INVALID_CREATOR_TYPE": "Solo las páginas pueden crear publicaciones desde aquí",
+        "NOT_PAGE_OWNER": "No eres el propietario de esta página"
+    },
+    "notifications": {
+        "POST_CREATED": "Publicación creada exitosamente",
+        "POST_DELETED": "Publicación eliminada exitosamente"
+    }
+}

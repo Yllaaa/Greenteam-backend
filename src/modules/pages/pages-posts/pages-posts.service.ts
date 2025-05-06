@@ -23,12 +23,12 @@ export class PagesPostsService {
   async getPagePosts(dto: GetPostsDto, slug: string, currentUserId?: string) {
     if (dto.mainTopicId && dto.subTopicId) {
       throw new BadRequestException(
-        'You can only filter by main topic or sub topic',
+        'pages.posts.errors.FILTER_CONFLICT',
       );
     }
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.pages.errors.PAGE_NOT_FOUND');
     }
     const posts = await this.postsRepository.getFilteredPosts(
       {
@@ -51,14 +51,14 @@ export class PagesPostsService {
   async getPostById(postId: string, slug: string, currentUserId: string) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.pages.errors.PAGE_NOT_FOUND');
     }
     const post = await this.postsRepository.getPostInDetails(
       postId,
       currentUserId,
     );
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('pages.posts.errors.POST_NOT_FOUND');
     }
     return post;
   }
@@ -68,12 +68,12 @@ export class PagesPostsService {
     const { content, creatorType, subtopicIds } = dto;
 
     if (creatorType !== 'page') {
-      throw new BadRequestException('Only page can create posts from here');
+      throw new BadRequestException('pages.posts.errors.INVALID_CREATOR_TYPE');
     }
 
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.pages.errors.PAGE_NOT_FOUND');
     }
 
     const newPost = await this.postsRepository.createPost(
@@ -106,14 +106,14 @@ export class PagesPostsService {
   async deletePost(postId: string, slug: string, userId: string) {
     const page = await this.pagesService.getPageBySlug(slug);
     if (!page) {
-      throw new NotFoundException('Page not found');
+      throw new NotFoundException('pages.pages.errors.PAGE_NOT_FOUND');
     }
     const post = await this.postsRepository.getPostById(postId);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('pages.posts.errors.POST_NOT_FOUND');
     }
     if (page.ownerId !== userId) {
-      throw new BadRequestException('You are not the owner of this page');
+      throw new BadRequestException('pages.posts.errors.NOT_PAGE_OWNER');
     }
     return this.postsRepository.deletePost(postId, page.id);
   }
