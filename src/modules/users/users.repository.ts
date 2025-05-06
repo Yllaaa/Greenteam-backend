@@ -30,6 +30,8 @@ export class UsersRepository {
         avatar: true,
         cover: true,
         bio: true,
+        languagePreference: true,
+        fcmToken: true,
         joinedAt: true,
       },
     });

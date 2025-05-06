@@ -34,6 +34,8 @@ import {
 } from 'nestjs-i18n';
 import { I18nResponseInterceptor } from './modules/common/filters/i18n-response.interceptor';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { NotificationQueueModule } from './modules/common/queues/notification-queue/notification-queue.module';
+import { UtilsModule } from './modules/utils/utils.module';
 @Global()
 @Module({
   imports: [
@@ -84,6 +86,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     UploadMediaModule,
     CommunityModule,
     NotificationsModule,
+    NotificationQueueModule,
+    UtilsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -98,6 +102,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     CommonModule,
     UsersModule,
     UploadMediaModule,
+    NotificationQueueModule,
   ],
 })
 export class AppModule {}

@@ -232,6 +232,7 @@ export class CommentsRepository {
         mainTopicId: true,
         content: true,
         createdAt: true,
+        creatorId: true,
       },
       where: eq(posts.id, postId),
     });
@@ -244,6 +245,7 @@ export class CommentsRepository {
         mainTopicId: true,
         content: true,
         createdAt: true,
+        authorId: true,
       },
       where: eq(forumPublications.id, publicationId),
     });

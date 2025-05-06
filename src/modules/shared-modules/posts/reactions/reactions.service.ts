@@ -12,6 +12,7 @@ import { PointingSystemService } from 'src/modules/pointing-system/pointing-syst
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
 import { UsersService } from 'src/modules/users/users.service';
 import { NotificationsService } from 'src/modules/notifications/notifications.service';
+import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
 @Injectable()
 export class ReactionsService {
   private readonly allowedReactions = {
@@ -130,12 +131,12 @@ export class ReactionsService {
           userId,
           dto,
         );
-
         return { action: 'updated', type: updated.reactionType };
       }
     }
 
     const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
+
     if (dto.reactionableType == ReactionableTypeEnum.POST && topicId) {
       const action: Action = { id: reaction.id, type: dto.reactionType };
       await this.queuesService.addPointsJob(userId, topicId, action);
@@ -149,10 +150,7 @@ export class ReactionsService {
       const userInfo = await this.getUserInfo(userId);
       const userName = userInfo.name || 'Someone';
 
-      const reactionMessages = this.getReactionMessages(
-        dto.reactionType,
-        userName,
-      );
+      const reactionMessages = getNotificationMessage('reaction', userName);
 
       await this.notificationQueueService.addCreateNotificationJob({
         recipientId: postCreatorId,
@@ -160,11 +158,13 @@ export class ReactionsService {
         type: 'reaction',
         metadata: {
           postId: dto.reactionableId,
+          reactionType: dto.reactionType,
         },
         messageEn: reactionMessages.en,
         messageEs: reactionMessages.es,
       });
     }
+
     return { action: 'added' };
   }
 
@@ -176,20 +176,7 @@ export class ReactionsService {
       this.allowedReactions[reactionableType]?.includes(reactionType) ?? false
     );
   }
-  private getReactionMessages(reactionType: string, userName: string) {
-    switch (reactionType) {
-      case 'like':
-        return {
-          en: `${userName} liked your post`,
-          es: `A ${userName} le gustó tu publicación`,
-        };
-      default:
-        return {
-          en: `${userName} reacted to your post`,
-          es: `${userName} reaccionó a tu publicación`,
-        };
-    }
-  }
+
   private async getUserInfo(userId: string) {
     const user = await this.usersService.getUserById(userId);
     if (!user) {

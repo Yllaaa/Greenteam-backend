@@ -330,6 +330,7 @@ export class PagesRepository {
       columns: {
         id: true,
         slug: true,
+        name: true,
         ownerId: true,
         countryId: true,
         cityId: true,

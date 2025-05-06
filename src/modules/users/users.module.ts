@@ -7,12 +7,14 @@ import { ScoreModule } from './score/score.module';
 import { ProfileModule } from './profile/profile.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { ActionsModule } from './actions/actions.module';
+import { SettingsModule } from './settings/settings.module';
 
 const usersRoutes = [
   { path: 'score', module: ScoreModule },
   { path: '/', module: ProfileModule },
   { path: 'favorites', module: FavoritesModule },
   { path: 'actions', module: ActionsModule },
+  { path: 'settings', module: SettingsModule },
 ];
 @Module({
   imports: [
@@ -23,6 +25,7 @@ const usersRoutes = [
     ProfileModule,
     FavoritesModule,
     ActionsModule,
+    SettingsModule,
   ],
   providers: [UsersService, UsersRepository],
   exports: [UsersService, UsersRepository],
