@@ -39,18 +39,21 @@ export class FavoritesRepository {
     return this.drizzleService.db
       .select({
         reactionableId: publicationsReactions.reactionableId,
-        reactionType: publicationsReactions.reactionType,
+        userReactionType: sql<string | null>`
+              MAX(CASE 
+                WHEN ${publicationsReactions.reactionType} IN ('like', 'dislike') 
+                THEN ${publicationsReactions.reactionType}
+                ELSE NULL
+              END)
+            `.as('user_reaction_type'),
         hasDoReaction: sql<boolean>`
-          BOOL_OR(${publicationsReactions.reactionType} = 'do')
-        `.as('has_do_reaction'),
+              BOOL_OR(${publicationsReactions.reactionType} = 'do')
+            `.as('has_do_reaction'),
       })
       .from(publicationsReactions)
-      .where(eq(publicationsReactions.userId, userId))
-      .groupBy(
-        publicationsReactions.reactionableId,
-        publicationsReactions.reactionType,
-      )
-      .as('user_reactions');
+      .where(userId ? eq(publicationsReactions.userId, userId) : sql`1=1`)
+      .groupBy(publicationsReactions.reactionableId)
+      .as('user_reaction');
   }
 
   private getReactionsAggregationSubquery() {
@@ -135,7 +138,7 @@ export class FavoritesRepository {
           sql<number>`COALESCE(${reactionsAggregation.dislikeCount}, 0)`.as(
             'dislike_count',
           ),
-        userReactionType: userReactions.reactionType,
+        userReactionType: userReactions.userReactionType,
         hasDoReaction:
           sql<boolean>`COALESCE(${userReactions.hasDoReaction}, false)`.as(
             'has_do_reaction',
@@ -171,7 +174,7 @@ export class FavoritesRepository {
         pages.slug,
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
-        userReactions.reactionType,
+        userReactions.userReactionType,
         userReactions.hasDoReaction,
       )
       .orderBy(desc(posts.createdAt));
@@ -227,7 +230,6 @@ export class FavoritesRepository {
       .from(followers)
       .where(eq(followers.followerId, userId))
       .as('followings_list');
-
     const condition = and(
       eq(posts.creatorType, 'user'),
       sql`${posts.creatorId} IN (SELECT ${followingsSubquery.followingId} FROM ${followingsSubquery})`,
