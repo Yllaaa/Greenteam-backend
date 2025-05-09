@@ -186,7 +186,7 @@ export class ProfileService {
       throw new NotFoundException('User not found');
     }
 
-    return await this.followersService.toggleFollow(user.id, userId);
+    return await this.followersService.toggleFollow(userId, user.id);
   }
 
   async getAllProducts(

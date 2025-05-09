@@ -81,6 +81,7 @@ export class FavoritesService {
         return {
           ...rest,
           hostName,
+          isJoined: true,
         };
       }),
     );
