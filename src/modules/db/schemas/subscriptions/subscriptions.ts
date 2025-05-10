@@ -44,6 +44,7 @@ export const subscriptionBenefits = pgTable('subscription_benefits', {
 export const subscriptionTierBenefits = pgTable(
   'subscription_tier_benefits',
   {
+    id: uuid('id').primaryKey().defaultRandom(),
     tierId: integer('tier_id')
       .notNull()
       .references(() => subscriptionTiers.id, { onDelete: 'cascade' }),

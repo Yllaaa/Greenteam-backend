@@ -91,6 +91,7 @@ export class ScoreRepository {
       .where(eq(topics.parentId, topicId))
       .orderBy(desc(subQuery.totalPoints));
   }
+
   async getUserStats(userId: string) {
     const userStats = await this.drizzleService.db.query.users.findFirst({
       columns: {},

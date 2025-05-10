@@ -246,6 +246,13 @@
       "when": 1746461629633,
       "tag": "0034_chemical_black_tom",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1746838072721,
+      "tag": "0035_wealthy_vulcan",
+      "breakpoints": true
     }
   ]
 }
