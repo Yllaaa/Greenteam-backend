@@ -28,6 +28,6 @@ export class SettingsService {
       userId,
       languagePreference,
     );
-    return { message: 'Language preference updated' };
+    return { message: 'users.settings.notifications.LANGUAGE_UPDATED' };
   }
 }

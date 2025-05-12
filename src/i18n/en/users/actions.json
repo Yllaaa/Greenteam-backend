@@ -1,0 +1,11 @@
+{
+    "errors": {
+        "BLOCK_YOURSELF":"You cannot block yourself",
+        "FAILED_TO_BLOCK": "Failed to block entity",
+        "BLOCK_NOT_FOUND": "Block not found",
+        "FAILED_TO_SUBMIT_REPORT": "Failed to submit report"
+    },
+    "validations": {
+        "ALREADY_BLOCKED": "You have already blocked this {blockedEntityType}"
+    }
+}
