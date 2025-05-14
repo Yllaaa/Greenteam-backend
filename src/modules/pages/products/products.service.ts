@@ -17,6 +17,7 @@ import { PagesService } from '../pages/pages.service';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { GetPageProductsDto } from './dtos/get-page-products';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class ProductsService {
   constructor(
@@ -24,7 +25,8 @@ export class ProductsService {
     private readonly commonRepository: CommonRepository,
     private readonly pagesService: PagesService,
     private readonly uploadMediaService: UploadMediaService,
-  ) {}
+    private readonly i18n: I18nService
+  ) { }
 
   async createProduct(
     data: {
@@ -122,7 +124,8 @@ export class ProductsService {
       }));
       await this.marketplaceRepository.insertProductImages(images);
     }
-    return { message: 'pages.products.notifications.PRODUCT_CREATED' };
+    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_CREATED');
+    return { message: translatedMessage};
   }
 
   async getPageProducts(
@@ -164,6 +167,7 @@ export class ProductsService {
     }
 
     await this.marketplaceRepository.deleteProduct(productId, page.id);
-    return { message: 'pages.products.notifications.PRODUCT_DELETED' };
+    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_DELETED');
+    return { message: translatedMessage};
   }
 }

@@ -1,0 +1,8 @@
+{
+    "errors": {
+        "MISSING_STRIP_HEADER": "Falta el encabezado stripe-signature",
+        "MISSING_RAW_BODY_IN_REQUEST": "Falta el cuerpo sin procesar en la solicitud",
+        "WEBHOOK_ERROR": "Error de webhook: {message}",
+        "RENEWAL_PAYMENT_FAILED": "El pago de renovación falló para la suscripción {subscription_id}"
+    }
+}

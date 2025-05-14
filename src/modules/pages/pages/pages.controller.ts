@@ -24,11 +24,14 @@ import { ValidateProfileImagesInterceptor } from 'src/modules/common/upload-medi
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
 export class PagesController {
-  constructor(private readonly pagesService: PagesService) {}
+  constructor(private readonly pagesService: PagesService,
+    private readonly i18n: I18nService
+  ) { }
 
   @Post('create-page')
   @UseInterceptors(
@@ -95,7 +98,8 @@ export class PagesController {
   ) {
     const userId = req.user.id;
     await this.pagesService.addPageContact(contact, pageSlug, userId);
-    return { message: 'Contact added successfully' };
+    const translatedMessage = await this.i18n.t('pages.pages.notifications.CONTACT_ADDED_SUCCESSFULLY');
+    return { message: translatedMessage };
   }
 
   @Get(':slug/contacts')
@@ -116,7 +120,8 @@ export class PagesController {
   ) {
     const userId = req.user.id;
     await this.pagesService.deletePageContact(contactId, userId);
-    return res.status(HttpStatus.OK).json({ message: 'Contact deleted' });
+    const translatedMessage = await this.i18n.t('pages.pages.notifications.CONTACT_DELETED');
+    return res.status(HttpStatus.OK).json({ message: translatedMessage });
   }
 
   @Post(':slug/toggle-follow')

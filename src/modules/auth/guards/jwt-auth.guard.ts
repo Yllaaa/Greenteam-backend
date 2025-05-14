@@ -40,7 +40,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     });
 
     if (!savedUser?.isEmailVerified) {
-      throw new UnauthorizedException('Please verify your email');
+      throw new UnauthorizedException('auth.auth.notifications.PLEASE_VERIFY_EMAIL');
     }
 
     request.user = savedUser;

@@ -4,7 +4,8 @@
     "PAGE_NOT_FOUND": "Page not found",
     "POST_NOT_FOUND": "Post not found",
     "INVALID_CREATOR_TYPE": "Only page can create posts from here",
-    "NOT_PAGE_OWNER": "You are not the owner of this page"
+    "NOT_PAGE_OWNER": "You are not the owner of this page",
+    "DELETE_POST_AUTHORIZATION_DENIAL": "You are not allowed to delete this post"
   },
   "notifications": {
     "POST_CREATED": "Post created successfully",

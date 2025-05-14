@@ -284,7 +284,9 @@ export class PagesService {
     await this.pagesRepository.deletePagePosts(page.id);
     await this.pagesRepository.deletePageEvents(page.id);
     await this.pagesRepository.deletePageProducts(page.id);
-    return { message: 'pages.pages.notifications.PAGE_DELETED' };
+    
+    const translatedMessage = await this.i18n.t('pages.pages.notifications.PAGE_DELETED');
+    return { message: translatedMessage };
   }
 
   private async getUserInfo(userId: string) {

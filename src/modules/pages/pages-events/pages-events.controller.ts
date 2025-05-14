@@ -19,11 +19,15 @@ import { CreateEventDto } from 'src/modules/events/events/dto/createEvents.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class PagesEventsController {
-  constructor(private readonly pagesEventsService: PagesEventsService) {}
+  constructor(
+    private readonly pagesEventsService: PagesEventsService,
+    private readonly i18n: I18nService
+  ) { }
 
   @Post('create-event')
   @UseInterceptors(ValidatePosterInterceptor, FileInterceptor('poster'))
@@ -70,6 +74,7 @@ export class PagesEventsController {
   ) {
     const userId = req.user.id;
     await this.pagesEventsService.deleteEvent(id, slug, userId);
-    return { message: 'Event deleted' };
+    const translatedMessage = await this.i18n.t('pages.events.notifications.EVENT_DELETED');
+    return { message: translatedMessage };
   }
 }

@@ -1,0 +1,6 @@
+{
+    "errors": {
+        "FOLLOW_THEMSELVES": "Users cannot follow themselves.",
+        "FAILED_TO_SEND_FOLLOW_NOTIFICATIONS": "Failed to send follow notification: {error}"
+    }
+}

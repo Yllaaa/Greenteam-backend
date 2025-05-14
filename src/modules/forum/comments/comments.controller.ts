@@ -17,6 +17,7 @@ import { CommentsService } from 'src/modules/shared-modules/comments/comments.se
 import { CreateCommentDto } from 'src/modules/shared-modules/comments/dtos/create-comment.dto';
 import { PaginationDto } from 'src/modules/shared-modules/comments/dtos/pagination.dto';
 import { ForumService } from '../publications/forum.service';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
@@ -24,7 +25,8 @@ export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
     private readonly forumService: ForumService,
-  ) {}
+    private readonly i18n: I18nService
+  ) { }
 
   private publicationType: SQL<'forum_publication' | 'post'> =
     'forum_publication' as unknown as SQL<'forum_publication' | 'post'>;
@@ -39,7 +41,7 @@ export class CommentsController {
 
     const publication = await this.forumService.getPublication(publicationId);
     if (!publication) {
-      throw new NotFoundException('Publication not found');
+      throw new NotFoundException('forum.publications.errors.PUBLICATION_NOT_FOUND');
     }
     return this.commentsService.createComment(publicationId, userId, {
       content: dto.content,
@@ -96,13 +98,17 @@ export class CommentsController {
       userId,
       this.publicationType,
     );
-    return { message: 'Comment deleted successfully' };
+    
+    const translatedMessage = await this.i18n.t('shared-modules.comments.notifications.COMMENT_DELETED');
+    return { message: translatedMessage };
   }
 
   @Delete(':publicationId/comments/:commentId/replies/:replyId')
   async deleteReply(@Param('replyId') replyId: string, @Req() req) {
     const userId = req.user.id;
     await this.commentsService.deleteReply(replyId, userId);
-    return { message: 'Reply deleted successfully' };
+    
+    const translatedMessage = await this.i18n.t('shared-modules.comments.notifications.REPLY_DELETED');
+    return { message: translatedMessage };
   }
 }

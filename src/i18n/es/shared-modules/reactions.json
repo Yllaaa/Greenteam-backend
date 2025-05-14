@@ -1,0 +1,10 @@
+{
+    "errors": {
+        "INVALID_REACTION_TYPE": "Tipo de reacción inválido {reactionType} para {reactionableType}."
+    },
+    "notifications": {
+        "REMOVED": "eliminado",
+        "ADDED": "agregado",
+        "UPDATED": "actualizado"
+    }
+}
