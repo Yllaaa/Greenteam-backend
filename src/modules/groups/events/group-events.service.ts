@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { EventsRepository } from '../../events/events/events.repository';
 import { GroupsRepository } from '../groups/groups.repository';
-import { CreateEventDto } from '../../events/events/dto/events.dto';
+import { CreateEventDto } from '../../events/events/dto/createEvents.dto';
 import { EventsGroupRepository } from './group-events.repository';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { EventsService } from 'src/modules/events/events/events.service';
@@ -21,7 +21,7 @@ export class GroupEventsService {
     private readonly uploadMediaService: UploadMediaService,
     private readonly commonService: CommonService,
     private readonly i18n: I18nService,
-  ) { }
+  ) {}
 
   async createGroupEvent(
     groupId: string,
@@ -32,14 +32,12 @@ export class GroupEventsService {
     const group = await this.groupsRepository.getGroupById(groupId);
 
     if (!group || !group.length) {
-      throw new NotFoundException(
-        'groups.groups.errors.GROUP_NOT_FOUND'
-      );
+      throw new NotFoundException('groups.groups.errors.GROUP_NOT_FOUND');
     }
 
     if (group[0].ownerId !== userId) {
       throw new ForbiddenException(
-        'groups.events.errors.ONLY_OWNER_CREATE_EVENT'
+        'groups.events.errors.ONLY_OWNER_CREATE_EVENT',
       );
     }
     await this.commonService.validateLocation(data.countryId, data.cityId);
@@ -73,8 +71,8 @@ export class GroupEventsService {
     if (!group || !group.length) {
       throw new NotFoundException(
         this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
-          args: { groupId }
-        })
+          args: { groupId },
+        }),
       );
     }
 
@@ -94,8 +92,8 @@ export class GroupEventsService {
     if (!group || !group.length) {
       throw new NotFoundException(
         this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
-          args: { groupId }
-        })
+          args: { groupId },
+        }),
       );
     }
 
@@ -106,8 +104,7 @@ export class GroupEventsService {
     );
 
     if (!event) {
-      throw new NotFoundException('groups.events.errors.EVENT_NOT_FOUND'
-      );
+      throw new NotFoundException('groups.events.errors.EVENT_NOT_FOUND');
     }
 
     return event;
@@ -119,8 +116,8 @@ export class GroupEventsService {
     if (!group || !group.length) {
       throw new NotFoundException(
         this.i18n.translate('groups.groups.errors.GROUP_ID_NOT_FOUND', {
-          args: { groupId }
-        })
+          args: { groupId },
+        }),
       );
     }
 
@@ -131,13 +128,11 @@ export class GroupEventsService {
     );
 
     if (!event) {
-      throw new NotFoundException(
-        'groups.events.errors.EVENT_NOT_FOUND'
-      );
+      throw new NotFoundException('groups.events.errors.EVENT_NOT_FOUND');
     }
     if (group[0].ownerId !== userId) {
       throw new ForbiddenException(
-        'groups.events.errors.UNAUTHORIZED_EVENT_ACTION'
+        'groups.events.errors.UNAUTHORIZED_EVENT_ACTION',
       );
     }
 

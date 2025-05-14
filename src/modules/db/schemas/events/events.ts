@@ -36,6 +36,9 @@ export const EventHostedBy = pgEnum('event_hosted_by', [
   'page',
 ]);
 
+export const eventModeEnum = pgEnum('event_mode', ['online', 'local']);
+export type EventMode = (typeof eventModeEnum.enumValues)[number];
+
 export const events = pgTable(
   'events',
   {
@@ -51,6 +54,7 @@ export const events = pgTable(
     hostedBy: EventHostedBy('hosted_by'),
     posterUrl: varchar('poster_url'),
     priority: smallint('priority').notNull().default(0),
+    mode: eventModeEnum('mode').notNull().default('online'),
     countryId: integer('country_id').references(() => countries.id),
     cityId: integer('city_id').references(() => cities.id),
     groupId: uuid('group_id').references(() => groups.id, {
@@ -61,6 +65,7 @@ export const events = pgTable(
   (table) => [
     index('events_creator_id_idx').on(table.creatorId),
     index('events_start_date_idx').on(table.startDate),
+    index('events_mode_idx').on(table.mode),
     index('events_group_id_idx').on(table.groupId),
     index('events_category_idx').on(table.category),
   ],

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
 import {
+  EventMode,
   events,
   publicationsComments,
   usersJoinedEvent,
 } from '../../db/schemas/schema';
 import { and, asc, desc, eq, isNull, sql, SQL } from 'drizzle-orm';
-import { CreateEventDto } from '../events/dto/events.dto';
+import { CreateEventDto } from './dto/createEvents.dto';
 import { EventResponse } from './interfaces/events.interface';
 import { GetEventsDto } from './dto/getEvents.dto';
 import e from 'express';
@@ -63,7 +64,7 @@ export class EventsRepository {
     dto: GetEventsDto,
     userId?: string,
   ): Promise<EventResponse[]> {
-    const { page, limit, countryId, cityId, category } = dto;
+    const { page, limit, countryId, cityId, category, eventMode } = dto;
     const offset = Math.max(0, (page - 1) * limit);
     const returnedEvents = await this.drizzleService.db.query.events.findMany({
       columns: {
@@ -88,6 +89,7 @@ export class EventsRepository {
           category ? eq(events.category, dto.category) : undefined,
           cityId ? eq(events.cityId, dto.cityId) : undefined,
           countryId ? eq(events.countryId, dto.countryId) : undefined,
+          eventMode ? eq(events.mode, eventMode as EventMode) : undefined,
         ),
       extras: userId
         ? {
@@ -129,6 +131,7 @@ export class EventsRepository {
         startDate: true,
         endDate: true,
         category: true,
+        mode: true,
         posterUrl: true,
         hostedBy: true,
       },

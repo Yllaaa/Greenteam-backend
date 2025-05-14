@@ -9,8 +9,8 @@ import {
 import { MarketType } from 'src/modules/db/schemas/schema';
 
 enum MarketTypeEnum {
-  LOCAL_BUSINESS = 'local_business',
-  VALUE_DRIVEN_BUSINESS = 'value_driven_business',
+  LOCAL = 'local',
+  ONLINE = 'online',
 }
 
 export class CreateProductDto {
@@ -28,8 +28,7 @@ export class CreateProductDto {
   price: number | string;
 
   @IsEnum(MarketTypeEnum, {
-    message:
-      'marketType must be either local_business or value_driven_business',
+    message: 'marketType must be either online or local',
   })
   marketType: MarketType;
 

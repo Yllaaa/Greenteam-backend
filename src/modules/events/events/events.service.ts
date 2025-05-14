@@ -6,7 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { EventsRepository } from './events.repository';
-import { CreateEventDto } from './dto/events.dto';
+import { CreateEventDto } from './dto/createEvents.dto';
 import { PostgresError } from 'postgres';
 import { SQL } from 'drizzle-orm';
 import { GetEventsDto } from './dto/getEvents.dto';
@@ -48,7 +48,6 @@ export class EventsService {
     return await Promise.all(
       events.map(async (event) => {
         const hostName = await this.GetEventHostName(event);
-        console.log('hostName', hostName);
         const { userCreator, pageCreator, ...rest } = event;
 
         return {

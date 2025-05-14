@@ -30,6 +30,7 @@ export const subscriptionTiers = pgTable(
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
     price: integer('price').notNull(),
+    isDirectlySubscriptable: boolean('is_directly_subscriptable').default(true),
     stripeProductId: text('stripe_product_id'),
     stripePriceId: text('stripe_price_id'),
   },

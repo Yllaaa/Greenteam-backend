@@ -5,7 +5,14 @@ import {
   IsNumber,
   IsBoolean,
   IsEnum,
+  IsIn,
 } from 'class-validator';
+import { MarketType } from 'src/modules/db/schemas/products/products';
+
+export enum MarketTypeEnum {
+  LOCAL = 'local',
+  ONLINE = 'online',
+}
 
 export class CreateProductDto {
   @IsString()
@@ -32,4 +39,10 @@ export class CreateProductDto {
   @IsNumber()
   @Type(() => Number)
   cityId: number;
+
+  @IsOptional()
+  @IsIn(Object.values(MarketTypeEnum), {
+    message: `Invalid marketType. Must be one of: ${Object.values(MarketTypeEnum).join(', ')}`,
+  })
+  marketType: MarketType;
 }

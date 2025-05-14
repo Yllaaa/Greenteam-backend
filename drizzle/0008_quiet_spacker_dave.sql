@@ -1,2 +1,0 @@
-ALTER TABLE "group_members" DROP CONSTRAINT "group_members_user_id_group_id_pk";--> statement-breakpoint
-ALTER TABLE "group_members" ADD COLUMN "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL;

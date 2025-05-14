@@ -1,0 +1,2 @@
+--DROP INDEX "market_type_idx";--> statement-breakpoint
+--ALTER TABLE "products" DROP COLUMN "market_type";
