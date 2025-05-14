@@ -67,7 +67,7 @@ export class PostsController {
   async deletePost(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     await this.postsService.deletePost(id, userId);
-    const translatedMessage = await this.i18n.t('src/i18n/en/pages/posts.notifications.POST_DELETED');
+    const translatedMessage = await this.i18n.t('pages.posts.notifications.POST_DELETED');
     return { message: translatedMessage };
   }
 }
