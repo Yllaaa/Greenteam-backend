@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, lt } from 'drizzle-orm';
+import { and, asc, eq, lt } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
   SubscriptionStatus,
@@ -31,6 +31,7 @@ export class SubscriptionsRepository {
             },
           },
         },
+        orderBy: (table) => [asc(table.id)],
       },
     );
 

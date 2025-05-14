@@ -1,0 +1,1 @@
+--ALTER TABLE "subscription_tiers" DROP COLUMN "is_directly_subscriptable";

@@ -44,9 +44,6 @@ export class SubscriptionsService {
     if (!tier) {
       throw new NotFoundException('Subscription tier not found');
     }
-    if (tier.name.toLowerCase() === 'basic') {
-      throw new BadRequestException('Cannot directly subscribe to basic tier');
-    }
 
     // 2. Check existing subscription and validate upgrade path
     const existingSubscription =
