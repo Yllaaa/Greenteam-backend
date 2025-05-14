@@ -1,0 +1,15 @@
+{
+    "errors": {
+        "SUBSCRIPTION_NOT_FOUND": "Subscription tier not found",
+        "CANNOT_SUBSCRIBE_TO_BASIC": "Cannot directly subscribe to basic tier",
+        "FAILED_CREATE_SUBSCRIPTION": "Failed to create subscription",
+        "USER_HAS_NOT_ACTIVE_SUBSCRIPTION": "User does not have an active subscription"
+    },
+    "validations": {
+        "ALREADY_ACTIVE_SUBSCRIPTION": "User already has an active subscription",
+        "CANNOT_DOWNGRADE_SUBSCRIPTION": "Cannot downgrade subscription"
+    },
+    "notifications": {
+        "SUBSCRIPTION_DELETED": "Subscription deleted"
+    }
+}

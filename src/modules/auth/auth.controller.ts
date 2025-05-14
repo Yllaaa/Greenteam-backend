@@ -17,10 +17,14 @@ import { Response } from 'express';
 import { LoginDto, RegisterDto } from './dtos/auth.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private readonly i18n: I18nService
+  ) {}
 
   private setAuthCookie(res: Response, token: string) {
     res.cookie('accessToken', token, {
@@ -35,8 +39,9 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     const response = await this.authService.register(registerDto);
     this.setAuthCookie(res, response?.accessToken);
+    const translatedMessage = await this.i18n.t('auth.auth.validations.CHECK_YOUR_EMAIL');
     res.json({
-      message: 'Please check your email to verify your account',
+      message: translatedMessage,
       ...response,
     });
   }
@@ -80,7 +85,7 @@ export class AuthController {
   @Post('resend-verification')
   async resendVerification(@Body('email') email: string) {
     if (!email) {
-      throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+      throw new HttpException('auth.auth.validations.EMAIL_REQUIRED', HttpStatus.BAD_REQUEST);
     }
     return this.authService.resendVerificationEmail(email);
   }

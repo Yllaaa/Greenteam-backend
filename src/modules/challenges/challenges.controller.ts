@@ -17,11 +17,15 @@ import { UserChallengesDto } from './dtos/get-do-posts.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ValidateMediaInterceptor } from '../common/upload-media/interceptors/validateMedia.interceptor';
 import { GreenChallengePostDto } from './dtos/create-challenge-post.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('challenges')
 export class ChallengesController {
-  constructor(private readonly challengesService: ChallengesService) {}
+  constructor(
+    private readonly challengesService: ChallengesService,
+      private readonly i18n: I18nService
+  ) {}
 
   @Get('do-posts')
   async getUserDoPosts(
@@ -40,7 +44,8 @@ export class ChallengesController {
   async markDoPostAsDone(@Req() req, @Param('id') postId: string) {
     const userId = req.user.id;
     await this.challengesService.markDoPostAsDone(postId, userId);
-    return { message: 'Do post marked as done' };
+    const translatedMessage = await this.i18n.t('challenges.challenges.notifications.DO_POST_MARKED_AS_DONE');
+    return { message: translatedMessage };
   }
 
   @Get('green-challenges')

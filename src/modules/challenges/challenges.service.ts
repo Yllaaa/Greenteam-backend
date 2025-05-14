@@ -10,12 +10,15 @@ import { ChallengesRepository } from './challenges.repository';
 import { PostsService } from '../shared-modules/posts/posts/posts.service';
 import { SQL } from 'drizzle-orm';
 import { CreatorType, UserChallengeStatus } from '../db/schemas/schema';
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class ChallengesService {
   constructor(
     private readonly challengesRepository: ChallengesRepository,
     private readonly postsService: PostsService,
-  ) {}
+    private readonly i18n: I18nService
+
+  ) { }
 
   async createDoPostChallenge(userId: string, postId: string) {
     const post = await this.challengesRepository.createDoPostChallenge(
@@ -38,12 +41,12 @@ export class ChallengesService {
       userId,
     );
     if (!doPostChallenge) {
-      throw new NotFoundException('Do post challenge not found');
+      throw new NotFoundException('challenges.challenges.errors.DO_POST_CHALLENGE_NOT_FOUND');
     }
 
     if (doPostChallenge.status === 'done') {
       throw new BadRequestException(
-        'Do post challenge is already marked as done',
+        'challenges.challenges.validations.DO_POST_CHALLENGE_ALREADY_DONE',
       );
     }
     return await this.challengesRepository.UpdateDoPostChallengeStatus(
@@ -57,7 +60,7 @@ export class ChallengesService {
     const challengeExists =
       await this.challengesRepository.findGreenChallengeById(challengeId);
     if (!challengeExists) {
-      throw new NotFoundException('Green challenge not found');
+      throw new NotFoundException('challenges.challenges.errors.GREEN_CHALLENGE_NOT_FOUND');
     }
 
     const userChallengeExists =
@@ -66,16 +69,17 @@ export class ChallengesService {
         challengeId,
       );
     if (userChallengeExists) {
-      throw new BadRequestException('Green challenge already added to user');
+      throw new BadRequestException('challenges.challenges.validations.GREEN_CHALLENGE_ADDED_USER');
     }
 
     await this.challengesRepository.addGreenChallengeToUser(
       userId,
       challengeId,
     );
+    const translatedMessage = await this.i18n.t('challenges.challenges.notifications.GREEN_CHALLENGE_ADDED_USER');
     return {
       statusCode: HttpStatus.CREATED,
-      message: 'Green challenge added to user',
+      message: translatedMessage,
     };
   }
 
@@ -86,12 +90,12 @@ export class ChallengesService {
         challengeId,
       );
     if (!userGreenChallenge) {
-      throw new NotFoundException('User has not added this challenge');
+      throw new NotFoundException('challenges.challenges.errors.USER_HAS_NOT_ADDED');
     }
 
     if (userGreenChallenge.status === 'done') {
       throw new BadRequestException(
-        'Green challenge is already marked as done',
+        'challenges.challenges.validations.GREEN_CHALLENGE_ALREADY_DONE',
       );
     }
 
@@ -99,9 +103,10 @@ export class ChallengesService {
       userId,
       challengeId,
     );
+    const translatedMessage = await this.i18n.t('challenges.challenges.notifications.GREEN_CHALLENGE_MARKED_DONE');
     return {
       statusCode: HttpStatus.CREATED,
-      message: ' Green challenge marked as done',
+      message: translatedMessage,
     };
   }
 
@@ -114,7 +119,7 @@ export class ChallengesService {
     const challenge =
       await this.challengesRepository.findGreenChallengeById(challengeId);
     if (!challenge) {
-      throw new NotFoundException('Green challenge not found');
+      throw new NotFoundException('challenges.challenges.errors.GREEN_CHALLENGE_NOT_FOUND');
     }
 
     const userGreenChallenge =
@@ -124,7 +129,7 @@ export class ChallengesService {
       );
 
     if (userGreenChallenge?.status === 'done') {
-      throw new BadRequestException(`you have already done this challenge`);
+      throw new BadRequestException(`challenges.challenges.validations.ALREADY_DONE_CHALLENGE`);
     }
 
     const creatorType = 'user' as CreatorType;
@@ -161,9 +166,11 @@ export class ChallengesService {
       userId,
     );
 
+    const translatedMessage = await this.i18n.t('pages.posts.notifications.POST_CREATED');
+
     return {
       statusCode: HttpStatus.CREATED,
-      message: 'Post created successfully',
+      message: translatedMessage,
     };
   }
 

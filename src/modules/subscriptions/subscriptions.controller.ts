@@ -13,11 +13,14 @@ import {
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('subscriptions')
 export class SubscriptionsController {
-  constructor(private readonly subscriptionsService: SubscriptionsService) {}
+  constructor(
+    private readonly subscriptionsService: SubscriptionsService,
+    private readonly i18n: I18nService) {}
   private readonly logger = new Logger(SubscriptionsController.name);
 
   @Get('tiers')
@@ -40,7 +43,7 @@ export class SubscriptionsController {
     const subscription =
       await this.subscriptionsService.getUserActiveSubscription(req.user.id);
     if (!subscription) {
-      throw new HttpException('User does not have an active subscription', 404);
+      throw new HttpException('subscriptions.subscriptions.errors.USER_HAS_NOT_ACTIVE_SUBSCRIPTION', 404);
     }
     return subscription;
   }
@@ -49,6 +52,7 @@ export class SubscriptionsController {
   @Delete('delete-my-subscription')
   async deleteMySubscription(@Req() req) {
     await this.subscriptionsService.deleteUserSubscription(req.user.id);
-    return 'Subscription deleted';
+    const translatedMessage = await this.i18n.t('subscriptions.subscriptions.notifications.SUBSCRIPTION_DELETED');
+    return translatedMessage;
   }
 }

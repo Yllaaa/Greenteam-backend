@@ -1,0 +1,18 @@
+{
+    "errors": {
+        "DO_POST_CHALLENGE_NOT_FOUND": "Desafío de publicación no encontrado",
+        "GREEN_CHALLENGE_NOT_FOUND": "Desafío verde no encontrado",
+        "USER_HAS_NOT_ADDED": "El usuario no ha añadido este desafío"
+    },
+    "validations": {
+        "DO_POST_CHALLENGE_ALREADY_DONE": "El desafío de publicación ya está marcado como completado",
+        "GREEN_CHALLENGE_ADDED_USER": "El desafío verde ya fue añadido al usuario",
+        "GREEN_CHALLENGE_ALREADY_DONE": "El desafío verde ya está marcado como completado",
+        "ALREADY_DONE_CHALLENGE": "Ya has completado este desafío"
+    },
+    "notifications": {
+        "GREEN_CHALLENGE_ADDED_USER": "Desafío verde añadido al usuario",
+        "GREEN_CHALLENGE_MARKED_DONE": "Desafío verde marcado como completado",
+        "DO_POST_MARKED_AS_DONE": "Publicación marcada como completada"
+    }
+}

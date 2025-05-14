@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 
 import { SQL } from 'drizzle-orm';
+import { I18nService } from 'nestjs-i18n';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { CommentsService } from 'src/modules/shared-modules/comments/comments.service';
 import { CreateCommentDto } from 'src/modules/shared-modules/comments/dtos/create-comment.dto';
@@ -19,7 +20,10 @@ import { PaginationDto } from 'src/modules/shared-modules/comments/dtos/paginati
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class EventCommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly i18n: I18nService
+  ) { }
   private publicationType: SQL<'forum_publication' | 'post' | 'event'> =
     'event' as unknown as SQL<'forum_publication' | 'post' | 'event'>;
 
@@ -86,13 +90,16 @@ export class EventCommentsController {
       userId,
       this.publicationType,
     );
-    return { message: 'Comment deleted successfully' };
+    const translatedMessage = await this.i18n.t('shared-modules.comments.notifications.COMMENT_DELETED');
+    return { message: translatedMessage };
   }
 
   @Delete(':eventId/comments/:commentId/replies/:replyId')
   async deleteReply(@Param('replyId') replyId: string, @Req() req) {
     const userId = req.user.id;
     await this.commentsService.deleteReply(replyId, userId);
-    return { message: 'Reply deleted successfully' };
+    const translatedMessage = await this.i18n.t('shared-modules.comments.notifications.REPLY_DELETED');
+
+    return { message: translatedMessage };
   }
 }

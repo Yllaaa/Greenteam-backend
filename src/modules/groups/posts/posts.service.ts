@@ -125,8 +125,9 @@ export class GroupPostsService {
     }
 
     await this.postsRepository.deletePost(postId, post.creatorId);
+    const translatedMessage = await this.i18n.t('groups.posts.notifications.POST_DELETED');
     return {
-      message: 'groups.posts.notifications.POST_DELETED',
+      message: translatedMessage,
     };
   }
 }

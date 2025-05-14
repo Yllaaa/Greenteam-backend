@@ -3,6 +3,7 @@ import { FollowersRepository } from './followers.repository';
 import { UsersService } from '../users.service';
 import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class FollowersService {
@@ -10,6 +11,7 @@ export class FollowersService {
     private readonly followersRepository: FollowersRepository,
     private readonly usersService: UsersService,
     private readonly notificationQueueService: NotificationQueueService,
+    private readonly i18n: I18nService, 
   ) {}
 
   async toggleFollow(
@@ -17,7 +19,7 @@ export class FollowersService {
     followingId: string,
   ): Promise<{ following: boolean }> {
     if (followerId === followingId) {
-      throw new BadRequestException('Users cannot follow themselves');
+      throw new BadRequestException('users.followers.errors.FOLLOW_THEMSELVES');
     }
 
     const isFollowing = await this.followersRepository.isFollowing(
@@ -61,7 +63,9 @@ export class FollowersService {
         messageEs: notificationMessages.es,
       });
     } catch (error) {
-      console.error('Failed to send follow notification:', error);
+      console.error(this.i18n.translate('users.followers.errors.FAILED_TO_SEND_FOLLOW_NOTIFICATIONS', {
+        args: { error: error },
+      }));
     }
   }
 

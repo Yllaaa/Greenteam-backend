@@ -1,0 +1,10 @@
+{
+    "errors": {
+        "PUBLICATION_NOT_FOUND": "Publicación no encontrada",
+        "DELETE_PUBLICATION_AUTHORIZATION_DENIAL": "No tienes permiso para eliminar esta publicación",
+        "INVALID_REACTION_TYPE": "Tipo de reacción inválido {reactionType} para la sección del foro: {publication_section}"
+    },
+    "notifications": {
+        "PUBLICATION_DELETED": "Publicación eliminada exitosamente"
+    }
+}

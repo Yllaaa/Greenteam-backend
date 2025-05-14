@@ -71,13 +71,13 @@ export class EventsService {
   async addUserJoinedEvent(eventId: string, userId: string) {
     try {
       if (!(await this.eventExist(eventId))) {
-        throw new NotFoundException('Event not found');
+        throw new NotFoundException('events.events.errors.EVENT_NOT_FOUND');
       }
 
       return await this.eventsRepository.addUserJoinedEvent(eventId, userId);
     } catch (error) {
       if (error.code === '23505') {
-        throw new ConflictException('User already joined this event');
+        throw new ConflictException('events.events.validations.USER_ALREADY_JOINED');
       }
 
       throw error;
@@ -86,21 +86,21 @@ export class EventsService {
 
   async removeUserJoinedEvent(eventId: string, userId: string) {
     if (!(await this.eventExist(eventId))) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException('events.events.errors.EVENT_NOT_FOUND');
     }
     if (!(await this.eventsRepository.checkUserJoinedEvent(eventId, userId))) {
-      throw new NotFoundException('User has not joined this event');
+      throw new NotFoundException('events.events.validations.USER_NOT_JOINED');
     }
     return await this.eventsRepository.removeUserJoinedEvent(eventId, userId);
   }
   async deleteEvent(id: string, userId: string) {
     const event = await this.eventsRepository.getEventById(id);
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException('events.events.errors.EVENT_NOT_FOUND');
     }
 
     if (event.creatorId !== userId) {
-      throw new BadRequestException('You are not the creator of this event');
+      throw new BadRequestException('events.events.validations.USER_EVENT_CREATOR');
     }
 
     return await this.eventsRepository.deleteEvent(id, userId);

@@ -8,6 +8,7 @@ import { extname } from 'path';
 import { Request } from 'express';
 import { diskStorage } from 'multer';
 import * as sharp from 'sharp';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class UploadMediaService {
@@ -28,8 +29,11 @@ export class UploadMediaService {
   ];
   private readonly ALLOWED_DOCS = ['.pdf', '.docx'];
   private readonly ALLOWED_AUDIO = ['.mp3', '.wav'];
+  
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly i18n: I18nService,
+    private readonly configService: ConfigService) {
     this.s3 = new S3({
       accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
@@ -43,23 +47,29 @@ export class UploadMediaService {
     if (this.ALLOWED_IMAGES.includes(fileExt)) {
       if (fileSizeMB > this.MAX_IMAGE_SIZE) {
         throw new BadRequestException(
-          `Image size must be under ${this.MAX_IMAGE_SIZE}MB.`,
+          this.i18n.translate('common.common.errors.MAX_IMAGE_SIZE', {
+            args: { MAX_IMAGE_SIZE: this.MAX_IMAGE_SIZE },
+          }),
         );
       }
     } else if (this.ALLOWED_DOCS.includes(fileExt)) {
       if (fileSizeMB > this.MAX_DOC_SIZE) {
         throw new BadRequestException(
-          `Document size must be under ${this.MAX_DOC_SIZE}MB.`,
+          this.i18n.translate('common.common.errors.MAX_DOC_SIZE', {
+            args: { MAX_DOC_SIZE: this.MAX_DOC_SIZE },
+          }),
         );
       }
     } else if (this.ALLOWED_AUDIO.includes(fileExt)) {
       if (fileSizeMB > this.MAX_AUDIO_SIZE) {
         throw new BadRequestException(
-          `Audio size must be under ${this.MAX_AUDIO_SIZE}MB.`,
+          this.i18n.translate('common.common.errors.MAX_AUDIO_SIZE', {
+            args: { MAX_AUDIO_SIZE: this.MAX_AUDIO_SIZE },
+          }),
         );
       }
     } else {
-      throw new BadRequestException('Invalid file type.');
+      throw new BadRequestException('common.common.errors.INVALID_FILE_TYPE');
     }
   }
 
@@ -67,13 +77,15 @@ export class UploadMediaService {
     return new Promise((resolve, reject) => {
       ffmpeg(file.path).ffprobe((err, metadata) => {
         if (err) {
-          return reject(new BadRequestException('Invalid audio file.'));
+          return reject(new BadRequestException('common.common.errors.INVALID_AUDIO_TYPE'));
         }
         const duration = metadata.format.duration;
         if (duration > this.MAX_AUDIO_DURATION) {
           return reject(
             new BadRequestException(
-              `Audio must be under ${this.MAX_AUDIO_DURATION} seconds.`,
+              this.i18n.translate('common.common.errors.AUDIO_LIMIT_TIME_EXCEEDED', {
+                args: { AUDIO_LIMIT_TIME_EXCEEDED: this.MAX_AUDIO_DURATION },
+              }),
             ),
           );
         }
@@ -99,7 +111,7 @@ export class UploadMediaService {
 
     if (!validCombination) {
       throw new BadRequestException(
-        'Invalid media combination. Allowed: (1) up to 3 images + 1 audio, (2) up to 4 images, (3) 1 audio only, or (4) 1 document only.',
+        'common.common.errors.INVALID_MEDIA_COMBINATION',
       );
     }
   }

@@ -67,7 +67,7 @@ export class PostsService {
   async getPosts(dto: GetPostsDto, userId: string) {
     if (dto.mainTopicId && dto.subTopicId) {
       throw new BadRequestException(
-        'You can only filter by main topic or sub topic',
+        'pages.posts.errors.FILTER_CONFLICT',
       );
     }
     return await this.postsRepository.getFilteredPosts(
@@ -86,7 +86,7 @@ export class PostsService {
   async getPostInDetails(postId: string, userId: string) {
     const [post] = await this.postsRepository.getPostInDetails(postId, userId);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('pages.posts.errors.POST_NOT_FOUND');
     }
     return post;
   }
@@ -94,7 +94,7 @@ export class PostsService {
   async getPostById(postId: string) {
     const post = await this.postsRepository.getPostById(postId);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('pages.posts.errors.POST_NOT_FOUND');
     }
     return post;
   }
@@ -128,11 +128,11 @@ export class PostsService {
   async deletePost(postId: string, userId: string) {
     const post = await this.getPostById(postId);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('pages.posts.errors.POST_NOT_FOUND');
     }
 
     if (post.creatorId !== userId) {
-      throw new BadRequestException('You are not allowed to delete this post');
+      throw new BadRequestException('pages.posts.errors.DELETE_POST_AUTHORIZATION_DENIAL');
     }
     await this.postsRepository.deletePost(postId, userId);
   }
