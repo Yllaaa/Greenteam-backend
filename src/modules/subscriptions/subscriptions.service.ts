@@ -27,6 +27,7 @@ export class SubscriptionsService {
       id: tier.id,
       name: tier.name,
       price: tier.price,
+      isDirectlySubscriptable: tier.isDirectlySubscriptable,
       benefits: tier.TierBenefits.map((tb) => tb.benefit.benefit),
     }));
     return formattedResponse;
