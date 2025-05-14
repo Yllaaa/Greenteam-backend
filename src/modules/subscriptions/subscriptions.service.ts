@@ -44,9 +44,7 @@ export class SubscriptionsService {
     if (!tier) {
       throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
     }
-    if (tier.name.toLowerCase() === 'basic') {
-      throw new BadRequestException('subscriptions.subscriptions.errors.CANNOT_SUBSCRIBE_TO_BASIC');
-    }
+
 
     // 2. Check existing subscription and validate upgrade path
     const existingSubscription =

@@ -1,0 +1,1 @@
+ALTER TABLE "subscription_tiers" ADD COLUMN "is_directly_subscriptable" boolean DEFAULT true;
