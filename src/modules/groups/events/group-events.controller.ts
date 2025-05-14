@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GroupEventsService } from './group-events.service';
-import { CreateEventDto } from '../../events/events/dto/events.dto';
+import { CreateEventDto } from '../../events/events/dto/createEvents.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
 import { FileInterceptor } from '@nestjs/platform-express';

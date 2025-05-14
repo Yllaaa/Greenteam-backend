@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { PagesEventsService } from './pages-events.service';
-import { CreateEventDto } from 'src/modules/events/events/dto/events.dto';
+import { CreateEventDto } from 'src/modules/events/events/dto/createEvents.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';

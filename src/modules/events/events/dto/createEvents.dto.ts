@@ -8,7 +8,11 @@ import {
   IsUUID,
 } from 'class-validator';
 import { SQL } from 'drizzle-orm';
-import { CreatorType, EventCategory } from 'src/modules/db/schemas/schema';
+import {
+  CreatorType,
+  EventCategory,
+  EventMode,
+} from 'src/modules/db/schemas/schema';
 
 export class CreateEventDto {
   @IsIn(['user', 'page'])
@@ -33,6 +37,9 @@ export class CreateEventDto {
 
   @IsIn(EventCategory.enumValues)
   category: SQL<'social' | 'volunteering&work' | 'talks&workshops'>;
+
+  @IsIn(['online', 'local'])
+  eventMode: EventMode;
 
   @IsNumber()
   @Type(() => Number)

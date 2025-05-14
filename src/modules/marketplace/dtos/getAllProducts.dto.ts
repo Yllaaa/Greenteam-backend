@@ -2,9 +2,8 @@ import { IsEnum, IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 export enum MarketType {
-  LOCAL_BUSINESS = 'local_business',
-  VALUE_DRIVEN_BUSINESS = 'value_driven_business',
-  SECOND_HAND = 'second_hand',
+  LOCAL = 'local',
+  ONLINE = 'online',
 }
 
 export class GetAllProductsDto {

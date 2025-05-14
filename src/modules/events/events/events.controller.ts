@@ -14,7 +14,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateEventDto } from '../events/dto/events.dto';
+import { CreateEventDto } from './dto/createEvents.dto';
 import { EventsService } from './events.service';
 import { GetEventsDto } from '../events/dto/getEvents.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';

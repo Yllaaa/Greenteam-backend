@@ -1,4 +1,5 @@
 import { SQL } from 'drizzle-orm';
+import { EventMode } from 'src/modules/db/schemas/schema';
 
 type EventCategory = 'social' | 'volunteering&work' | 'talks&workshops';
 
@@ -10,6 +11,7 @@ export interface EventResponse {
   startDate: Date;
   endDate: Date;
   category: EventCategory;
+  mode: EventMode;
   poster: string | null;
   hostedBy: SQL<'Global' | 'Greenteam' | 'user' | 'page'>;
   groupId: string | null;

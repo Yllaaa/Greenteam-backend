@@ -34,13 +34,11 @@ export class MarketplaceController {
     const userId = request.user.id;
     const sellerId = userId;
     const sellerType = 'user';
-    const marketType = 'second_hand' as MarketType;
 
     return this.marketplaceService.createProduct({
       ...createProductDto,
       sellerId,
       sellerType,
-      marketType,
       images,
     });
   }

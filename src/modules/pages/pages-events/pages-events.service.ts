@@ -5,7 +5,7 @@ import {
   HttpException,
   HttpCode,
 } from '@nestjs/common';
-import { CreateEventDto } from 'src/modules/events/events/dto/events.dto';
+import { CreateEventDto } from 'src/modules/events/events/dto/createEvents.dto';
 import { EventsRepository } from 'src/modules/events/events/events.repository';
 import { PagesService } from '../pages/pages.service';
 import { CreatorType } from 'src/modules/db/schemas/schema';

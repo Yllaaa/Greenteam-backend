@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { and, desc, eq, sql } from 'drizzle-orm';
-import { events } from 'src/modules/db/schemas/schema';
+import { EventMode, events } from 'src/modules/db/schemas/schema';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { EventResponse } from 'src/modules/events/events/interfaces/events.interface';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
@@ -14,7 +14,7 @@ export class PagesEventsRepository {
     pageId: string,
     userId?: string,
   ): Promise<EventResponse[]> {
-    const { page, limit, category } = dto;
+    const { page, limit, category, eventMode } = dto;
     const offset = Math.max(0, (page - 1) * limit);
     const returnedEvents = await this.drizzleService.db.query.events.findMany({
       columns: {
@@ -22,7 +22,7 @@ export class PagesEventsRepository {
         title: true,
         description: true,
         location: true,
-
+        mode: true,
         startDate: true,
         endDate: true,
         category: true,
@@ -36,6 +36,7 @@ export class PagesEventsRepository {
         and(
           category ? eq(events.category, dto.category) : undefined,
           eq(events.creatorId, pageId),
+          eventMode ? eq(events.mode, dto.eventMode as EventMode) : undefined,
         ),
       extras: userId
         ? {

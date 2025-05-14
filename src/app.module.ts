@@ -36,7 +36,7 @@ import { I18nResponseInterceptor } from './modules/common/filters/i18n-response.
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { NotificationQueueModule } from './modules/common/queues/notification-queue/notification-queue.module';
 import { UtilsModule } from './modules/utils/utils.module';
-import { DashboardModule } from './dashboard/dashboard.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 @Global()
 @Module({
   imports: [

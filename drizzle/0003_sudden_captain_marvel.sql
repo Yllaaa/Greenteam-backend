@@ -1,1 +1,0 @@
-ALTER TABLE "forum_publications" DROP COLUMN "media_url";
