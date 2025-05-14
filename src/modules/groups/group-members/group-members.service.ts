@@ -7,6 +7,7 @@ import { GroupMembersRepository } from './group-members.repository';
 import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
 import { UsersService } from 'src/modules/users/users.service';
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class GroupMembersService {
@@ -14,7 +15,8 @@ export class GroupMembersService {
     private readonly groupMembersRepository: GroupMembersRepository,
     private readonly usersService: UsersService,
     private readonly notificationQueueService: NotificationQueueService,
-  ) {}
+    private readonly i18n: I18nService
+  ) { }
 
   async joinGroup(userId: string, groupId: string) {
     try {
@@ -39,8 +41,8 @@ export class GroupMembersService {
           group.name,
         );
       }
-
-      return { message: 'groups.groups.notifications.GROUP_JOINED' };
+      const translatedMessage = await this.i18n.t('groups.groups.notifications.GROUP_JOINED');
+      return { message: translatedMessage };
     } catch (error) {
       if (
         error instanceof ConflictException ||
@@ -62,7 +64,8 @@ export class GroupMembersService {
       throw new NotFoundException('groups.group-members.errors.GROUP_MEMBERSHIP_NOT_FOUND');
     }
 
-    return { message: 'groups.groups.notifications.GROUP_LEFT' };
+    const translatedMessage = await this.i18n.t('groups.groups.notifications.GROUP_LEFT');
+    return { message: translatedMessage };
   }
 
   async getGroupMembers(groupId: string) {

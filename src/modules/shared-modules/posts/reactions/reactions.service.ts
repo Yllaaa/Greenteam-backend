@@ -13,6 +13,7 @@ import { NotificationQueueService } from 'src/modules/common/queues/notification
 import { UsersService } from 'src/modules/users/users.service';
 import { NotificationsService } from 'src/modules/notifications/notifications.service';
 import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class ReactionsService {
   private readonly allowedReactions = {
@@ -29,6 +30,7 @@ export class ReactionsService {
     private readonly usersService: UsersService,
     private readonly notificationQueueService: NotificationQueueService,
     private readonly notificationsService: NotificationsService,
+    private readonly i18n: I18nService,
   ) {}
 
   async toggleReaction(userId: string, dto: CreateReactionDto) {
@@ -40,7 +42,9 @@ export class ReactionsService {
     const postCreatorId = post?.creatorId;
     if (!this.isReactionValid(dto.reactionableType, dto.reactionType)) {
       throw new BadRequestException(
-        `Invalid reaction type "${dto.reactionType}" for ${dto.reactionableType}.`,
+        this.i18n.translate('shared-modules.reactions.errors.INVALID_REACTION_TYPE', {
+          args: { reactionType: dto.reactionType, reactionableType: dto.reactionableType },
+        }),
       );
     }
 
@@ -80,7 +84,7 @@ export class ReactionsService {
         this.queuesService.removePointsJob(userId, topicId, action);
       }
 
-      return { action: 'removed' };
+      return { action: 'shared-modules.reactions.notifications.REMOVED' };
     }
 
     const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
@@ -95,7 +99,7 @@ export class ReactionsService {
       this.queuesService.addPointsJob(userId, topicId, action);
     }
 
-    return { action: 'added' };
+    return { action: 'shared-modules.reactions.notifications.ADDED' };
   }
 
   private async handleStandardReaction(
@@ -125,13 +129,13 @@ export class ReactionsService {
           };
           this.queuesService.removePointsJob(userId, topicId, action);
         }
-        return { action: 'removed' };
+        return { action: 'shared-modules.reactions.notifications.REMOVED' };
       } else {
         const [updated] = await this.reactionsRepository.updateReaction(
           userId,
           dto,
         );
-        return { action: 'updated', type: updated.reactionType };
+        return { action: 'shared-modules.reactions.notifications.UPDATED', type: updated.reactionType };
       }
     }
 
@@ -165,7 +169,7 @@ export class ReactionsService {
       });
     }
 
-    return { action: 'added' };
+    return { action: 'shared-modules.reactions.notifications.ADDED' };
   }
 
   private isReactionValid(
@@ -180,7 +184,7 @@ export class ReactionsService {
   private async getUserInfo(userId: string) {
     const user = await this.usersService.getUserById(userId);
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException('users.profiles.errors.USER_NOT_FOUND');
     }
     return {
       id: user.id,

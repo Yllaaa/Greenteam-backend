@@ -1,0 +1,10 @@
+{
+    "errors": {
+        "PUBLICATION_NOT_FOUND": "Publication not found",
+        "DELETE_PUBLICATION_AUTHORIZATION_DENIAL": "You are not allowed to delete this publication",
+        "INVALID_REACTION_TYPE": "Invalid reaction type {reactionType} for forum section: {publication_section}" 
+    },
+    "notifications": {
+        "PUBLICATION_DELETED": "Publication deleted successfully"
+    }
+}

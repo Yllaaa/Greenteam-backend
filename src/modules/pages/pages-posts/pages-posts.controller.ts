@@ -19,10 +19,14 @@ import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
 import { CreatePagePostDto } from './dtos/create-page-post.dto';
+import { I18nService } from 'nestjs-i18n';
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class PagesPostsController {
-  constructor(private readonly pagesPostsService: PagesPostsService) {}
+  constructor(
+    private readonly pagesPostsService: PagesPostsService,
+    private readonly i18n: I18nService
+  ) { }
 
   @Get('')
   async getPagePosts(
@@ -74,8 +78,7 @@ export class PagesPostsController {
   ) {
     const userId = req.user.id;
     await this.pagesPostsService.deletePost(postId, slug, userId);
-    return {
-      message: 'Post deleted successfully',
-    };
+    const translatedMessage = await this.i18n.t('pages.posts.notifications.POST_DELETED');
+    return { message: translatedMessage };
   }
 }

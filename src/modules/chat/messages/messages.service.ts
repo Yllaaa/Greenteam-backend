@@ -31,7 +31,7 @@ export class MessagesService {
     const conversation =
       await this.conversationsService.getConversation(conversationId);
     if (!conversation) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('chat.chat.errors.NOT_FOUND', HttpStatus.NOT_FOUND);
     }
 
     const isParticipant = await this.conversationsService.isParticipant(
@@ -39,7 +39,7 @@ export class MessagesService {
       participant,
     );
     if (!isParticipant) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      throw new HttpException('chat.chat.errors.FORBIDDEN', HttpStatus.FORBIDDEN);
     }
 
     const messages = await this.messagesRepository.getMessagesPage(

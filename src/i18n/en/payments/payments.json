@@ -1,0 +1,8 @@
+{
+    "errors":{
+        "MISSING_STRIP_HEADER": "Missing stripe-signature header",
+        "MISSING_RAW_BODY_IN_REQUEST": "Missing raw body in the request",
+        "WEBHOOK_ERROR": "Webhook error: {message}",
+        "RENEWAL_PAYMENT_FAILED": "Renewal payment failed for subscription {subscription_id}"
+    }
+}

@@ -8,9 +8,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { SettingsRepository } from './settings.repository';
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class SettingsService {
-  constructor(private readonly settingsRepository: SettingsRepository) {}
+  constructor(
+    private readonly settingsRepository: SettingsRepository,
+    private readonly i18n: I18nService
+  ) { }
 
   async setUserFcmtoken(userId: string, fcmToken: string) {
     return await this.settingsRepository.setUserFcmtoken(userId, fcmToken);
@@ -28,6 +32,7 @@ export class SettingsService {
       userId,
       languagePreference,
     );
-    return { message: 'users.settings.notifications.LANGUAGE_UPDATED' };
+    const translatedMessage = await this.i18n.t('users.settings.notifications.LANGUAGE_UPDATED');
+    return { message: translatedMessage };
   }
 }

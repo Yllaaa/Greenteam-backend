@@ -1,0 +1,18 @@
+{
+    "errors": {
+        "MISSING_AUTH_TOKEN": "Missing authentication token",
+        "JWT_NOT_CONFIGURED": "JWT secret is not configured",
+        "INVALID_OR_EXPIRED_TOKEN": "Invalid or expired token",
+        "NOT_FOUND": "Not found",
+        "FORBIDDEN":"Forbidden",
+        "AUTH_TOKEN_NOT_PROVIDED":"No authentication token provided",
+        "JWT_CONFIG_ERROR": "JWT configuration error",
+        "INVALID_TOKEN": "Invalid token",
+        "RECIPIENT_REQUIRED_IN_CONVERSATION": "Recipient information is required for new conversations",
+        "CONVERSATION_NOT_FOUND": "Conversation not found",
+        "NOT_PARTICIPANT": "Not a participant in this conversation"
+    },
+    "validations": {
+        "MESSAGE_CANNOT_BE_EMPTY": "message cannot be empty"
+    }
+}

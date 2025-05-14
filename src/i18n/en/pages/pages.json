@@ -13,6 +13,8 @@
         "INVALID_SLUG_PAGE": "Invalid page slug"
     },
     "notifications": {
-        "PAGE_DELETED": "Page deleted successfully"
+        "PAGE_DELETED": "Page deleted successfully",
+        "CONTACT_ADDED_SUCCESSFULLY": "Contact added successfully",
+        "CONTACT_DELETED": "Contact deleted"
     }
 }

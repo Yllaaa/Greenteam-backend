@@ -1,0 +1,16 @@
+{
+    "errors": {
+        "INVALID_COUNTRY_ID": "ID de país inválido",
+        "INVALID_DISTRICT": "Distrito inválido o el distrito no pertenece al país especificado",
+        "MAX_IMAGE_SIZE": "El tamaño de la imagen debe ser inferior a {MAX_IMAGE_SIZE}MB.",
+        "MAX_DOC_SIZE": "El tamaño del documento debe ser inferior a {MAX_DOC_SIZE}MB.",
+        "MAX_AUDIO_SIZE": "El tamaño del audio debe ser inferior a {MAX_AUDIO_SIZE}MB.",
+        "INVALID_FILE_TYPE": "Tipo de archivo inválido.",
+        "INVALID_AUDIO_TYPE": "Archivo de audio inválido.",
+        "AUDIO_LIMIT_TIME_EXCEEDED": "El audio debe durar menos de {MAX_AUDIO_DURATION} segundos.",
+        "INVALID_MEDIA_COMBINATION": "Combinación de medios inválida. Permitido: (1) hasta 3 imágenes + 1 audio, (2) hasta 4 imágenes, (3) solo 1 audio, o (4) solo 1 documento."
+    },
+    "validations": {
+        "COUNTRY_ID_REQUIRED": "El ID del país es requerido cuando se especifica un distrito"
+    }
+}

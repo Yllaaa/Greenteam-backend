@@ -1,0 +1,18 @@
+{
+    "errors": {
+        "MISSING_AUTH_TOKEN": "Falta el token de autenticación",
+        "JWT_NOT_CONFIGURED": "El secreto JWT no está configurado",
+        "INVALID_OR_EXPIRED_TOKEN": "Token inválido o expirado",
+        "NOT_FOUND": "No encontrado",
+        "FORBIDDEN": "Prohibido",
+        "AUTH_TOKEN_NOT_PROVIDED": "No se proporcionó un token de autenticación",
+        "JWT_CONFIG_ERROR": "Error de configuración JWT",
+        "INVALID_TOKEN": "Token inválido",
+        "RECIPIENT_REQUIRED_IN_CONVERSATION": "Se requiere información del destinatario para nuevas conversaciones",
+        "CONVERSATION_NOT_FOUND": "Conversación no encontrada",
+        "NOT_PARTICIPANT": "No eres participante en esta conversación"
+    },
+    "validations": {
+        "MESSAGE_CANNOT_BE_EMPTY": "El mensaje no puede estar vacío"
+    }
+}

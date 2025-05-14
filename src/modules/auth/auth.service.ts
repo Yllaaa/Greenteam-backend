@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -21,18 +22,19 @@ export class AuthService {
     private authRepository: AuthRepository,
     private userService: UsersService,
     private mailService: MailService,
+    private readonly i18n: I18nService,
   ) {}
 
   async register(registerDto: RegisterDto) {
     const validUsernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
     if (!validUsernameRegex.test(registerDto.username)) {
       throw new BadRequestException(
-        'Username must be 3-30 characters long and can only contain letters, numbers, and underscores',
+        'auth.auth.validations.USERNAME_VALIDATION',
       );
     }
     const reservedUsernames = ['greenteam', 'admin', 'root'];
     if (reservedUsernames.includes(registerDto.username.toLowerCase())) {
-      throw new BadRequestException('Username is not allowed');
+      throw new BadRequestException('auth.auth.validations.USERNAME_NOT_ALLOWED');
     }
 
     const existingEmail = await this.authRepository.getUserByEmail(
@@ -40,7 +42,7 @@ export class AuthService {
     );
 
     if (existingEmail) {
-      throw new ConflictException('Email already in use');
+      throw new ConflictException('auth.auth.validations.EMAIL_IN_USE');
     }
 
     const existingUser = await this.authRepository.getUserByUsername(
@@ -49,7 +51,7 @@ export class AuthService {
 
     if (existingUser[0]) {
       console.log('existingUsername', existingUser[0]);
-      throw new ConflictException('Username already in use');
+      throw new ConflictException('auth.auth.validations.USERNAME_IN_USE');
     }
 
     const hashedPassword = await argon2.hash(registerDto.password);
@@ -77,7 +79,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { identifier, password } = loginDto;
     if (!identifier || !password) {
-      throw new UnauthorizedException('Missing email or password');
+      throw new UnauthorizedException('auth.auth.validations.MISSING_EMAIL_OR_PASSWORD');
     }
 
     const user = await this.validateUser(identifier, password);
@@ -91,11 +93,11 @@ export class AuthService {
     const isEmail = identifier.includes('@');
     const field = isEmail ? 'email' : 'username';
     user = await this.authRepository.validateUser(field, identifier);
-    if (!user) throw new UnauthorizedException('User not found!');
+    if (!user) throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
 
     const isPasswordValid = await argon2.verify(user.password, password);
     if (!isPasswordValid)
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('auth.auth.errors.INVALID_EMAIL_OR_PASSWORD');
 
     return user;
   }
@@ -144,13 +146,15 @@ export class AuthService {
         errorMessage += `: ${error.message}`;
       }
 
-      throw new UnauthorizedException(errorMessage);
+      throw new UnauthorizedException(this.i18n.translate('auth.auth.errors.GOOGLE_AUTHENTICATION_FAILED', {
+        args: { errorMessage: errorMessage },
+      }),);
     }
   }
 
   async validateJwtUser(userId: string) {
     const user = await this.authRepository.getUserById(userId);
-    if (!user) throw new UnauthorizedException('User not found!');
+    if (!user) throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
     const currentUser = {
       id: user.id,
       email: user.email,
@@ -185,7 +189,7 @@ export class AuthService {
     const user = await this.authRepository.checkUserVerification(token);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid verification token');
+      throw new UnauthorizedException('auth.auth.errors.INVALID_VERIFICATION_TOKEN');
     }
     const UpdatedUser = await this.authRepository.verifyEmail(user.id);
     const payload = {
@@ -193,9 +197,10 @@ export class AuthService {
       email: UpdatedUser[0].email,
       username: UpdatedUser[0].username,
     };
+    const translatedMessage = await this.i18n.t('auth.auth.notifications.EMAIL_VERIFIED_SUCCESSFULLY');
 
     return {
-      message: 'Email verified successfully',
+      message: translatedMessage,
       user: UpdatedUser,
       accessToken: this.jwtService.sign(payload),
     };
@@ -204,11 +209,11 @@ export class AuthService {
   async resendVerificationEmail(email: string) {
     const user = await this.authRepository.getUserByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
     }
 
     if (user.isEmailVerified) {
-      throw new ConflictException('Email already verified');
+      throw new ConflictException('auth.auth.validations.EMAIL_ALREADY_VERIFIED');
     }
     const verificationToken = uuidv4();
 
@@ -216,7 +221,9 @@ export class AuthService {
 
     await this.mailService.sendVerificationEmail(email, verificationToken);
 
-    return { message: 'Verification email sent' };
+    const translatedMessage = await this.i18n.t('auth.auth.notifications.VERIFICATION_EMAIL_SENT');
+
+    return { message: translatedMessage };
   }
 
   // forgot password
@@ -226,10 +233,12 @@ export class AuthService {
       forgotPasswordDto.email,
     );
 
+    const translatedMessage = await this.i18n.t('auth.auth.notifications.SENT_PASSWORD_RESET_LINK');
+
     if (!user) {
       return {
         message:
-          'If your email is registered, you will receive a password reset link',
+        translatedMessage,
       };
     }
 
@@ -246,11 +255,11 @@ export class AuthService {
 
       return {
         message:
-          'If your email is registered, you will receive a password reset link',
+        translatedMessage,
       };
     } catch (error) {
       await this.authRepository.forgotPassword(user.id, '', new Date(0));
-      throw new Error('Failed to process password reset');
+      throw new Error('auth.auth.errors.FAILED_TO_RESET_PASSWORD');
     }
   }
 
@@ -260,7 +269,7 @@ export class AuthService {
     const user = await this.authRepository.getUserByResetToken(hashedToken);
 
     if (!user[0]) {
-      throw new UnauthorizedException('Invalid or expired reset token');
+      throw new UnauthorizedException('auth.auth.errors.INVALID_RESET_TOKEN');
     }
 
     if (
@@ -269,7 +278,7 @@ export class AuthService {
       user[0].passwordResetTokenExpires < new Date()
     ) {
       await this.authRepository.forgotPassword(user[0].id, null, null);
-      throw new UnauthorizedException('Reset token has expired');
+      throw new UnauthorizedException('auth.auth.errors.RESET_TOKEN_EXPIRED');
     }
 
     const hashedPassword = await argon2.hash(resetPasswordDto.password);
@@ -284,9 +293,10 @@ export class AuthService {
       email: updatedUser[0].email,
       username: updatedUser[0].username,
     };
+    const translatedMessage = await this.i18n.t('auth.auth.notifications.PASSWORD_REST_SUCCESSFULLY');
 
     return {
-      message: 'Password has been reset successfully',
+      message: translatedMessage,
       accessToken: this.jwtService.sign(payload),
     };
   }

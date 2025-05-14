@@ -1,0 +1,15 @@
+{
+    "errors": {
+        "SUBSCRIPTION_NOT_FOUND": "Nivel de suscripción no encontrado",
+        "CANNOT_SUBSCRIBE_TO_BASIC": "No se puede suscribir directamente al nivel básico",
+        "FAILED_CREATE_SUBSCRIPTION": "No se pudo crear la suscripción",
+        "USER_HAS_NOT_ACTIVE_SUBSCRIPTION": "El usuario no tiene una suscripción activa"
+    },
+    "validations": {
+        "ALREADY_ACTIVE_SUBSCRIPTION": "El usuario ya tiene una suscripción activa",
+        "CANNOT_DOWNGRADE_SUBSCRIPTION": "No se puede degradar la suscripción"
+    },
+    "notifications": {
+        "SUBSCRIPTION_DELETED": "Suscripción eliminada"
+    }
+}

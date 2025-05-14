@@ -44,7 +44,7 @@ export class CommentsService {
       const publication =
         await this.commentsRepository.getForumPublicationById(publicationId);
       if (!publication) {
-        throw new NotFoundException('Publication not found');
+        throw new NotFoundException('forum.publications.errors.PUBLICATION_NOT_FOUND');
       }
       topicId = publication.mainTopicId;
       publicationCreatorId = publication.authorId;
@@ -54,7 +54,7 @@ export class CommentsService {
     ) {
       const post = await this.commentsRepository.getPostById(publicationId);
       if (!post) {
-        throw new NotFoundException('Post not found');
+        throw new NotFoundException('pages.posts.errors.POST_NOT_FOUND');
       }
       topicId = post.mainTopicId;
       publicationCreatorId = post.creatorId;
@@ -109,7 +109,7 @@ export class CommentsService {
       commentId,
       dto.publicationType,
     );
-    if (!comment) throw new NotFoundException('Comment not found');
+    if (!comment) throw new NotFoundException('shared-modules.comments.errors.COMMENT_NOT_FOUND');
 
     const newReply = await this.repliesRepository.createCommentReply({
       commentId,
@@ -178,11 +178,11 @@ export class CommentsService {
     );
 
     if (!comment) {
-      throw new NotFoundException('Comment not found');
+      throw new NotFoundException('shared-modules.comments.errors.COMMENT_NOT_FOUND');
     }
 
     if (comment.author.id !== userId) {
-      throw new NotFoundException('You are not allowed to delete this comment');
+      throw new NotFoundException('shared-modules.comments.errors.DELETE_COMMENT_AUTHORIZATION_DENIAL');
     }
 
     const deletedComment = await this.commentsRepository.deleteComment(
@@ -208,11 +208,11 @@ export class CommentsService {
   async deleteReply(id: string, userId: string) {
     const reply = await this.repliesRepository.findById(id);
     if (!reply) {
-      throw new NotFoundException('Reply not found');
+      throw new NotFoundException('shared-modules.comments.errors.REPLY_NOT_FOUND');
     }
 
     if (reply.author.id !== userId) {
-      throw new NotFoundException('You are not allowed to delete this reply');
+      throw new NotFoundException('shared-modules.comments.errors.DELETE_REPLY_AUTHORIZATION_DENIAL');
     }
 
     return this.repliesRepository.deleteReply(id, userId);

@@ -8,6 +8,7 @@ import {
 import { PaymentsRepository } from './payments.repository';
 import { StripeService } from '../stripe/stripe.service';
 import { SubscriptionsService } from 'src/modules/subscriptions/subscriptions.service';
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class PaymentsService {
   constructor(
@@ -15,6 +16,7 @@ export class PaymentsService {
     @Inject(forwardRef(() => SubscriptionsService))
     private readonly subscriptionsService: SubscriptionsService,
     private readonly stripeService: StripeService,
+    private readonly i18n: I18nService,
   ) {}
   private readonly logger = new Logger(SubscriptionsService.name);
 
@@ -39,7 +41,7 @@ export class PaymentsService {
       );
 
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
     }
     const existingSubscription =
       await this.subscriptionsService.getUserSubscriptionByUserId(
@@ -86,7 +88,7 @@ export class PaymentsService {
       );
 
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
     }
 
     const stripeInvoice = await this.stripeService.getInvoice(stripeInvoiceId);
@@ -104,7 +106,9 @@ export class PaymentsService {
       );
     } else if (subscription.status === 'active') {
       this.logger.warn(
-        `Renewal payment failed for subscription ${subscription.id}`,
+        this.i18n.translate('subscriptions.subscriptions.errors.RENEWAL_PAYMENT_FAILED', {
+          args: { subscription_id: subscription.id },
+        }),
       );
     }
 

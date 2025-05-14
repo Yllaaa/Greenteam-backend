@@ -42,10 +42,10 @@ export class SubscriptionsService {
     // 1. Validate tier and check if user can subscribe
     const tier = await this.subscriptionsRepository.getTierById(tierId);
     if (!tier) {
-      throw new NotFoundException('Subscription tier not found');
+      throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
     }
     if (tier.name.toLowerCase() === 'basic') {
-      throw new BadRequestException('Cannot directly subscribe to basic tier');
+      throw new BadRequestException('subscriptions.subscriptions.errors.CANNOT_SUBSCRIBE_TO_BASIC');
     }
 
     // 2. Check existing subscription and validate upgrade path
@@ -53,20 +53,20 @@ export class SubscriptionsService {
       await this.subscriptionsRepository.getUserSubscriptionByUserId(userId);
 
     if (existingSubscription?.tierId === tierId) {
-      throw new ConflictException('User already has an active subscription');
+      throw new ConflictException('subscriptions.subscriptions.validations.ALREADY_ACTIVE_SUBSCRIPTION');
     }
     if (
       !Array.isArray(existingSubscription?.tier) &&
       existingSubscription?.tier.price > tier.price
     ) {
-      throw new ConflictException('Cannot downgrade subscription');
+      throw new ConflictException('subscriptions.subscriptions.validations.CANNOT_DOWNGRADE_SUBSCRIPTION');
     }
 
     try {
       // 3. Get or create Stripe customer
       const user = await this.paymentsService.getUserStripeCustomerId(userId);
       if (!user) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
       }
 
       const stripeCustomerId = await this.getOrCreateStripeCustomer(user);
@@ -92,7 +92,7 @@ export class SubscriptionsService {
       };
     } catch (error) {
       this.logger.error(`Error creating subscription: ${error.message}`);
-      throw new InternalServerErrorException('Failed to create subscription');
+      throw new InternalServerErrorException('subscriptions.subscriptions.errors.FAILED_CREATE_SUBSCRIPTION');
     }
   }
 

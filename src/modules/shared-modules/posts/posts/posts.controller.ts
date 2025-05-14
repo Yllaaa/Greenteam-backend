@@ -22,11 +22,14 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly i18n: I18nService) { }
 
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
   @Post('publish-post')
@@ -64,6 +67,7 @@ export class PostsController {
   async deletePost(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     await this.postsService.deletePost(id, userId);
-    return { message: 'Post deleted successfully' };
+    const translatedMessage = await this.i18n.t('src/i18n/en/pages/posts.notifications.POST_DELETED');
+    return { message: translatedMessage };
   }
 }

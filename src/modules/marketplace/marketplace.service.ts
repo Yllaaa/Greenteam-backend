@@ -14,13 +14,16 @@ import {
 } from '../db/schemas/schema';
 import { GetAllProductsDto } from './dtos/getAllProducts.dto';
 import { UploadMediaService } from '../common/upload-media/upload-media.service';
+import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class MarketplaceService {
   constructor(
     private readonly marketplaceRepository: MarketplaceRepository,
     private readonly commonRepository: CommonRepository,
     private readonly uploadMediaService: UploadMediaService,
-  ) {}
+    private readonly i18n: I18nService
+
+  ) { }
 
   async createProduct(data: {
     sellerId: string;
@@ -57,8 +60,8 @@ export class MarketplaceService {
 
       await this.marketplaceRepository.insertProductImages(imageRecords);
     }
-
-    return { message: 'Product created successfully' };
+    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_CREATED');
+    return { message: translatedMessage };
   }
 
   async getAllProducts(query: GetAllProductsDto, userId: string) {
@@ -78,7 +81,7 @@ export class MarketplaceService {
       userId,
     );
     if (!product) {
-      throw new BadRequestException('Product not found');
+      throw new BadRequestException('pages.products.errors.PRODUCT_NOT_FOUND');
     }
     return {
       ...product,
@@ -103,7 +106,7 @@ export class MarketplaceService {
       userId,
     );
     if (!product) {
-      throw new BadRequestException('Product not found');
+      throw new BadRequestException('pages.products.errors.PRODUCT_NOT_FOUND');
     }
     const existingFavorite =
       await this.marketplaceRepository.getUserFavoriteProduct(
@@ -136,20 +139,21 @@ export class MarketplaceService {
       userId,
     );
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException('pages.products.errors.PRODUCT_NOT_FOUND');
     }
     if (product.sellerId !== userId) {
       throw new ForbiddenException(
-        'You are not authorized to delete this product',
+        'pages.products.errors.UNAUTHORIZED_PRODUCT_DELETE',
       );
     }
     await this.marketplaceRepository.deleteProduct(productId, userId);
-    return { message: 'Product deleted successfully' };
+    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_DELETED');
+    return { message: translatedMessage };
   }
 
   private validateSellerType(sellerType: SellerType) {
     if (sellerType !== 'user') {
-      throw new BadRequestException('Invalid seller type');
+      throw new BadRequestException('pages.products.errors.INVALID_SELLER_TYPE');
     }
   }
 
@@ -157,7 +161,7 @@ export class MarketplaceService {
     if (price !== undefined && price !== null) {
       const numeric = typeof price === 'string' ? parseFloat(price) : price;
       if (isNaN(numeric) || numeric < 0) {
-        throw new BadRequestException('Price must be a valid positive number');
+        throw new BadRequestException('pages.products.errors.INVALID_PRICE');
       }
     }
   }
@@ -165,7 +169,7 @@ export class MarketplaceService {
   private validateMarketType(marketType: string) {
     const valid = ['local_business', 'value_driven_business', 'second_hand'];
     if (marketType && !valid.includes(marketType)) {
-      throw new BadRequestException('Invalid market type');
+      throw new BadRequestException('pages.products.errors.INVALID_MARKET_TYPE');
     }
   }
 
@@ -176,18 +180,18 @@ export class MarketplaceService {
   ) {
     if (topicId) {
       const exists = await this.commonRepository.topicExists(topicId);
-      if (!exists) throw new BadRequestException('Invalid topic ID');
+      if (!exists) throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
     }
 
     if (countryId) {
       const exists = await this.commonRepository.countryExists(countryId);
-      if (!exists) throw new BadRequestException('Invalid country ID');
+      if (!exists) throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
     }
 
     if (cityId) {
       if (!countryId) {
         throw new BadRequestException(
-          'Country ID is required when district is specified',
+          'pages.products.errors.COUNTRY_REQUIRED',
         );
       }
       const exists = await this.commonRepository.cityExistsInCountry(
@@ -196,7 +200,7 @@ export class MarketplaceService {
       );
       if (!exists) {
         throw new BadRequestException(
-          'Invalid district or district does not belong to the specified country',
+          'pages.products.errors.INVALID_DISTRICT',
         );
       }
     }
