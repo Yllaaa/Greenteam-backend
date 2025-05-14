@@ -12,6 +12,7 @@ import { UploadMediaService } from 'src/modules/common/upload-media/upload-media
 import { CommonRepository } from 'src/modules/common/common.repository';
 import { CommonService } from 'src/modules/common/common.service';
 import { GetAllGroupsDtos } from './dtos/get-groups.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class GroupsService {
@@ -21,7 +22,9 @@ export class GroupsService {
     private readonly groupMembersService: GroupMembersService,
     private readonly commonRepository: CommonRepository,
     private readonly commonService: CommonService,
-  ) {}
+    private readonly i18n: I18nService
+
+  ) { }
 
   async createGroup(
     data: { dto: CreateGroupDto; banner: any },
@@ -122,6 +125,7 @@ export class GroupsService {
 
     await this.groupsRepository.deleteGroup(groupId, userId);
 
-    return { message: 'groups.groups.notifications.GROUP_DELETED' };
+    const translatedMessage = await this.i18n.t('groups.groups.notifications.GROUP_DELETED');
+    return { message: translatedMessage};
   }
 }

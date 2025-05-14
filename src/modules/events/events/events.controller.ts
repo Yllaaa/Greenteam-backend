@@ -20,11 +20,15 @@ import { GetEventsDto } from '../events/dto/getEvents.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { ValidatePosterInterceptor } from 'src/modules/common/upload-media/interceptors/validate-poster.interceptor';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class EventsController {
-  constructor(readonly eventsService: EventsService) {}
+  constructor(readonly eventsService: EventsService,
+    private readonly i18n: I18nService
+
+  ) { }
 
   @Post('create-event')
   @UseInterceptors(ValidatePosterInterceptor, FileInterceptor('poster'))
@@ -54,7 +58,8 @@ export class EventsController {
   async deleteEvent(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     await this.eventsService.deleteEvent(id, userId);
-    return { message: 'Event deleted' };
+    const translatedMessage = await this.i18n.t('pages.events.notifications.EVENT_DELETED');
+    return { message: translatedMessage };
   }
 
   @Post('/:id/join')
@@ -62,7 +67,8 @@ export class EventsController {
     const userId = req.user.id;
 
     await this.eventsService.addUserJoinedEvent(id, userId);
-    return { message: 'User joined event' };
+    const translatedMessage = await this.i18n.t('events.events.validations.USER_JOINED');
+    return { message: translatedMessage };
   }
 
   @Delete('/:id/leave')
@@ -70,6 +76,7 @@ export class EventsController {
     const userId = req.user.id;
 
     await this.eventsService.removeUserJoinedEvent(id, userId);
-    return { message: 'User left event' };
+    const translatedMessage = await this.i18n.t('events.events.validations.USER_LEFT_EVENT');
+    return { message: translatedMessage };
   }
 }

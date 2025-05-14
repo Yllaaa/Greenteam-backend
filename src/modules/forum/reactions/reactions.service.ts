@@ -11,6 +11,7 @@ import { ReactionsRepository } from 'src/modules/shared-modules/reactions/reacti
 import { ForumService } from '../publications/forum.service';
 import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { Action } from 'src/modules/pointing-system/pointing-system.repository';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class ReactionsService {
@@ -29,12 +30,15 @@ export class ReactionsService {
     private readonly reactionsRepository: ReactionsRepository,
     private readonly forumService: ForumService,
     private readonly queuesService: QueuesService,
+    private readonly i18n: I18nService,
   ) {}
 
   async toggleReaction(userId: string, dto: CreateReactionDto) {
     if (!this.isReactionValid(dto.reactionableType, dto.reactionType)) {
       throw new BadRequestException(
-        `Invalid reaction type "${dto.reactionType}" for ${dto.reactionableType}.`,
+        this.i18n.translate('shared-modules.reactions.errors.INVALID_REACTION_TYPE', {
+          args: { reactionType: dto.reactionType, reactionableType: dto.reactionableType },
+        }),
       );
     }
 
@@ -56,13 +60,13 @@ export class ReactionsService {
     if (isForumPublication) {
       publication = await this.forumService.getPublication(dto.reactionableId);
       if (!publication) {
-        throw new NotFoundException('Publication not found');
+        throw new NotFoundException('forum.publications.errors.PUBLICATION_NOT_FOUND');
       }
 
       if (!this.isValidForumReaction(publication.section, dto.reactionType)) {
-        throw new BadRequestException(
-          `Invalid reaction type "${dto.reactionType}" for forum section: ${publication.section}.`,
-        );
+        this.i18n.translate('forum.publications.errors.INVALID_REACTION_TYPE', {
+          args: { reactionType: dto.reactionType, publication_section: publication.section },
+        })
       }
 
       topicId = publication.mainTopicId;
@@ -98,14 +102,14 @@ export class ReactionsService {
           this.queuesService.removePointsJob(userId, topicId, action);
         }
 
-        return { action: 'removed' };
+        return { action: 'shared-modules.reactions.notifications.REMOVED' };
       }
 
       const [updated] = await this.reactionsRepository.updateReaction(
         userId,
         dto,
       );
-      return { action: 'updated', type: updated.reactionType };
+      return { action: 'shared-modules.reactions.notifications.UPDATED', type: updated.reactionType };
     }
 
     const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
@@ -114,7 +118,7 @@ export class ReactionsService {
       this.queuesService.addPointsJob(userId, topicId, action);
     }
 
-    return { action: 'added' };
+    return { action: 'shared-modules.reactions.notifications.ADDED' };
   }
 
   private isValidForumReaction(section: string, reactionType: string): boolean {

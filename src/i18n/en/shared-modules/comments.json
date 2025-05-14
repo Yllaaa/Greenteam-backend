@@ -1,0 +1,13 @@
+{
+    "errors": {
+        "COMMENT_NOT_FOUND": "Comment not found",
+        "DELETE_COMMENT_AUTHORIZATION_DENIAL": "You are not allowed to delete this comment",
+        "REPLY_NOT_FOUND": "Reply not found",
+        "DELETE_REPLY_AUTHORIZATION_DENIAL": "You are not allowed to delete this reply",
+        "TOPIC_NOT_FOUND": "Topic not found"
+    },
+    "notifications": {
+        "COMMENT_DELETED": "Comment deleted successfully",
+        "REPLY_DELETED": "Reply deleted successfully"
+    }
+}

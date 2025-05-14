@@ -24,11 +24,11 @@ export class WsJwtAuthGuard implements CanActivate {
       : authQuery || authAuth;
 
     if (!token) {
-      throw new UnauthorizedException('Missing authentication token');
+      throw new UnauthorizedException('chat.chat.errors.MISSING_AUTH_TOKEN');
     }
 
     if (!process.env.JWT_SECRET) {
-      throw new UnauthorizedException('JWT secret is not configured');
+      throw new UnauthorizedException('chat.chat.errors.JWT_NOT_CONFIGURED');
     }
 
     try {
@@ -39,7 +39,7 @@ export class WsJwtAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       console.error('JWT Verification Error:', error);
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException('chat.chat.errors.INVALID_OR_EXPIRED_TOKEN');
     }
   }
 }

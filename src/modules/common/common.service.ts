@@ -38,13 +38,13 @@ export class CommonService {
   async validateLocation(countryId: number, cityId: number) {
     if (countryId) {
       const exists = await this.commonRepository.countryExists(countryId);
-      if (!exists) throw new BadRequestException('Invalid country ID');
+      if (!exists) throw new BadRequestException('common.common.errors.INVALID_COUNTRY_ID');
     }
 
     if (cityId) {
       if (!countryId) {
         throw new BadRequestException(
-          'Country ID is required when district is specified',
+          'common.common.validations.COUNTRY_ID_REQUIRED',
         );
       }
       const exists = await this.commonRepository.cityExistsInCountry(
@@ -53,7 +53,7 @@ export class CommonService {
       );
       if (!exists) {
         throw new BadRequestException(
-          'Invalid district or district does not belong to the specified country',
+          'common.common.errors.INVALID_DISTRICT',
         );
       }
     }

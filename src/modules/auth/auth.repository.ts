@@ -3,10 +3,14 @@ import { DrizzleService } from '../db/drizzle.service';
 import { users } from '../db/schemas/users/users';
 import { eq, is } from 'drizzle-orm';
 import { User } from './interfaces/user.interface';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthRepository {
-  constructor(private drizzle: DrizzleService) {}
+  constructor(
+    private drizzle: DrizzleService,
+    private readonly i18n: I18nService
+  ) { }
 
   async validateUser(field: 'email' | 'username', value: string) {
     return await this.drizzle.db.query.users.findFirst({
@@ -129,7 +133,9 @@ export class AuthRepository {
       .update(users)
       .set({ verificationToken })
       .where(eq(users.email, email));
-    return { message: 'Verification email sent' };
+    const translatedMessage = await this.i18n.t('auth.auth.notifications.VERIFICATION_EMAIL_SENT');
+
+    return { message: translatedMessage };
   }
 
   async forgotPassword(

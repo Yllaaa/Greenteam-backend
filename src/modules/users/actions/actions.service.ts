@@ -4,18 +4,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ActionsRepository } from './action.repository';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class ActionsService {
   constructor(private readonly actionsRepository: ActionsRepository) {}
-
+  private readonly i18n: I18nService
   async blockEntity(
     userId: string,
     blockedId: string,
     blockedEntityType: 'user' | 'page',
   ) {
     if (userId === blockedId && blockedEntityType === 'user') {
-      throw new BadRequestException('You cannot block yourself');
+      throw new BadRequestException('users.actions.errors.BLOCK_YOURSELF');
     }
 
     try {
@@ -26,7 +27,9 @@ export class ActionsService {
 
       if (existingBlock) {
         throw new BadRequestException(
-          `You have already blocked this ${blockedEntityType}`,
+          this.i18n.translate('users.actions.validations.ALREADY_BLOCKED', {
+            args: { blockedEntityType: blockedEntityType },
+          }),
         );
       }
 
@@ -39,7 +42,7 @@ export class ActionsService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException('Failed to block entity');
+      throw new BadRequestException('users.actions.errors.FAILED_TO_BLOCK');
     }
   }
 
@@ -47,7 +50,7 @@ export class ActionsService {
     const block = await this.actionsRepository.findBlock(userId, blockedId);
 
     if (!block) {
-      throw new NotFoundException('Block not found');
+      throw new NotFoundException('users.actions.errors.BLOCK_NOT_FOUND');
     }
 
     return await this.actionsRepository.removeBlock(userId, blockedId);
@@ -79,7 +82,7 @@ export class ActionsService {
         reason,
       );
     } catch (error) {
-      throw new BadRequestException('Failed to submit report');
+      throw new BadRequestException('users.actions.errors.FAILED_TO_SUBMIT_REPORT');
     }
   }
 }

@@ -1,0 +1,13 @@
+{
+    "errors": {
+        "PUBLICATION_NOT_FOUND": "Publicación no encontrada",
+        "COMMENT_NOT_FOUND": "Comentario no encontrado",
+        "DELETE_COMMENT_AUTHORIZATION_DENIAL": "No tienes permiso para eliminar este comentario",
+        "REPLY_NOT_FOUND": "Respuesta no encontrada",
+        "DELETE_REPLY_AUTHORIZATION_DENIAL": "No tienes permiso para eliminar esta respuesta"
+    },
+    "notifications": {
+        "COMMENT_DELETED": "Comentario eliminado exitosamente",
+        "REPLY_DELETED": "Respuesta eliminada exitosamente"
+    }
+}

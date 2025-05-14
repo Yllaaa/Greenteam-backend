@@ -33,7 +33,7 @@ export class UsersController {
     const userId = req.user.id;
     const user = await this.usersService.deleteUser(userId);
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('auth.auth.errors.USER_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
     res.clearCookie('accessToken');
     return res.send();

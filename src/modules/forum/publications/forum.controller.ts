@@ -21,11 +21,15 @@ import { GetForumPublicationsDto } from './dtos/get-publication.dto';
 import { SQL } from 'drizzle-orm';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
 @Controller('')
 export class ForumController {
-  constructor(private readonly forumService: ForumService) {}
+  constructor(
+    private readonly forumService: ForumService,
+    private readonly i18n: I18nService
+  ) { }
 
   @Post('add-publication')
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
@@ -64,6 +68,8 @@ export class ForumController {
   async deletePublication(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     await this.forumService.deletePublication(id, userId);
-    return { message: 'Publication deleted successfully' };
+
+    const translatedMessage = await this.i18n.t('forum.publications.notifications.PUBLICATION_DELETED');
+    return { message: translatedMessage };
   }
 }

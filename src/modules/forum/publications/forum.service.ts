@@ -29,7 +29,7 @@ export class ForumService {
     const { dto, files } = data;
     const topic = await this.forumRepository.findTopicById(dto.mainTopicId);
     if (!topic) {
-      throw new NotFoundException('Topic not found');
+      throw new NotFoundException('shared-modules.comments.errors.TOPIC_NOT_FOUND');
     }
     const newPublication = await this.forumRepository.createPublication(
       dto,
@@ -78,7 +78,7 @@ export class ForumService {
     const publication =
       await this.forumRepository.findPublicationById(publicationId);
     if (!publication) {
-      throw new NotFoundException('Publication not found');
+      throw new NotFoundException('forum.publications.errors.PUBLICATION_NOT_FOUND');
     }
     return publication;
   }
@@ -115,11 +115,11 @@ export class ForumService {
     const publication =
       await this.forumRepository.findPublicationById(publicationId);
     if (!publication) {
-      throw new NotFoundException('Publication not found');
+      throw new NotFoundException('forum.publications.errors.PUBLICATION_NOT_FOUND');
     }
     if (publication.authorId !== userId) {
       throw new ForbiddenException(
-        'You are not allowed to delete this publication',
+        'forum.publications.errors.DELETE_PUBLICATION_AUTHORIZATION_DENIAL',
       );
     }
     await this.forumRepository.deletePublication(publicationId, userId);

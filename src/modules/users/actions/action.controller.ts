@@ -17,11 +17,15 @@ import { ActionsService } from './actions.service';
 import { CreateBlockDto } from './dto/create-block.dto';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
 export class ActionsController {
-  constructor(private readonly actionsService: ActionsService) {}
+  constructor(
+    private readonly actionsService: ActionsService,
+    private readonly i18n: I18nService
+  ) {}
 
   @Post('block')
   async blockEntity(@Req() req, @Body() createBlockDto: CreateBlockDto) {
@@ -38,9 +42,10 @@ export class ActionsController {
     const userId: string = req.user.id;
     const result = await this.actionsService.unblockEntity(userId, blockedId);
     if (!result) {
-      throw new NotFoundException('Block not found');
+      throw new NotFoundException('users.actions.errors.BLOCK_NOT_FOUND');
     }
-    return { message: 'unblocked successfully' };
+    const translatedMessage = await this.i18n.t('users.actions.notifications.UN_BLOCKED_SUCCESSFULLY');
+    return { message: translatedMessage };
   }
 
   @Get('blocks')

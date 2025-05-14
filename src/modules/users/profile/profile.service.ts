@@ -25,7 +25,7 @@ export class ProfileService {
   async getUserByUsername(username: string, userId: string) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
     const userData = await this.profileRepository.getUserProfile(
       user.id,
@@ -58,7 +58,7 @@ export class ProfileService {
       );
       if (existingUser) {
         throw new BadRequestException(
-          'Username already taken, please choose another one.',
+          'users.profiles.validations.USERNAME_TAKEN',
         );
       }
     }
@@ -93,7 +93,7 @@ export class ProfileService {
   ) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
     const posts = await this.profileRepository.getUserPosts(
       user.id,
@@ -130,7 +130,7 @@ export class ProfileService {
   ) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
     const pages = await this.profileRepository.getUserPages(
       user.id,
@@ -147,7 +147,7 @@ export class ProfileService {
   ) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
     const groups = await this.profileRepository.getUserGroups(
       user.id,
@@ -183,7 +183,7 @@ export class ProfileService {
   async toggleFollowUser(username: string, userId: string) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
 
     return await this.followersService.toggleFollow(userId, user.id);
@@ -196,7 +196,7 @@ export class ProfileService {
   ) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
     const products = await this.profileRepository.getUserCreatedProducts(
       user.id,
@@ -218,7 +218,7 @@ export class ProfileService {
   ) {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
     const events = await this.profileRepository.getUserCreatedEvents(
       user.id,

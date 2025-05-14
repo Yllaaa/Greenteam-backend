@@ -112,21 +112,21 @@ export class ChatGateway
         : authQuery || authAuth;
 
       if (!token) {
-        throw new WsException('No authentication token provided');
+        throw new WsException('chat.chat.errors.AUTH_TOKEN_NOT_PROVIDED');
       }
 
       if (!process.env.JWT_SECRET) {
-        throw new WsException('JWT configuration error');
+        throw new WsException('chat.chat.errors.JWT_CONFIG_ERROR');
       }
 
       const decoded = verify(token, process.env.JWT_SECRET) as { sub: string };
       if (!decoded?.sub) {
-        throw new WsException('Invalid token');
+        throw new WsException('chat.chat.errors.INVALID_TOKEN');
       }
 
       const user = await this.authService.getUserById(decoded.sub);
       if (!user) {
-        throw new WsException('User not found');
+        throw new WsException('auth.auth.errors.USER_NOT_FOUND');
       }
 
       client.data.userFullData = user;
@@ -137,7 +137,7 @@ export class ChatGateway
         : { type: 'user' as unknown as SQL<'user' | 'page'>, id: decoded.sub };
     } catch (error) {
       console.error('WebSocket Auth Error:', error);
-      throw new WsException('Authentication failed');
+      throw new WsException('auth.auth.errors.AUTH_FAILED');
     }
   }
 
@@ -180,7 +180,7 @@ export class ChatGateway
       const sender = client.data.sender;
       let conversation;
       if (!payload.content) {
-        throw new WsException('message cannot be empty');
+        throw new WsException('chat.chat.validations.MESSAGE_CANNOT_BE_EMPTY');
       }
 
       if (payload.conversationId) {
@@ -188,7 +188,7 @@ export class ChatGateway
           payload.conversationId,
         );
         if (!conversation) {
-          throw new WsException('Conversation not found');
+          throw new WsException('chat.chat.errors.CONVERSATION_NOT_FOUND');
         }
       } else {
         if (
@@ -197,7 +197,7 @@ export class ChatGateway
           !payload.recipient.type
         ) {
           throw new WsException(
-            'Recipient information is required for new conversations',
+            'chat.chat.errors.RECIPIENT_REQUIRED_IN_CONVERSATION',
           );
         }
 
@@ -219,7 +219,7 @@ export class ChatGateway
         sender,
       );
       if (!isParticipant) {
-        throw new WsException('Not a participant in this conversation');
+        throw new WsException('chat.chat.errors.NOT_PARTICIPANT');
       }
 
       const message = await this.messagesService.createMessage(
@@ -259,7 +259,7 @@ export class ChatGateway
         payload.conversationId,
       );
       if (!conversation) {
-        throw new WsException('Conversation not found');
+        throw new WsException('chat.chat.errors.CONVERSATION_NOT_FOUND');
       }
 
       const isParticipant = await this.conversationsService.isParticipant(
@@ -267,7 +267,7 @@ export class ChatGateway
         sender,
       );
       if (!isParticipant) {
-        throw new WsException('Not a participant in this conversation');
+        throw new WsException('chat.chat.errors.NOT_PARTICIPANT');
       }
 
       const updatedMessages = await this.messagesService.markMessagesAsSeen(

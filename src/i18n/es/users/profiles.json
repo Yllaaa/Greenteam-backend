@@ -1,0 +1,8 @@
+{
+    "errors": {
+        "USER_NOT_FOUND": "Usuario no encontrado"
+    },
+    "validations": {
+        "USERNAME_TAKEN": "Nombre de usuario ya tomado, por favor elige otro."
+    }
+}
