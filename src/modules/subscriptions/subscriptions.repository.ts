@@ -18,6 +18,7 @@ export class SubscriptionsRepository {
           id: true,
           name: true,
           price: true,
+          isDirectlySubscriptable: true,
         },
         with: {
           TierBenefits: {

@@ -10,5 +10,6 @@ interface SubscriptionTier {
   id: number;
   name: string;
   price: number;
+  isDirectlySubscriptable: boolean;
   TierBenefits: TierBenefit[];
 }
