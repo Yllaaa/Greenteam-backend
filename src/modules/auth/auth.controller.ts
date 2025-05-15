@@ -23,7 +23,7 @@ import { I18nService } from 'nestjs-i18n';
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private readonly i18n: I18nService
+    private readonly i18n: I18nService,
   ) {}
 
   private setAuthCookie(res: Response, token: string) {
@@ -39,7 +39,9 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     const response = await this.authService.register(registerDto);
     this.setAuthCookie(res, response?.accessToken);
-    const translatedMessage = await this.i18n.t('auth.auth.validations.CHECK_YOUR_EMAIL');
+    const translatedMessage = await this.i18n.t(
+      'auth.auth.validations.CHECK_YOUR_EMAIL',
+    );
     res.json({
       message: translatedMessage,
       ...response,
@@ -63,9 +65,9 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     try {
       const user = req.user;
-
+      console.log('Google user:', user);
       const response = await this.authService.googleLogin(user);
-
+      console.log('Google login response:', response);
       this.setAuthCookie(res, response?.accessToken);
 
       res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
@@ -85,7 +87,10 @@ export class AuthController {
   @Post('resend-verification')
   async resendVerification(@Body('email') email: string) {
     if (!email) {
-      throw new HttpException('auth.auth.validations.EMAIL_REQUIRED', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'auth.auth.validations.EMAIL_REQUIRED',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return this.authService.resendVerificationEmail(email);
   }

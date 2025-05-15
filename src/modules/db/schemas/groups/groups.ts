@@ -9,6 +9,7 @@ import {
   serial,
   integer,
   unique,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { users } from '../users/users';
 import { topics } from '../topics/topics';
@@ -32,6 +33,7 @@ export const groups = pgTable(
       .references(() => topics.id, { onDelete: 'cascade' }),
     countryId: integer('country_id').references(() => countries.id),
     cityId: integer('city_id').references(() => cities.id),
+    isVerified: boolean('is_verified').default(false),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
   },

@@ -34,7 +34,9 @@ export class AuthService {
     }
     const reservedUsernames = ['greenteam', 'admin', 'root'];
     if (reservedUsernames.includes(registerDto.username.toLowerCase())) {
-      throw new BadRequestException('auth.auth.validations.USERNAME_NOT_ALLOWED');
+      throw new BadRequestException(
+        'auth.auth.validations.USERNAME_NOT_ALLOWED',
+      );
     }
 
     const existingEmail = await this.authRepository.getUserByEmail(
@@ -79,7 +81,9 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { identifier, password } = loginDto;
     if (!identifier || !password) {
-      throw new UnauthorizedException('auth.auth.validations.MISSING_EMAIL_OR_PASSWORD');
+      throw new UnauthorizedException(
+        'auth.auth.validations.MISSING_EMAIL_OR_PASSWORD',
+      );
     }
 
     const user = await this.validateUser(identifier, password);
@@ -93,11 +97,14 @@ export class AuthService {
     const isEmail = identifier.includes('@');
     const field = isEmail ? 'email' : 'username';
     user = await this.authRepository.validateUser(field, identifier);
-    if (!user) throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
+    if (!user)
+      throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
 
     const isPasswordValid = await argon2.verify(user.password, password);
     if (!isPasswordValid)
-      throw new UnauthorizedException('auth.auth.errors.INVALID_EMAIL_OR_PASSWORD');
+      throw new UnauthorizedException(
+        'auth.auth.errors.INVALID_EMAIL_OR_PASSWORD',
+      );
 
     return user;
   }
@@ -109,10 +116,11 @@ export class AuthService {
   async googleLogin(profile: any) {
     try {
       let user = await this.authRepository.getUserByEmail(profile.email);
-
+      console.log('Google user:', profile);
       if (user && (!user.googleId || !user.isEmailVerified)) {
         await this.userService.updateUserGoogleId(user.id, profile.googleId);
       }
+
       if (!user) {
         const baseUsername = profile.email.split('@')[0];
         const username = await this.generateUniqueUsername(baseUsername);
@@ -136,6 +144,7 @@ export class AuthService {
 
         const createdUsers = await this.authRepository.createUser(newUser);
         user = createdUsers[0];
+        console.log('Created new user:', user);
       }
 
       const token = await this.generateToken(user);
@@ -146,15 +155,18 @@ export class AuthService {
         errorMessage += `: ${error.message}`;
       }
 
-      throw new UnauthorizedException(this.i18n.translate('auth.auth.errors.GOOGLE_AUTHENTICATION_FAILED', {
-        args: { errorMessage: errorMessage },
-      }),);
+      throw new UnauthorizedException(
+        this.i18n.translate('auth.auth.errors.GOOGLE_AUTHENTICATION_FAILED', {
+          args: { errorMessage: errorMessage },
+        }),
+      );
     }
   }
 
   async validateJwtUser(userId: string) {
     const user = await this.authRepository.getUserById(userId);
-    if (!user) throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
+    if (!user)
+      throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
     const currentUser = {
       id: user.id,
       email: user.email,
@@ -189,7 +201,9 @@ export class AuthService {
     const user = await this.authRepository.checkUserVerification(token);
 
     if (!user) {
-      throw new UnauthorizedException('auth.auth.errors.INVALID_VERIFICATION_TOKEN');
+      throw new UnauthorizedException(
+        'auth.auth.errors.INVALID_VERIFICATION_TOKEN',
+      );
     }
     const UpdatedUser = await this.authRepository.verifyEmail(user.id);
     const payload = {
@@ -197,7 +211,9 @@ export class AuthService {
       email: UpdatedUser[0].email,
       username: UpdatedUser[0].username,
     };
-    const translatedMessage = await this.i18n.t('auth.auth.notifications.EMAIL_VERIFIED_SUCCESSFULLY');
+    const translatedMessage = await this.i18n.t(
+      'auth.auth.notifications.EMAIL_VERIFIED_SUCCESSFULLY',
+    );
 
     return {
       message: translatedMessage,
@@ -213,7 +229,9 @@ export class AuthService {
     }
 
     if (user.isEmailVerified) {
-      throw new ConflictException('auth.auth.validations.EMAIL_ALREADY_VERIFIED');
+      throw new ConflictException(
+        'auth.auth.validations.EMAIL_ALREADY_VERIFIED',
+      );
     }
     const verificationToken = uuidv4();
 
@@ -221,7 +239,9 @@ export class AuthService {
 
     await this.mailService.sendVerificationEmail(email, verificationToken);
 
-    const translatedMessage = await this.i18n.t('auth.auth.notifications.VERIFICATION_EMAIL_SENT');
+    const translatedMessage = await this.i18n.t(
+      'auth.auth.notifications.VERIFICATION_EMAIL_SENT',
+    );
 
     return { message: translatedMessage };
   }
@@ -233,12 +253,13 @@ export class AuthService {
       forgotPasswordDto.email,
     );
 
-    const translatedMessage = await this.i18n.t('auth.auth.notifications.SENT_PASSWORD_RESET_LINK');
+    const translatedMessage = await this.i18n.t(
+      'auth.auth.notifications.SENT_PASSWORD_RESET_LINK',
+    );
 
     if (!user) {
       return {
-        message:
-        translatedMessage,
+        message: translatedMessage,
       };
     }
 
@@ -254,8 +275,7 @@ export class AuthService {
       await this.mailService.sendPasswordResetEmail(user.email, rawToken);
 
       return {
-        message:
-        translatedMessage,
+        message: translatedMessage,
       };
     } catch (error) {
       await this.authRepository.forgotPassword(user.id, '', new Date(0));
@@ -293,7 +313,9 @@ export class AuthService {
       email: updatedUser[0].email,
       username: updatedUser[0].username,
     };
-    const translatedMessage = await this.i18n.t('auth.auth.notifications.PASSWORD_REST_SUCCESSFULLY');
+    const translatedMessage = await this.i18n.t(
+      'auth.auth.notifications.PASSWORD_REST_SUCCESSFULLY',
+    );
 
     return {
       message: translatedMessage,
