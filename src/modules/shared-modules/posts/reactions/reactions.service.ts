@@ -42,9 +42,15 @@ export class ReactionsService {
     const postCreatorId = post?.creatorId;
     if (!this.isReactionValid(dto.reactionableType, dto.reactionType)) {
       throw new BadRequestException(
-        this.i18n.translate('shared-modules.reactions.errors.INVALID_REACTION_TYPE', {
-          args: { reactionType: dto.reactionType, reactionableType: dto.reactionableType },
-        }),
+        this.i18n.translate(
+          'shared-modules.reactions.errors.INVALID_REACTION_TYPE',
+          {
+            args: {
+              reactionType: dto.reactionType,
+              reactionableType: dto.reactionableType,
+            },
+          },
+        ),
       );
     }
 
@@ -84,7 +90,7 @@ export class ReactionsService {
         this.queuesService.removePointsJob(userId, topicId, action);
       }
 
-      return { action: 'shared-modules.reactions.notifications.REMOVED' };
+      return { action: 'removed' };
     }
 
     const [reaction] = await this.reactionsRepository.addReaction(userId, dto);
@@ -99,7 +105,7 @@ export class ReactionsService {
       this.queuesService.addPointsJob(userId, topicId, action);
     }
 
-    return { action: 'shared-modules.reactions.notifications.ADDED' };
+    return { action: 'added' };
   }
 
   private async handleStandardReaction(
@@ -129,13 +135,13 @@ export class ReactionsService {
           };
           this.queuesService.removePointsJob(userId, topicId, action);
         }
-        return { action: 'shared-modules.reactions.notifications.REMOVED' };
+        return { action: 'removed' };
       } else {
         const [updated] = await this.reactionsRepository.updateReaction(
           userId,
           dto,
         );
-        return { action: 'shared-modules.reactions.notifications.UPDATED', type: updated.reactionType };
+        return { action: 'updated', type: updated.reactionType };
       }
     }
 
@@ -169,7 +175,7 @@ export class ReactionsService {
       });
     }
 
-    return { action: 'shared-modules.reactions.notifications.ADDED' };
+    return { action: 'added' };
   }
 
   private isReactionValid(

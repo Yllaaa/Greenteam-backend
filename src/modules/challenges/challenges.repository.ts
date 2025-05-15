@@ -64,6 +64,7 @@ export class ChallengesRepository {
     }
     return await this.drizzleService.db
       .select({
+        createdAt: usersDoPosts.createdAt,
         post: {
           id: posts.id,
           content: posts.content,

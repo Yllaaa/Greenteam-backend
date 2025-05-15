@@ -10,6 +10,7 @@ import {
   integer,
   timestamp,
   index,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { events, posts, topics, users } from '../schema';
 import { relations } from 'drizzle-orm';
@@ -41,6 +42,8 @@ export const pages = pgTable(
     cityId: integer('city_id')
       .references(() => cities.id)
       .notNull(),
+    isVerified: boolean('is_verified').default(false),
+    updatedAt: timestamp('updated_at').defaultNow(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [
