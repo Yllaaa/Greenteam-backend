@@ -16,7 +16,8 @@ export class SubscriptionsRepository {
       {
         columns: {
           id: true,
-          name: true,
+          nameEn: true,
+          nameEs: true,
           price: true,
           isDirectlySubscriptable: true,
         },
@@ -26,7 +27,8 @@ export class SubscriptionsRepository {
             with: {
               benefit: {
                 columns: {
-                  benefit: true,
+                  benefitEn: true,
+                  benefitEs: true,
                 },
               },
             },
@@ -44,7 +46,8 @@ export class SubscriptionsRepository {
       where: eq(subscriptionTiers.id, tierId),
       columns: {
         id: true,
-        name: true,
+        nameEn: true,
+        nameEs: true,
         price: true,
         stripeProductId: true,
         stripePriceId: true,

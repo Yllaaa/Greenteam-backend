@@ -1,5 +1,6 @@
 interface SubscriptionBenefit {
-  benefit: string;
+  benefitEn: string;
+  benefitEs: string;
 }
 
 interface TierBenefit {
@@ -8,7 +9,8 @@ interface TierBenefit {
 
 interface SubscriptionTier {
   id: number;
-  name: string;
+  nameEn: string;
+  nameEs: string;
   price: number;
   isDirectlySubscriptable: boolean;
   TierBenefits: TierBenefit[];

@@ -64,6 +64,13 @@
       "when": 1747253251421,
       "tag": "0008_bitter_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1747352794016,
+      "tag": "0009_sudden_white_tiger",
+      "breakpoints": true
     }
   ]
 }
