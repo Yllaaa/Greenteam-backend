@@ -21,16 +21,22 @@ export class SubscriptionsService {
     private readonly stripeService: StripeService,
   ) {}
   private readonly logger = new Logger(SubscriptionsService.name);
-  async getSubscriptionTiers() {
+
+  async getSubscriptionTiers(lang?: string) {
     const tiers = await this.subscriptionsRepository.getSubscriptionTiers();
-    const formattedResponse = tiers.map((tier) => ({
+    return tiers.map((tier) => ({
       id: tier.id,
-      name: tier.name,
+      name: this.getLocalizedValue(tier.nameEn, tier.nameEs, lang),
       price: tier.price,
       isDirectlySubscriptable: tier.isDirectlySubscriptable,
-      benefits: tier.TierBenefits.map((tb) => tb.benefit.benefit),
+      benefits: tier.TierBenefits.map((tb) =>
+        this.getLocalizedValue(
+          tb.benefit.benefitEn,
+          tb.benefit.benefitEs,
+          lang,
+        ),
+      ),
     }));
-    return formattedResponse;
   }
 
   async getUserSubscriptionByUserId(userId: string) {
@@ -43,22 +49,27 @@ export class SubscriptionsService {
     // 1. Validate tier and check if user can subscribe
     const tier = await this.subscriptionsRepository.getTierById(tierId);
     if (!tier) {
-      throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
+      throw new NotFoundException(
+        'subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND',
+      );
     }
-
 
     // 2. Check existing subscription and validate upgrade path
     const existingSubscription =
       await this.subscriptionsRepository.getUserSubscriptionByUserId(userId);
 
     if (existingSubscription?.tierId === tierId) {
-      throw new ConflictException('subscriptions.subscriptions.validations.ALREADY_ACTIVE_SUBSCRIPTION');
+      throw new ConflictException(
+        'subscriptions.subscriptions.validations.ALREADY_ACTIVE_SUBSCRIPTION',
+      );
     }
     if (
       !Array.isArray(existingSubscription?.tier) &&
       existingSubscription?.tier.price > tier.price
     ) {
-      throw new ConflictException('subscriptions.subscriptions.validations.CANNOT_DOWNGRADE_SUBSCRIPTION');
+      throw new ConflictException(
+        'subscriptions.subscriptions.validations.CANNOT_DOWNGRADE_SUBSCRIPTION',
+      );
     }
 
     try {
@@ -91,7 +102,9 @@ export class SubscriptionsService {
       };
     } catch (error) {
       this.logger.error(`Error creating subscription: ${error.message}`);
-      throw new InternalServerErrorException('subscriptions.subscriptions.errors.FAILED_CREATE_SUBSCRIPTION');
+      throw new InternalServerErrorException(
+        'subscriptions.subscriptions.errors.FAILED_CREATE_SUBSCRIPTION',
+      );
     }
   }
 
@@ -230,5 +243,13 @@ export class SubscriptionsService {
       existingSubscription.id,
       'upgraded',
     );
+  }
+
+  private getLocalizedValue(
+    enValue: string,
+    esValue: string,
+    lang?: string,
+  ): string {
+    return lang === 'es' ? esValue : enValue;
   }
 }

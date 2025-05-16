@@ -116,7 +116,6 @@ export class AuthService {
   async googleLogin(profile: any) {
     try {
       let user = await this.authRepository.getUserByEmail(profile.email);
-      console.log('Google user:', profile);
       if (user && (!user.googleId || !user.isEmailVerified)) {
         await this.userService.updateUserGoogleId(user.id, profile.googleId);
       }
@@ -144,7 +143,6 @@ export class AuthService {
 
         const createdUsers = await this.authRepository.createUser(newUser);
         user = createdUsers[0];
-        console.log('Created new user:', user);
       }
 
       const token = await this.generateToken(user);

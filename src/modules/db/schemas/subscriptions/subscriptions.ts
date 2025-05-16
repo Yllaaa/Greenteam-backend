@@ -28,18 +28,20 @@ export const subscriptionTiers = pgTable(
   'subscription_tiers',
   {
     id: serial('id').primaryKey(),
-    name: text('name').notNull(),
+    nameEn: text('name_en'),
+    nameEs: text('name_es'),
     price: integer('price').notNull(),
     isDirectlySubscriptable: boolean('is_directly_subscriptable').default(true),
     stripeProductId: text('stripe_product_id'),
     stripePriceId: text('stripe_price_id'),
   },
-  (table) => [index('subscription_tiers_name_idx').on(table.name)],
+  (table) => [index('subscription_tiers_name_idx').on(table.nameEn)],
 );
 
 export const subscriptionBenefits = pgTable('subscription_benefits', {
   id: uuid('id').primaryKey().defaultRandom(),
-  benefit: text('benefit').notNull(),
+  benefitEn: text('benefit_en'),
+  benefitEs: text('benefit_es'),
 });
 
 export const subscriptionTierBenefits = pgTable(

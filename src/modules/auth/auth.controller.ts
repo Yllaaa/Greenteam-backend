@@ -65,9 +65,7 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     try {
       const user = req.user;
-      console.log('Google user:', user);
       const response = await this.authService.googleLogin(user);
-      console.log('Google login response:', response);
       this.setAuthCookie(res, response?.accessToken);
 
       res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
