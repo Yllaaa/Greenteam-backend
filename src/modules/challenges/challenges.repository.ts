@@ -12,6 +12,7 @@ import {
   usersGreenChallenges,
 } from '../db/schemas/schema';
 import { and, desc, eq, inArray, or, SQL, sql } from 'drizzle-orm';
+import { DoPostChallengeResult } from './interfaces/user-doPost-challenge.interface';
 @Injectable()
 export class ChallengesRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
@@ -25,13 +26,47 @@ export class ChallengesRepository {
       })
       .returning();
   }
-  async findDoPostChallenge(postId: string, userId: string) {
-    return await this.drizzleService.db.query.usersDoPosts.findFirst({
-      where: and(
-        eq(usersDoPosts.postId, postId),
-        eq(usersDoPosts.userId, userId),
-      ),
-    });
+  async findDoPostChallenge(
+    postId: string,
+    userId: string,
+  ): Promise<DoPostChallengeResult | null> {
+    const challenge = await this.drizzleService.db.query.usersDoPosts.findFirst(
+      {
+        where: and(
+          eq(usersDoPosts.postId, postId),
+          eq(usersDoPosts.userId, userId),
+        ),
+        with: {
+          post: {
+            columns: {
+              id: true,
+              content: true,
+              mainTopicId: true,
+            },
+            with: {
+              mainTopic: {
+                columns: {
+                  id: true,
+                  name: true,
+                },
+              },
+              subTopics: {
+                columns: {},
+                with: {
+                  topic: {
+                    columns: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    );
+    return challenge as unknown as DoPostChallengeResult;
   }
 
   async UpdateDoPostChallengeStatus(
@@ -266,6 +301,15 @@ export class ChallengesRepository {
           eq(usersGreenChallenges.userId, userId),
           eq(usersGreenChallenges.challengeId, challengeId),
         ),
+      );
+  }
+
+  async markDoPostChallengeAsDone(userId: string, postId: string) {
+    return await this.drizzleService.db
+      .update(usersDoPosts)
+      .set({ status: 'done' })
+      .where(
+        and(eq(usersDoPosts.userId, userId), eq(usersDoPosts.postId, postId)),
       );
   }
 

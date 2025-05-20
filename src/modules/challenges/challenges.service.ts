@@ -57,6 +57,22 @@ export class ChallengesService {
     );
   }
 
+  async deleteDoPost(postId: string, userId: string) {
+    const doPostChallenge = await this.challengesRepository.findDoPostChallenge(
+      postId,
+      userId,
+    );
+    if (!doPostChallenge) {
+      throw new NotFoundException(
+        'challenges.challenges.errors.DO_POST_CHALLENGE_NOT_FOUND',
+      );
+    }
+    return await this.challengesRepository.deleteDoPostChallenge(
+      userId,
+      postId,
+    );
+  }
+
   async addGreenChallengeToDo(userId: string, challengeId: string) {
     const challengeExists =
       await this.challengesRepository.findGreenChallengeById(challengeId);
@@ -117,6 +133,59 @@ export class ChallengesService {
     );
     return {
       statusCode: HttpStatus.CREATED,
+      message: translatedMessage,
+    };
+  }
+
+  async postAboutCompletedDoPostChallenge(
+    userId: string,
+    postId: string,
+    content: string,
+    files: any,
+  ) {
+    console.log('postId', postId);
+    const userDoPostChallenge =
+      await this.challengesRepository.findDoPostChallenge(postId, userId);
+    if (!userDoPostChallenge) {
+      throw new NotFoundException(
+        'challenges.challenges.errors.DO_POST_CHALLENGE_NOT_FOUND',
+      );
+    }
+
+    if (userDoPostChallenge?.status === 'done') {
+      throw new BadRequestException(
+        `challenges.challenges.validations.ALREADY_DONE_CHALLENGE`,
+      );
+    }
+
+    await this.challengesRepository.markDoPostChallengeAsDone(userId, postId);
+    const creatorType = 'user' as CreatorType;
+    const parentTopic = await this.challengesRepository.getParentTopic(
+      userDoPostChallenge.post.mainTopicId,
+    );
+    const mainTopicId = parentTopic?.id || userDoPostChallenge.post.mainTopicId;
+    const subTopicsIds = userDoPostChallenge.post.subTopics.map(
+      (subTopic) => subTopic.topic.id,
+    );
+    const postData = {
+      content,
+      mainTopicId,
+      creatorType: creatorType,
+      subtopicIds: subTopicsIds,
+    };
+    await this.postsService.createPost(
+      {
+        createPostDto: postData,
+        files,
+      },
+      userId,
+    );
+
+    const translatedMessage = await this.i18n.t(
+      'pages.posts.notifications.POST_CREATED',
+    );
+
+    return {
       message: translatedMessage,
     };
   }

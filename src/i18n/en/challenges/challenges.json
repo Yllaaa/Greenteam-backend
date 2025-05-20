@@ -1,18 +1,19 @@
 {
-    "errors": {
-        "DO_POST_CHALLENGE_NOT_FOUND": "Do post challenge not found'",
-        "GREEN_CHALLENGE_NOT_FOUND": "Green challenge not found",
-        "USER_HAS_NOT_ADDED": "User has not added this challenge"
-    },
-    "validations": {
-        "DO_POST_CHALLENGE_ALREADY_DONE": "Do post challenge is already marked as done",
-        "GREEN_CHALLENGE_ADDED_USER": "Green challenge already added to user",
-        "GREEN_CHALLENGE_ALREADY_DONE": "Green challenge is already marked as done",
-        "ALREADY_DONE_CHALLENGE": "you have already done this challenge"
-    },
-    "notifications": {
-        "GREEN_CHALLENGE_ADDED_USER": "Green challenge added to user",
-        "GREEN_CHALLENGE_MARKED_DONE": "Green challenge marked as done",
-        "DO_POST_MARKED_AS_DONE": "Do post marked as done"
-    }
+  "errors": {
+    "DO_POST_CHALLENGE_NOT_FOUND": "Do post challenge not found'",
+    "GREEN_CHALLENGE_NOT_FOUND": "Green challenge not found",
+    "USER_HAS_NOT_ADDED": "User has not added this challenge"
+  },
+  "validations": {
+    "DO_POST_CHALLENGE_ALREADY_DONE": "Do post challenge is already marked as done",
+    "GREEN_CHALLENGE_ADDED_USER": "Green challenge already added to user",
+    "GREEN_CHALLENGE_ALREADY_DONE": "Green challenge is already marked as done",
+    "ALREADY_DONE_CHALLENGE": "you have already done this challenge"
+  },
+  "notifications": {
+    "GREEN_CHALLENGE_ADDED_USER": "Green challenge added to user",
+    "GREEN_CHALLENGE_MARKED_DONE": "Green challenge marked as done",
+    "DO_POST_MARKED_AS_DONE": "Do post marked as done",
+    "DO_POST_DELETED": "Challenge removed"
+  }
 }

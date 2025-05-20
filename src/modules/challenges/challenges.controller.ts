@@ -10,13 +10,14 @@ import {
   Put,
   UploadedFiles,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChallengesService } from './challenges.service';
 import { UserChallengesDto } from './dtos/get-do-posts.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ValidateMediaInterceptor } from '../common/upload-media/interceptors/validateMedia.interceptor';
-import { GreenChallengePostDto } from './dtos/create-challenge-post.dto';
+import { ChallengePostDto } from './dtos/create-challenge-post.dto';
 import { I18nService } from 'nestjs-i18n';
 
 @UseGuards(JwtAuthGuard)
@@ -24,7 +25,7 @@ import { I18nService } from 'nestjs-i18n';
 export class ChallengesController {
   constructor(
     private readonly challengesService: ChallengesService,
-      private readonly i18n: I18nService
+    private readonly i18n: I18nService,
   ) {}
 
   @Get('do-posts')
@@ -44,7 +45,40 @@ export class ChallengesController {
   async markDoPostAsDone(@Req() req, @Param('id') postId: string) {
     const userId = req.user.id;
     await this.challengesService.markDoPostAsDone(postId, userId);
-    const translatedMessage = await this.i18n.t('challenges.challenges.notifications.DO_POST_MARKED_AS_DONE');
+    const translatedMessage = await this.i18n.t(
+      'challenges.challenges.notifications.DO_POST_MARKED_AS_DONE',
+    );
+    return { message: translatedMessage };
+  }
+
+  @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
+  @Post('do-posts/:id/done-with-post')
+  async createDoPostChallenge(
+    @Req() req,
+    @Param('id') postId: string,
+    @Body() dto: ChallengePostDto,
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      document?: Express.Multer.File[];
+    },
+  ) {
+    const userId = req.user.id;
+    return this.challengesService.postAboutCompletedDoPostChallenge(
+      userId,
+      postId,
+      dto.content,
+      files,
+    );
+  }
+
+  @Delete('do-posts/:id')
+  async deleteDoPost(@Req() req, @Param('id') postId: string) {
+    const userId = req.user.id;
+    await this.challengesService.deleteDoPost(postId, userId);
+    const translatedMessage = await this.i18n.t(
+      'challenges.challenges.notifications.DO_POST_DELETED',
+    );
     return { message: translatedMessage };
   }
 
@@ -87,10 +121,10 @@ export class ChallengesController {
 
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
   @Post('green-challenges/:id/done-with-post')
-  async createDoPostChallenge(
+  async createPostGreenChallenge(
     @Req() req,
     @Param('id') challengeId: string,
-    @Body() dto: GreenChallengePostDto,
+    @Body() dto: ChallengePostDto,
     @UploadedFiles()
     files: {
       images?: Express.Multer.File[];
