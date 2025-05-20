@@ -6,12 +6,12 @@ export const countries = pgTable(
   {
     id: serial('id').primaryKey(),
     nameEn: varchar('name_en', { length: 100 }).notNull(),
-    nameES: varchar('name_es', { length: 100 }).notNull(),
+    nameEs: varchar('name_es', { length: 100 }).notNull(),
     iso: varchar('iso', { length: 2 }).notNull(),
   },
   (table) => [
     index('country_name_en_idx').on(table.nameEn),
-    index('country_name_es_idx').on(table.nameES),
+    index('country_name_es_idx').on(table.nameEs),
     index('country_iso_idx').on(table.iso),
   ],
 );

@@ -15,7 +15,7 @@ export class CommonService {
     return countries.map((country) => {
       return {
         id: country.id,
-        name: locale === 'es' ? country.nameES : country.nameEn,
+        name: locale === 'es' ? country.nameEs : country.nameEn,
         iso: country.iso,
       };
     });
@@ -38,7 +38,10 @@ export class CommonService {
   async validateLocation(countryId: number, cityId: number) {
     if (countryId) {
       const exists = await this.commonRepository.countryExists(countryId);
-      if (!exists) throw new BadRequestException('common.common.errors.INVALID_COUNTRY_ID');
+      if (!exists)
+        throw new BadRequestException(
+          'common.common.errors.INVALID_COUNTRY_ID',
+        );
     }
 
     if (cityId) {
@@ -52,9 +55,7 @@ export class CommonService {
         countryId,
       );
       if (!exists) {
-        throw new BadRequestException(
-          'common.common.errors.INVALID_DISTRICT',
-        );
+        throw new BadRequestException('common.common.errors.INVALID_DISTRICT');
       }
     }
   }

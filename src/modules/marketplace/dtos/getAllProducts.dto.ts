@@ -1,4 +1,4 @@
-import { IsEnum, IsIn, IsInt, IsOptional, Min } from 'class-validator';
+import { Equals, IsEnum, IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 export enum MarketType {
@@ -40,4 +40,9 @@ export class GetAllProductsDto {
     message: `Invalid marketType. Must be one of: ${Object.values(MarketType).join(', ')}`,
   })
   marketType?: MarketType;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @Equals(true, { message: 'verified must be true if provided' })
+  verified?: boolean;
 }

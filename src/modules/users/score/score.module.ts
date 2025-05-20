@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ScoreService } from './score.service';
 import { ScoreController } from './score.controller';
 import { ScoreRepository } from './score.repository';
+import { ProfileModule } from '../profile/profile.module';
 
 @Module({
+  imports: [ProfileModule],
   providers: [ScoreService, ScoreRepository],
   controllers: [ScoreController],
 })

@@ -15,7 +15,7 @@ import { UpdatePageDto } from './dto/update-page.dto';
 import { getNotificationMessage } from 'src/modules/notifications/notification-messages';
 import { UsersService } from 'src/modules/users/users.service';
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
-import { I18nService } from 'nestjs-i18n';
+import { I18nService, I18nContext } from 'nestjs-i18n';
 @Injectable()
 export class PagesService {
   constructor(
@@ -125,6 +125,7 @@ export class PagesService {
 
   async getPageDetails(slug: string, userId: string) {
     const pageDetails = await this.pagesRepository.getPageDetails(slug, userId);
+    const lang = I18nContext.current()?.lang || 'en'; // Default to English if no language context
 
     if (!pageDetails) {
       throw new NotFoundException(
@@ -133,12 +134,22 @@ export class PagesService {
         }),
       );
     }
+    const countryName =
+      lang === 'es' ? pageDetails.country?.nameEs : pageDetails.country?.nameEn;
 
     const isAdmin = pageDetails.ownerId === userId;
-
     const { ownerId, ...pageWithoutOwnerId } = pageDetails;
 
-    return { ...pageWithoutOwnerId, isAdmin };
+    return {
+      ...pageWithoutOwnerId,
+      country: pageDetails.country
+        ? {
+            id: pageDetails.country.id,
+            name: countryName,
+          }
+        : null,
+      isAdmin,
+    };
   }
 
   async getPageOwnerId(pageId: string) {
@@ -284,8 +295,10 @@ export class PagesService {
     await this.pagesRepository.deletePagePosts(page.id);
     await this.pagesRepository.deletePageEvents(page.id);
     await this.pagesRepository.deletePageProducts(page.id);
-    
-    const translatedMessage = await this.i18n.t('pages.pages.notifications.PAGE_DELETED');
+
+    const translatedMessage = await this.i18n.t(
+      'pages.pages.notifications.PAGE_DELETED',
+    );
     return { message: translatedMessage };
   }
 

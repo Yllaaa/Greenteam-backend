@@ -9,6 +9,8 @@ import {
   uuid,
   index,
   pgEnum,
+  varchar,
+  json,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { users, usersSubscriptions } from '../schema';
@@ -102,3 +104,15 @@ export const subscriptionsInvoiceRelations = relations(
     }),
   }),
 );
+
+export const webhookEvents = pgTable('webhook_events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  eventId: varchar('event_id', { length: 255 }).notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  processedAt: timestamp('processed_at').notNull(),
+  eventType: varchar('event_type', { length: 255 }),
+  metadata: json('metadata'),
+});
+
+export type WebhookEvent = typeof webhookEvents.$inferSelect;
+export type NewWebhookEvent = typeof webhookEvents.$inferInsert;

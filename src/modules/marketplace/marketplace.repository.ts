@@ -6,8 +6,10 @@ import {
   MarketType,
   MediaParentType,
   MediaType,
+  pages,
   products,
   SellerType,
+  users,
 } from '../db/schemas/schema';
 import { and, eq, SQL, sql } from 'drizzle-orm';
 import { GetAllProductsDto } from './dtos/getAllProducts.dto';
@@ -86,7 +88,8 @@ export class MarketplaceRepository {
     pageId?: string,
   ) {
     const filters: SQL[] = [];
-    const { topicId, countryId, cityId, limit, page, marketType } = query;
+    const { topicId, countryId, cityId, limit, page, marketType, verified } =
+      query;
 
     if (topicId) filters.push(eq(products.topicId, topicId));
     if (countryId) filters.push(eq(products.countryId, countryId));
@@ -99,6 +102,7 @@ export class MarketplaceRepository {
 
     const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
 
+    // Build query options
     const queryOptions = this.buildProductQueryOptions(
       filters,
       userId,
@@ -109,11 +113,52 @@ export class MarketplaceRepository {
 
     queryOptions.orderBy = (products, { desc }) => [desc(products.createdAt)];
 
-    const result =
-      await this.drizzleService.db.query.products.findMany(queryOptions);
+    let result;
+    if (verified == true) {
+      const userVerifiedProducts = await this.drizzleService.db
+        .select()
+        .from(products)
+        .where(
+          and(
+            eq(products.sellerType, 'user'),
+            eq(users.isVerified, true),
+            ...filters,
+          ),
+        )
+        .innerJoin(users, eq(products.sellerId, users.id))
+        .limit(limit ?? 10)
+        .offset(offset);
+
+      const pageVerifiedProducts = await this.drizzleService.db
+        .select()
+        .from(products)
+        .where(
+          and(
+            eq(products.sellerType, 'page'),
+            eq(pages.isVerified, true),
+            ...filters,
+          ),
+        )
+        .innerJoin(pages, eq(products.sellerId, pages.id))
+        .limit(limit ?? 10)
+        .offset(offset);
+
+      // Combine and sort the results
+      result = [...userVerifiedProducts, ...pageVerifiedProducts]
+        .sort(
+          (a, b) =>
+            new Date(b.products.createdAt).getTime() -
+            new Date(a.products.createdAt).getTime(),
+        )
+        .slice(0, limit ?? 10)
+        .map((item) => item.products);
+    } else {
+      result =
+        await this.drizzleService.db.query.products.findMany(queryOptions);
+    }
+
     return result;
   }
-
   async getProductById(id: string, userId?: string): Promise<Product> {
     const filters = [eq(products.id, id)];
 

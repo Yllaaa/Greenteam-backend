@@ -3,7 +3,9 @@ import { DrizzleService } from '../../db/drizzle.service';
 import {
   EventMode,
   events,
+  pages,
   publicationsComments,
+  users,
   usersJoinedEvent,
 } from '../../db/schemas/schema';
 import { and, asc, desc, eq, isNull, sql, SQL } from 'drizzle-orm';
@@ -64,8 +66,10 @@ export class EventsRepository {
     dto: GetEventsDto,
     userId?: string,
   ): Promise<EventResponse[]> {
-    const { page, limit, countryId, cityId, category, eventMode } = dto;
+    const { page, limit, countryId, cityId, category, eventMode, verified } =
+      dto;
     const offset = Math.max(0, (page - 1) * limit);
+
     const returnedEvents = await this.drizzleService.db.query.events.findMany({
       columns: {
         id: true,
@@ -82,14 +86,31 @@ export class EventsRepository {
       },
       offset: offset,
       limit: limit,
-      orderBy: (events, { asc }) => [asc(events.priority), desc(events.id)],
-      where: (events, { and, eq, isNull }) =>
+      orderBy: (events, { asc, desc }) => [
+        asc(events.priority),
+        desc(events.id),
+      ],
+      where: (events, { and, eq, isNull, sql }) =>
         and(
           isNull(events.groupId),
-          category ? eq(events.category, dto.category) : undefined,
-          cityId ? eq(events.cityId, dto.cityId) : undefined,
-          countryId ? eq(events.countryId, dto.countryId) : undefined,
+          category ? eq(events.category, category) : undefined,
+          cityId ? eq(events.cityId, cityId) : undefined,
+          countryId ? eq(events.countryId, countryId) : undefined,
           eventMode ? eq(events.mode, eventMode as EventMode) : undefined,
+          // Filter for verified creators
+          verified
+            ? sql`(
+              (${events.creatorType} = 'user' AND EXISTS (
+                SELECT 1 FROM ${users} u 
+                WHERE u.id = ${events.creatorId} AND u.is_verified = true
+              ))
+              OR
+              (${events.creatorType} = 'page' AND EXISTS (
+                SELECT 1 FROM ${pages} p 
+                WHERE p.id = ${events.creatorId} AND p.is_verified = true
+              ))
+            )`
+            : undefined,
         ),
       extras: userId
         ? {
@@ -118,6 +139,7 @@ export class EventsRepository {
         },
       },
     });
+
     return returnedEvents as unknown as EventResponse[];
   }
 

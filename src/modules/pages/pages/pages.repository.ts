@@ -100,7 +100,7 @@ export class PagesRepository {
   }
 
   async getAllPages(query: GetAllPagesDto, userId: string) {
-    const { countryId, cityId, limit, page } = query;
+    const { countryId, cityId, limit, page, verified } = query;
     const offset = (page - 1) * limit;
     const whereConditions: Array<ReturnType<typeof eq>> = [];
 
@@ -109,6 +109,9 @@ export class PagesRepository {
     }
     if (cityId) {
       whereConditions.push(eq(pages.cityId, cityId));
+    }
+    if (verified) {
+      whereConditions.push(eq(pages.isVerified, true));
     }
 
     const pagesList = await this.drizzleService.db.query.pages.findMany({
@@ -123,6 +126,7 @@ export class PagesRepository {
         cover: true,
         category: true,
         ownerId: true,
+        isVerified: true,
       },
       with: {
         topic: {
@@ -158,7 +162,10 @@ export class PagesRepository {
     return pagesList;
   }
 
-  async getPageDetails(slug: string, userId: string) {
+  async getPageDetails(
+    slug: string,
+    userId: string,
+  ): Promise<PageDetails | null> {
     const page = await this.drizzleService.db.query.pages.findFirst({
       where: eq(pages.slug, slug),
       columns: {
@@ -183,6 +190,19 @@ export class PagesRepository {
             name: true,
           },
         },
+        country: {
+          columns: {
+            id: true,
+            nameEn: true,
+            nameEs: true,
+          },
+        },
+        city: {
+          columns: {
+            id: true,
+            nameEn: true,
+          },
+        },
       },
       extras: {
         followersCount: sql<number>`(
@@ -204,7 +224,7 @@ export class PagesRepository {
       },
     });
 
-    return page;
+    return page as PageDetails;
   }
 
   async getPageOwnerId(pageId: string) {
