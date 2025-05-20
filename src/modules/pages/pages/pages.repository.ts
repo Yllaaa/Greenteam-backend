@@ -158,7 +158,10 @@ export class PagesRepository {
     return pagesList;
   }
 
-  async getPageDetails(slug: string, userId: string) {
+  async getPageDetails(
+    slug: string,
+    userId: string,
+  ): Promise<PageDetails | null> {
     const page = await this.drizzleService.db.query.pages.findFirst({
       where: eq(pages.slug, slug),
       columns: {
@@ -183,6 +186,19 @@ export class PagesRepository {
             name: true,
           },
         },
+        country: {
+          columns: {
+            id: true,
+            nameEn: true,
+            nameEs: true,
+          },
+        },
+        city: {
+          columns: {
+            id: true,
+            nameEn: true,
+          },
+        },
       },
       extras: {
         followersCount: sql<number>`(
@@ -204,7 +220,7 @@ export class PagesRepository {
       },
     });
 
-    return page;
+    return page as PageDetails;
   }
 
   async getPageOwnerId(pageId: string) {

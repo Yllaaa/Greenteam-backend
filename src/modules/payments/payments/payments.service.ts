@@ -41,7 +41,9 @@ export class PaymentsService {
       );
 
     if (!subscription) {
-      throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
+      throw new NotFoundException(
+        'subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND',
+      );
     }
     const existingSubscription =
       await this.subscriptionsService.getUserSubscriptionByUserId(
@@ -52,6 +54,8 @@ export class PaymentsService {
       await this.subscriptionsService.handleExistingSubscription(
         existingSubscription,
       );
+    }
+    if (subscription.tierId == 1) {
     }
 
     const stripeInvoice = await this.stripeService.getInvoice(stripeInvoiceId);
@@ -88,7 +92,9 @@ export class PaymentsService {
       );
 
     if (!subscription) {
-      throw new NotFoundException('subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND');
+      throw new NotFoundException(
+        'subscriptions.subscriptions.errors.SUBSCRIPTION_NOT_FOUND',
+      );
     }
 
     const stripeInvoice = await this.stripeService.getInvoice(stripeInvoiceId);
@@ -106,9 +112,12 @@ export class PaymentsService {
       );
     } else if (subscription.status === 'active') {
       this.logger.warn(
-        this.i18n.translate('subscriptions.subscriptions.errors.RENEWAL_PAYMENT_FAILED', {
-          args: { subscription_id: subscription.id },
-        }),
+        this.i18n.translate(
+          'subscriptions.subscriptions.errors.RENEWAL_PAYMENT_FAILED',
+          {
+            args: { subscription_id: subscription.id },
+          },
+        ),
       );
     }
 

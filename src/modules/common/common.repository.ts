@@ -69,11 +69,11 @@ export class CommonRepository {
       columns: {
         id: true,
         nameEn: true,
-        nameES: true,
+        nameEs: true,
         iso: true,
       },
       orderBy: (countries, { asc }) => [
-        asc(countries[locale === 'en' ? 'nameEn' : 'nameES']),
+        asc(countries[locale === 'en' ? 'nameEn' : 'nameEs']),
       ],
     });
   }
