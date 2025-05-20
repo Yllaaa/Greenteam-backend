@@ -39,9 +39,10 @@ export class SubscriptionsService {
     }));
   }
 
-  async getUserSubscriptionByUserId(userId: string) {
+  async getUserSubscriptionByUserId(userId: string, tx?: any) {
     return await this.subscriptionsRepository.getUserSubscriptionByUserId(
       userId,
+      tx,
     );
   }
 
@@ -118,9 +119,10 @@ export class SubscriptionsService {
     return subscription;
   }
 
-  async getSubscriptionByStripeId(stripeSubscriptionId: string) {
+  async getSubscriptionByStripeId(stripeSubscriptionId: string, tx?: any) {
     return await this.subscriptionsRepository.getSubscriptionByStripeId(
       stripeSubscriptionId,
+      tx,
     );
   }
 
@@ -129,24 +131,38 @@ export class SubscriptionsService {
     stripeInvoice,
     stripeInvoiceId: string,
     paymentId: string,
+    tx?: any,
   ) {
     return await this.subscriptionsRepository.createSubscriptionInvoice(
       subscription,
       stripeInvoice,
       stripeInvoiceId,
       paymentId,
+      tx,
     );
   }
 
   async updateSubscriptionStatus(
     subscriptionId: string,
     status: SubscriptionStatus,
+    tx?: any,
   ) {
     return await this.subscriptionsRepository.updateSubscriptionStatus(
       subscriptionId,
       status,
+      tx,
     );
   }
+
+  // Handle new subscriptions
+  async handleTier1Subscription(userId: string, tx?: any) {
+    await this.subscriptionsRepository.makeUserVerified(userId, tx);
+  }
+  async handleTier2Subscription(userId: string, tx?: any) {
+    await this.subscriptionsRepository.makeUserPagesVerified(userId, tx);
+  }
+
+  async handleTier3Subscription(userId: string, tx?: any) {}
 
   // for testing
   async deleteUserSubscription(userId: string) {
@@ -231,7 +247,10 @@ export class SubscriptionsService {
     return { subscriptionId, clientSecret };
   }
 
-  async handleExistingSubscription(existingSubscription: any): Promise<void> {
+  async handleExistingSubscription(
+    existingSubscription: any,
+    tx?,
+  ): Promise<void> {
     if (existingSubscription.stripeSubscriptionId) {
       await this.stripeService.cancelSubscription(
         existingSubscription.stripeSubscriptionId,
@@ -242,6 +261,7 @@ export class SubscriptionsService {
     await this.subscriptionsRepository.updateSubscriptionStatus(
       existingSubscription.id,
       'upgraded',
+      tx,
     );
   }
 

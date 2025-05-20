@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { and, asc, eq, lt } from 'drizzle-orm';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  pages,
   SubscriptionStatus,
   subscriptionTiers,
+  users,
   usersSubscriptions,
 } from '../db/schemas/schema';
 import { subscriptionsInvoice } from '../db/schemas/subscriptions/payments';
@@ -55,8 +57,9 @@ export class SubscriptionsRepository {
     });
   }
 
-  async getUserSubscriptionByUserId(userId: string) {
-    return await this.drizzleService.db.query.usersSubscriptions.findFirst({
+  async getUserSubscriptionByUserId(userId: string, tx?: any) {
+    const queryRunner = tx || this.drizzleService.db;
+    return await queryRunner.query.usersSubscriptions.findFirst({
       where: and(
         eq(usersSubscriptions.userId, userId),
         eq(usersSubscriptions.status, 'active'),
@@ -122,14 +125,11 @@ export class SubscriptionsRepository {
       },
     });
   }
-  async getSubscriptionByStripeId(stripeSubscriptionId: string) {
-    const subscription =
-      await this.drizzleService.db.query.usersSubscriptions.findFirst({
-        where: eq(
-          usersSubscriptions.stripeSubscriptionId,
-          stripeSubscriptionId,
-        ),
-      });
+  async getSubscriptionByStripeId(stripeSubscriptionId: string, tx?: any) {
+    const queryRunner = tx || this.drizzleService.db;
+    const subscription = await queryRunner.query.usersSubscriptions.findFirst({
+      where: eq(usersSubscriptions.stripeSubscriptionId, stripeSubscriptionId),
+    });
     return subscription;
   }
 
@@ -138,8 +138,10 @@ export class SubscriptionsRepository {
     stripeInvoice,
     stripeInvoiceId: string,
     paymentId: string,
+    tx?: any,
   ) {
-    await this.drizzleService.db.insert(subscriptionsInvoice).values({
+    const queryRunner = tx || this.drizzleService.db;
+    await queryRunner.insert(subscriptionsInvoice).values({
       paymentId,
       userId: subscription.userId,
       stripeInvoiceId,
@@ -149,11 +151,27 @@ export class SubscriptionsRepository {
     });
   }
 
+  async makeUserVerified(userId: string, tx?: any) {
+    const queryRunner = tx || this.drizzleService.db;
+    await queryRunner
+      .update(users)
+      .set({ isVerified: true })
+      .where(eq(users.id, userId));
+  }
+  async makeUserPagesVerified(userId: string, tx?: any) {
+    const queryRunner = tx || this.drizzleService.db;
+    await queryRunner
+      .update(pages)
+      .set({ isVerified: true })
+      .where(eq(pages.ownerId, userId));
+  }
+
   async updateSubscriptionStatus(
     subscriptionId: string,
     status: SubscriptionStatus,
+    tx?: any,
   ) {
-    await this.drizzleService.db
+    await (tx || this.drizzleService.db)
       .update(usersSubscriptions)
       .set({ status })
       .where(eq(usersSubscriptions.id, subscriptionId));

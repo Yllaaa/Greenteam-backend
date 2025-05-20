@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
 import { users } from '../../db/schemas/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import {
+  NewWebhookEvent,
   PaymentStatus,
   subscriptionsPayments,
+  WebhookEvent,
+  webhookEvents,
 } from 'src/modules/db/schemas/subscriptions/payments';
 @Injectable()
 export class PaymentsRepository {
@@ -34,8 +37,10 @@ export class PaymentsRepository {
     subscription,
     stripeInvoice,
     status: PaymentStatus,
+    tx?,
   ) {
-    return await this.drizzleService.db
+    const queryRunner = tx || this.drizzleService.db;
+    return await queryRunner
       .insert(subscriptionsPayments)
       .values({
         subscriptionId: subscription.id,
@@ -47,5 +52,35 @@ export class PaymentsRepository {
       .returning({
         id: subscriptionsPayments.id,
       });
+  }
+
+  async isWebhookProcessed(eventId: string): Promise<boolean> {
+    const result = await this.drizzleService.db
+      .select({ count: sql<number>`count(*)` })
+      .from(webhookEvents)
+      .where(eq(webhookEvents.eventId, eventId));
+
+    return result[0]?.count > 0;
+  }
+
+  async markWebhookAsProcessed(
+    eventId: string,
+    tx,
+    eventType?: string,
+    metadata?: Record<string, any>,
+  ): Promise<WebhookEvent> {
+    const newWebhook: NewWebhookEvent = {
+      eventId,
+      processedAt: new Date(),
+      eventType,
+      metadata,
+    };
+    const queryRunner = tx || this.drizzleService.db;
+    const result = await queryRunner
+      .insert(webhookEvents)
+      .values(newWebhook)
+      .returning();
+
+    return result[0];
   }
 }
