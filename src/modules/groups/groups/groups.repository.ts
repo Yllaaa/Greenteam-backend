@@ -37,7 +37,7 @@ export class GroupsRepository {
   }
 
   async getAllGroups(query: GetAllGroupsDtos, userId?: string) {
-    const { topicId, limit, page, countryId, cityId } = query;
+    const { topicId, limit, page, countryId, cityId, verified } = query;
     const offset = Math.max(0, ((page ?? 1) - 1) * (limit ?? 10));
     const selectObj: any = {
       id: groups.id,
@@ -69,14 +69,12 @@ export class GroupsRepository {
     if (topicId) {
       whereConditions = eq(groups.topicId, topicId);
     }
-
     if (countryId) {
       const countryCondition = eq(groups.countryId, countryId);
       whereConditions = whereConditions
         ? and(whereConditions, countryCondition)
         : countryCondition;
     }
-
     if (countryId && cityId) {
       const cityCondition = eq(groups.cityId, cityId);
       whereConditions = whereConditions
@@ -84,18 +82,42 @@ export class GroupsRepository {
         : cityCondition;
     }
 
-    const groupsWithMetadata = await this.drizzle.db
+    // Base query builder
+    let queryBuilder = this.drizzle.db
       .select(selectObj)
       .from(groups)
       .leftJoin(groupMembers, eq(groups.id, groupMembers.groupId))
-      .leftJoin(topics, eq(topics.id, groups.topicId))
+      .leftJoin(topics, eq(topics.id, groups.topicId));
+
+    if (verified) {
+      queryBuilder = queryBuilder.innerJoin(
+        users,
+        eq(groups.ownerId, users.id),
+      );
+
+      const verifiedCondition = eq(users.isVerified, true);
+      whereConditions = whereConditions
+        ? and(whereConditions, verifiedCondition)
+        : verifiedCondition;
+
+      const groupsWithMetadata = await queryBuilder
+        .where(whereConditions)
+        .groupBy(groups.id, topics.id, topics.name, users.id)
+        .limit(limit ?? 10)
+        .offset(offset);
+
+      return groupsWithMetadata;
+    }
+
+    const groupsWithMetadata = await queryBuilder
       .where(whereConditions)
       .groupBy(groups.id, topics.id, topics.name)
       .limit(limit ?? 10)
-
       .offset(offset);
+
     return groupsWithMetadata;
   }
+
   async getGroupByName(name: string) {
     return await this.drizzle.db.query.groups.findFirst({
       where: (groups, { eq }) => eq(groups.name, name),

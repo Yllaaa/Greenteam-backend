@@ -7,8 +7,9 @@ import {
   IsInt,
   Min,
   IsNumber,
+  Equals,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class GetAllGroupsDtos {
   @IsOptional()
@@ -39,4 +40,9 @@ export class GetAllGroupsDtos {
   @IsInt()
   @Type(() => Number)
   topicId?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @Equals(true, { message: 'verified must be true if provided' })
+  verified?: boolean;
 }

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { PagesService } from '../pages/pages/pages.service';
 import { MarketplaceService } from '../marketplace/marketplace.service';
 import { EventsService } from '../events/events/events.service';

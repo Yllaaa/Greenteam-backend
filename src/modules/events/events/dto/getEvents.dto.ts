@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsIn, IsNumber, IsOptional, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { Equals, IsIn, IsNumber, IsOptional, Min } from 'class-validator';
 import { SQL } from 'drizzle-orm';
 import {
   EventCategory,
@@ -39,4 +39,9 @@ export class GetEventsDto {
   @IsIn(eventModeEnum.enumValues)
   @IsOptional()
   eventMode?: EventMode;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @Equals(true, { message: 'verified must be true if provided' })
+  verified?: boolean;
 }
