@@ -16,6 +16,16 @@ export type BaseQueryResult = {
     avatar: string | null;
     username: string;
   } | null;
+  location: {
+    country: {
+      nameEn: string;
+      nameEs: string;
+      iso: string;
+    };
+    city: {
+      nameEn: string;
+    };
+  } | null;
   media: Array<{
     id: string;
     mediaUrl: string;
@@ -39,6 +49,16 @@ export type BasePublication = {
     fullName: string;
     avatar: string | null;
     username: string;
+  } | null;
+  location: {
+    country: {
+      nameEn: string;
+      nameEs: string;
+      iso: string;
+    };
+    city: {
+      nameEn: string;
+    };
   } | null;
   media: Array<{
     id: string;

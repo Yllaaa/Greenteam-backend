@@ -19,6 +19,7 @@ import {
   userBlocks,
   userPoints,
   users,
+  usersLocations,
 } from '../../db/schemas/schema';
 import {
   eq,
@@ -41,7 +42,10 @@ import { PaginationDto } from '../favorites/dto/paginations.dto';
 export class ProfileRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
-  async getUserProfile(id: string, currentUserId?: string) {
+  async getUserProfile(
+    id: string,
+    currentUserId?: string,
+  ): Promise<UserWithRelations> {
     const user = await this.drizzleService.db.query.users.findFirst({
       where: eq(users.id, id),
       columns: {
@@ -53,37 +57,60 @@ export class ProfileRepository {
         bio: true,
         joinedAt: true,
       },
+
       extras: currentUserId
         ? {
             isFollowing: sql<boolean>`
         EXISTS (
-          SELECT 1 FROM ${followers}
-          WHERE ${followers.followerId} = ${currentUserId}
+          SELECT 1 
+          FROM ${followers} 
+          WHERE ${followers.followerId} = ${currentUserId} 
           AND ${followers.followingId} = ${id}
         )
       `.as('isFollowing'),
-
             isFollower: sql<boolean>`
         EXISTS (
-          SELECT 1 FROM ${followers}
-          WHERE ${followers.followerId} = ${id}
+          SELECT 1 
+          FROM ${followers} 
+          WHERE ${followers.followerId} = ${id} 
           AND ${followers.followingId} = ${currentUserId}
         )
       `.as('isFollower'),
-
             isBlocked: sql<boolean>`
         EXISTS (
-          SELECT 1 FROM ${userBlocks}
-          WHERE ${userBlocks.userId} = ${currentUserId}
-          AND ${userBlocks.blockedId} = ${id}
+          SELECT 1 
+          FROM ${userBlocks} 
+          WHERE ${userBlocks.userId} = ${currentUserId} 
+          AND ${userBlocks.blockedId} = ${id} 
           AND ${userBlocks.blockedEntityType} = 'user'
         )
       `.as('isBlocked'),
           }
         : undefined,
     });
-
-    return user;
+    const userLocation =
+      await this.drizzleService.db.query.usersLocations.findFirst({
+        columns: {},
+        with: {
+          country: {
+            columns: {
+              id: true,
+              nameEn: true,
+              nameEs: true,
+            },
+          },
+          city: {
+            columns: {
+              id: true,
+              nameEn: true,
+            },
+          },
+        },
+      });
+    return {
+      ...user,
+      location: userLocation || null,
+    } as UserWithRelations;
   }
 
   async getUserScore(userId: string) {
@@ -140,6 +167,29 @@ export class ProfileRepository {
         cover: users.cover,
       });
     return updatedUser;
+  }
+
+  async updateUserLocation(userId: string, countryId: number, cityId?: number) {
+    const [updatedUserLocation] = await this.drizzleService.db
+      .insert(usersLocations)
+      .values({
+        userId,
+        countryId,
+        cityId,
+      })
+      .onConflictDoUpdate({
+        target: usersLocations.userId,
+        set: {
+          countryId,
+          cityId,
+        },
+      })
+      .returning({
+        id: usersLocations.id,
+        countryId: usersLocations.countryId,
+        cityId: usersLocations.cityId,
+      });
+    return updatedUserLocation;
   }
 
   async getUserOwnPages(userId: string) {

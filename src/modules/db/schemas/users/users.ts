@@ -10,9 +10,12 @@ import {
   integer,
   boolean,
   check,
+  index,
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
 import {
+  cities,
+  countries,
   followers,
   groupMembers,
   publicationsComments,
@@ -65,7 +68,49 @@ export const users = pgTable(
   ],
 );
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersLocations = pgTable(
+  'users_locations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' })
+      .unique(),
+    countryId: integer('country_id')
+      .notNull()
+      .references(() => countries.id, { onDelete: 'restrict' }),
+    cityId: integer('city_id').references(() => cities.id, {
+      onDelete: 'restrict',
+    }),
+    updatedAt: timestamp('updated_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => [
+    index('users_locations_country_id_idx').on(table.countryId),
+    index('users_locations_city_id_idx').on(table.cityId),
+  ],
+);
+
+export const usersLocationsRelations = relations(usersLocations, ({ one }) => ({
+  user: one(users, {
+    fields: [usersLocations.userId],
+    references: [users.id],
+  }),
+  country: one(countries, {
+    fields: [usersLocations.countryId],
+    references: [countries.id],
+  }),
+  city: one(cities, {
+    fields: [usersLocations.cityId],
+    references: [cities.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many, one }) => ({
+  location: one(usersLocations, {
+    fields: [users.id],
+    references: [usersLocations.userId],
+  }),
   posts: many(posts),
   publicationsComments: many(publicationsComments),
   forumPublications: many(forumPublications),
