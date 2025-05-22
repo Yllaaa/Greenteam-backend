@@ -13,6 +13,8 @@ import { FilterGetPostsDto } from './dto/get-posts.dto';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { PaginationDto } from '../favorites/dto/paginations.dto';
+import { CommonService } from 'src/modules/common/common.service';
+import { I18nContext } from 'nestjs-i18n';
 
 @Injectable()
 export class ProfileService {
@@ -20,26 +22,56 @@ export class ProfileService {
     private profileRepository: ProfileRepository,
     private followersService: FollowersService,
     private uploadMediaService: UploadMediaService,
+    private commonService: CommonService,
   ) {}
 
-  async getUserByUsername(username: string, userId: string) {
+  async getUserByUsername(
+    username: string,
+    userId: string,
+  ): Promise<GetUserProfileResult> {
     const user = await this.profileRepository.getUserByUsername(username);
     if (!user) {
       throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
     }
+
     const userData = await this.profileRepository.getUserProfile(
       user.id,
       userId,
     );
 
-    const isMyProfile = userData?.id === userId;
+    if (!userData) {
+      throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
+    }
 
+    let translatedUserData: UserProfileWithTranslatedLocation = {
+      ...userData,
+      location: null,
+    };
+
+    if (userData.location?.country) {
+      const lang = I18nContext.current()?.lang || 'en';
+
+      const countryName =
+        lang === 'es'
+          ? userData.location.country.nameEs
+          : userData.location.country.nameEn;
+
+      translatedUserData.location = {
+        city: userData.location.city,
+        country: {
+          id: userData.location.country.id,
+          name: countryName,
+        },
+      };
+    }
+
+    const isMyProfile = userData.id === userId;
     const userScore = isMyProfile
       ? await this.profileRepository.getUserScore(userData.id)
       : undefined;
 
     return {
-      userData,
+      userData: translatedUserData,
       userScore,
       isMyProfile,
     };
@@ -83,6 +115,14 @@ export class ProfileService {
       cover: uploadedCover?.location,
     };
 
+    if (dto.countryId && dto.cityId) {
+      await this.commonService.validateLocation(dto.countryId, dto.cityId);
+      await this.profileRepository.updateUserLocation(
+        userId,
+        dto.countryId,
+        dto.cityId,
+      );
+    }
     return await this.profileRepository.updateProfile(updateData, userId);
   }
 

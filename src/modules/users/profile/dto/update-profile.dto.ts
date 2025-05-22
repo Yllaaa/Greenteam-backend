@@ -1,4 +1,11 @@
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -21,4 +28,14 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   phoneNumber: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  countryId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  cityId?: number;
 }

@@ -35,7 +35,7 @@ export class CommonService {
       };
     });
   }
-  async validateLocation(countryId: number, cityId: number) {
+  async validateLocation(countryId?: number, cityId?: number) {
     if (countryId) {
       const exists = await this.commonRepository.countryExists(countryId);
       if (!exists)
