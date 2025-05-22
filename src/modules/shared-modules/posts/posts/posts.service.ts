@@ -12,12 +12,14 @@ import { Action } from 'src/modules/pointing-system/pointing-system.repository';
 import { QueuesService } from 'src/modules/common/queues/queues.service';
 import { MediaType } from 'src/modules/db/schemas/posts/enums';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly queuesService: QueuesService,
     private readonly uploadMediaService: UploadMediaService,
+    private readonly i18n: I18nService,
   ) {}
   async createPost(
     dto: {
@@ -66,9 +68,7 @@ export class PostsService {
 
   async getPosts(dto: GetPostsDto, userId: string) {
     if (dto.mainTopicId && dto.subTopicId) {
-      throw new BadRequestException(
-        'pages.posts.errors.FILTER_CONFLICT',
-      );
+      throw new BadRequestException('pages.posts.errors.FILTER_CONFLICT');
     }
     return await this.postsRepository.getFilteredPosts(
       {
@@ -132,7 +132,9 @@ export class PostsService {
     }
 
     if (post.creatorId !== userId) {
-      throw new BadRequestException('pages.posts.errors.DELETE_POST_AUTHORIZATION_DENIAL');
+      throw new BadRequestException(
+        'pages.posts.errors.DELETE_POST_AUTHORIZATION_DENIAL',
+      );
     }
     await this.postsRepository.deletePost(postId, userId);
   }

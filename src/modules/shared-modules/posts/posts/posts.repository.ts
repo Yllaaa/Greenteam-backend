@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { eq, exists, inArray, SQL, and, or, sql, desc } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+import { I18nContext } from 'nestjs-i18n';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import {
+  cities,
+  countries,
   CreatorType,
   entitiesMedia,
   MediaParentType,
@@ -13,6 +17,7 @@ import {
   publicationsReactions,
   topics,
   users,
+  usersLocations,
 } from 'src/modules/db/schemas/schema';
 
 @Injectable()
@@ -253,16 +258,17 @@ export class PostsRepository {
     const { mainTopicId, subTopicId, groupId } = filters || {};
     const { limit = 10, page = 0 } = pagination || {};
     const offset = Math.max(0, (page - 1) * limit);
+    const lang = I18nContext.current()?.lang || 'en';
 
     const reactionsAggregation = this.drizzleService.db
       .select({
         reactionableId: publicationsReactions.reactionableId,
         likeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
-        `.as('like_count'),
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'like' THEN 1 END)
+      `.as('like_count'),
         dislikeCount: sql<number>`
-          COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
-        `.as('dislike_count'),
+        COUNT(CASE WHEN ${publicationsReactions.reactionType} = 'dislike' THEN 1 END)
+      `.as('dislike_count'),
       })
       .from(publicationsReactions)
       .groupBy(publicationsReactions.reactionableId)
@@ -272,15 +278,15 @@ export class PostsRepository {
       .select({
         reactionableId: publicationsReactions.reactionableId,
         userReactionType: sql<string | null>`
-          MAX(CASE 
-            WHEN ${publicationsReactions.reactionType} IN ('like', 'dislike') 
-            THEN ${publicationsReactions.reactionType}
-            ELSE NULL
-          END)
-        `.as('user_reaction_type'),
+        MAX(CASE 
+          WHEN ${publicationsReactions.reactionType} IN ('like', 'dislike') 
+          THEN ${publicationsReactions.reactionType}
+          ELSE NULL
+        END)
+      `.as('user_reaction_type'),
         hasDoReaction: sql<boolean>`
-          BOOL_OR(${publicationsReactions.reactionType} = 'do')
-        `.as('has_do_reaction'),
+        BOOL_OR(${publicationsReactions.reactionType} = 'do')
+      `.as('has_do_reaction'),
       })
       .from(publicationsReactions)
       .where(
@@ -297,26 +303,55 @@ export class PostsRepository {
           id: posts.id,
           content: posts.content,
           createdAt: posts.createdAt,
-          //      groupId: posts.groupId,
         },
         author: {
           id: sql<string>`CASE 
-            WHEN ${posts.creatorType} = 'page' THEN ${pages.id}
-            ELSE ${users.id}
-          END`,
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.id}
+          ELSE ${users.id}
+        END`,
           name: sql<string>`CASE 
-            WHEN ${posts.creatorType} = 'page' THEN ${pages.name}
-            ELSE ${users.fullName}
-          END`,
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.name}
+          ELSE ${users.fullName}
+        END`,
           avatar: sql<string>`CASE 
-            WHEN ${posts.creatorType} = 'page' THEN ${pages.avatar}
-            ELSE ${users.avatar}
-          END`,
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.avatar}
+          ELSE ${users.avatar}
+        END`,
           username: sql<string>`CASE 
-            WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
-            ELSE ${users.username}
-          END`,
+          WHEN ${posts.creatorType} = 'page' THEN ${pages.slug}
+          ELSE ${users.username}
+        END`,
           type: posts.creatorType,
+        },
+        location: {
+          countryName: sql<string | null>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN 
+            CASE 
+              WHEN ${lang} = 'es' THEN ${alias(countries, 'pageCountries').nameEs}
+              ELSE ${alias(countries, 'pageCountries').nameEn}
+            END
+          ELSE 
+            CASE 
+              WHEN ${lang} = 'es' THEN ${alias(countries, 'userCountries').nameEs}
+              ELSE ${alias(countries, 'userCountries').nameEn}
+            END
+        END`,
+          countryIso: sql<string | null>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN ${alias(countries, 'pageCountries').iso}
+          ELSE ${alias(countries, 'userCountries').iso}
+        END`,
+          cityName: sql<string | null>`CASE 
+          WHEN ${posts.creatorType} = 'page' THEN 
+            CASE 
+              WHEN ${lang} = 'es' THEN ${alias(cities, 'pageCities').nameEn}
+              ELSE ${alias(cities, 'pageCities').nameEn}
+            END
+          ELSE 
+            CASE 
+              WHEN ${lang} = 'es' THEN ${alias(cities, 'userCities').nameEn}
+              ELSE ${alias(cities, 'userCities').nameEn}
+            END
+        END`,
         },
         media: sql<
           Array<{
@@ -325,17 +360,17 @@ export class PostsRepository {
             mediaType: MediaType;
           }>
         >`
-      COALESCE(
-        jsonb_agg(
-          DISTINCT jsonb_build_object(
-            'id', ${entitiesMedia.id},
-            'mediaUrl', ${entitiesMedia.mediaUrl},
-            'mediaType', ${entitiesMedia.mediaType}
-          )
-        ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
-        '[]'::jsonb
-      )
-      `.as('media'),
+    COALESCE(
+      jsonb_agg(
+        DISTINCT jsonb_build_object(
+          'id', ${entitiesMedia.id},
+          'mediaUrl', ${entitiesMedia.mediaUrl},
+          'mediaType', ${entitiesMedia.mediaType}
+        )
+      ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+      '[]'::jsonb
+    )
+    `.as('media'),
         commentCount: this.commentCountQuery,
         likeCount:
           sql<number>`COALESCE(${reactionsAggregation.likeCount}, 0)`.as(
@@ -358,6 +393,26 @@ export class PostsRepository {
       .from(posts)
       .leftJoin(users, eq(posts.creatorId, users.id))
       .leftJoin(pages, eq(posts.creatorId, pages.id))
+      // Join user locations for user authors
+      .leftJoin(usersLocations, eq(users.id, usersLocations.userId))
+      // Create aliases to avoid table name conflicts
+      .leftJoin(
+        alias(countries, 'userCountries'),
+        eq(usersLocations.countryId, alias(countries, 'userCountries').id),
+      )
+      .leftJoin(
+        alias(cities, 'userCities'),
+        eq(usersLocations.cityId, alias(cities, 'userCities').id),
+      )
+      // Join countries and cities directly for pages
+      .leftJoin(
+        alias(countries, 'pageCountries'),
+        eq(pages.countryId, alias(countries, 'pageCountries').id),
+      )
+      .leftJoin(
+        alias(cities, 'pageCities'),
+        eq(pages.cityId, alias(cities, 'pageCities').id),
+      )
       .leftJoin(
         publicationsComments,
         eq(posts.id, publicationsComments.publicationId),
@@ -373,6 +428,7 @@ export class PostsRepository {
         posts.content,
         posts.createdAt,
         posts.groupId,
+        posts.creatorType,
         users.id,
         users.fullName,
         users.avatar,
@@ -381,6 +437,18 @@ export class PostsRepository {
         pages.name,
         pages.avatar,
         pages.slug,
+        pages.countryId,
+        pages.cityId,
+        usersLocations.countryId,
+        usersLocations.cityId,
+        alias(countries, 'userCountries').nameEn,
+        alias(countries, 'userCountries').nameEs,
+        alias(countries, 'userCountries').iso,
+        alias(cities, 'userCities').nameEn,
+        alias(countries, 'pageCountries').nameEn,
+        alias(countries, 'pageCountries').nameEs,
+        alias(countries, 'pageCountries').iso,
+        alias(cities, 'pageCities').nameEn,
         reactionsAggregation.likeCount,
         reactionsAggregation.dislikeCount,
         userReaction.userReactionType,

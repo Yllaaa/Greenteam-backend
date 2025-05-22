@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from '../../db/drizzle.service';
 import {
+  cities,
+  countries,
   entitiesMedia,
   forumPublications,
   MediaParentType,
@@ -8,6 +10,7 @@ import {
   publicationsComments,
   publicationsReactions,
   users,
+  usersLocations,
 } from '../../db/schemas/schema';
 import { CreateForumPublicationDto } from './dtos/create-forumPublication.dto';
 import { and, desc, eq, isNull, or, SQL, sql } from 'drizzle-orm';
@@ -16,6 +19,7 @@ import {
   BaseQueryResult,
   Publication,
 } from './interfaces/publications.interface';
+import { I18nContext } from 'nestjs-i18n';
 
 @Injectable()
 export class ForumRepository {
@@ -88,6 +92,7 @@ export class ForumRepository {
     const page = pagination?.page || 1;
     const limit = pagination?.limit || 10;
     const offset = Math.max(0, (page - 1) * limit);
+    const lang = I18nContext.current()?.lang || 'en';
 
     const baseFilters = [eq(forumPublications.status, 'published')];
     if (filter?.section) {
@@ -120,6 +125,19 @@ export class ForumRepository {
           avatar: users.avatar,
           username: users.username,
         },
+        location: {
+          countryName: sql<string | null>`
+          CASE 
+            WHEN ${lang} = 'es' THEN ${countries.nameEs}
+            ELSE ${countries.nameEn}
+          END`,
+          countryIso: countries.iso,
+          cityName: sql<string | null>`
+          CASE 
+            WHEN ${lang} = 'es' THEN ${cities.nameEn}
+            ELSE ${cities.nameEn}
+          END`,
+        },
         media: sql<
           Array<{
             id: string;
@@ -127,52 +145,55 @@ export class ForumRepository {
             mediaType: MediaType;
           }>
         >`
-        COALESCE(
-          jsonb_agg(
-            DISTINCT jsonb_build_object(
-              'id', ${entitiesMedia.id},
-              'mediaUrl', ${entitiesMedia.mediaUrl},
-              'mediaType', ${entitiesMedia.mediaType}
-            )
-          ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
-          '[]'::jsonb
-        )
-        `.as('media'),
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', ${entitiesMedia.id},
+            'mediaUrl', ${entitiesMedia.mediaUrl},
+            'mediaType', ${entitiesMedia.mediaType}
+          )
+        ) FILTER (WHERE ${entitiesMedia.id} IS NOT NULL),
+        '[]'::jsonb
+      )
+      `.as('media'),
         commentCount: sql<number>`COALESCE(${commentCountSubquery.count}, 0)`,
         ...(sql`${forumPublications.section} = 'need'`
           ? {
               signCount: sql<number>`
-                COUNT(CASE 
-                  WHEN ${publicationsReactions.reactionType} = 'sign' 
-                  THEN 1 
-                END)`.as('sign_count'),
+              COUNT(CASE 
+                WHEN ${publicationsReactions.reactionType} = 'sign' 
+                THEN 1 
+              END)`.as('sign_count'),
               dislikeCount: sql<number>`
-                COUNT(CASE 
-                  WHEN ${publicationsReactions.reactionType} = 'dislike' 
-                  THEN 1 
-                END)`.as('dislike_count'),
+              COUNT(CASE 
+                WHEN ${publicationsReactions.reactionType} = 'dislike' 
+                THEN 1 
+              END)`.as('dislike_count'),
             }
           : {
               likeCount: sql<number>`
-                COUNT(CASE 
-                  WHEN ${publicationsReactions.reactionType} = 'like' 
-                  THEN 1 
-                END)`.as('like_count'),
+              COUNT(CASE 
+                WHEN ${publicationsReactions.reactionType} = 'like' 
+                THEN 1 
+              END)`.as('like_count'),
               dislikeCount: sql<number>`
-                COUNT(CASE 
-                  WHEN ${publicationsReactions.reactionType} = 'dislike' 
-                  THEN 1 
-                END)`.as('dislike_count'),
+              COUNT(CASE 
+                WHEN ${publicationsReactions.reactionType} = 'dislike' 
+                THEN 1 
+              END)`.as('dislike_count'),
             }),
         userReaction: sql<string | null>`
-          CASE 
-            WHEN ${publicationsReactions.userId} = ${currentUserId}
-            THEN ${publicationsReactions.reactionType}
-            ELSE NULL 
-          END`.as('user_reaction'),
+        CASE 
+          WHEN ${publicationsReactions.userId} = ${currentUserId}
+          THEN ${publicationsReactions.reactionType}
+          ELSE NULL 
+        END`.as('user_reaction'),
       })
       .from(forumPublications)
       .leftJoin(users, eq(forumPublications.authorId, users.id))
+      .leftJoin(usersLocations, eq(users.id, usersLocations.userId))
+      .leftJoin(countries, eq(usersLocations.countryId, countries.id))
+      .leftJoin(cities, eq(usersLocations.cityId, cities.id))
       .leftJoin(
         commentCountSubquery,
         eq(forumPublications.id, commentCountSubquery.publicationId),
@@ -198,6 +219,14 @@ export class ForumRepository {
       .groupBy(
         forumPublications.id,
         users.id,
+        users.fullName,
+        users.avatar,
+        users.username,
+        countries.nameEn,
+        countries.nameEs,
+        countries.iso,
+        cities.nameEn,
+
         commentCountSubquery.count,
         publicationsReactions.userId,
         publicationsReactions.reactionType,
@@ -217,6 +246,7 @@ export class ForumRepository {
           mediaUrl: row.mediaUrl,
           createdAt: row.createdAt,
           author: row.author,
+          location: row.location,
           media: row.media,
           commentCount: Number(row.commentCount || 0),
           userReaction: row.userReaction,
