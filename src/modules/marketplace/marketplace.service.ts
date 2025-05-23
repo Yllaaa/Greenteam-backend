@@ -21,9 +21,8 @@ export class MarketplaceService {
     private readonly marketplaceRepository: MarketplaceRepository,
     private readonly commonRepository: CommonRepository,
     private readonly uploadMediaService: UploadMediaService,
-    private readonly i18n: I18nService
-
-  ) { }
+    private readonly i18n: I18nService,
+  ) {}
 
   async createProduct(data: {
     sellerId: string;
@@ -39,7 +38,6 @@ export class MarketplaceService {
   }) {
     this.validateSellerType(data.sellerType);
     this.validatePrice(data.price);
-    this.validateMarketType(data.marketType);
 
     await this.validateLocation(data.topicId, data.countryId, data.cityId);
 
@@ -60,7 +58,9 @@ export class MarketplaceService {
 
       await this.marketplaceRepository.insertProductImages(imageRecords);
     }
-    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_CREATED');
+    const translatedMessage = await this.i18n.t(
+      'pages.products.notifications.PRODUCT_CREATED',
+    );
     return { message: translatedMessage };
   }
 
@@ -147,13 +147,17 @@ export class MarketplaceService {
       );
     }
     await this.marketplaceRepository.deleteProduct(productId, userId);
-    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_DELETED');
+    const translatedMessage = await this.i18n.t(
+      'pages.products.notifications.PRODUCT_DELETED',
+    );
     return { message: translatedMessage };
   }
 
   private validateSellerType(sellerType: SellerType) {
     if (sellerType !== 'user') {
-      throw new BadRequestException('pages.products.errors.INVALID_SELLER_TYPE');
+      throw new BadRequestException(
+        'pages.products.errors.INVALID_SELLER_TYPE',
+      );
     }
   }
 
@@ -166,13 +170,6 @@ export class MarketplaceService {
     }
   }
 
-  private validateMarketType(marketType: string) {
-    const valid = ['local_business', 'value_driven_business', 'second_hand'];
-    if (marketType && !valid.includes(marketType)) {
-      throw new BadRequestException('pages.products.errors.INVALID_MARKET_TYPE');
-    }
-  }
-
   private async validateLocation(
     topicId: number,
     countryId: number,
@@ -180,28 +177,26 @@ export class MarketplaceService {
   ) {
     if (topicId) {
       const exists = await this.commonRepository.topicExists(topicId);
-      if (!exists) throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
+      if (!exists)
+        throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
     }
 
     if (countryId) {
       const exists = await this.commonRepository.countryExists(countryId);
-      if (!exists) throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
+      if (!exists)
+        throw new BadRequestException('pages.products.errors.INVALID_TOPIC_ID');
     }
 
     if (cityId) {
       if (!countryId) {
-        throw new BadRequestException(
-          'pages.products.errors.COUNTRY_REQUIRED',
-        );
+        throw new BadRequestException('pages.products.errors.COUNTRY_REQUIRED');
       }
       const exists = await this.commonRepository.cityExistsInCountry(
         cityId,
         countryId,
       );
       if (!exists) {
-        throw new BadRequestException(
-          'pages.products.errors.INVALID_DISTRICT',
-        );
+        throw new BadRequestException('pages.products.errors.INVALID_DISTRICT');
       }
     }
   }
