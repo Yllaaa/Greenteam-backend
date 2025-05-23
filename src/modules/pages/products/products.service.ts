@@ -25,8 +25,8 @@ export class ProductsService {
     private readonly commonRepository: CommonRepository,
     private readonly pagesService: PagesService,
     private readonly uploadMediaService: UploadMediaService,
-    private readonly i18n: I18nService
-  ) { }
+    private readonly i18n: I18nService,
+  ) {}
 
   async createProduct(
     data: {
@@ -42,13 +42,15 @@ export class ProductsService {
     userId: string,
   ) {
     if (data.sellerType != 'page') {
-      throw new BadRequestException('pages.products.errors.INVALID_SELLER_TYPE');
+      throw new BadRequestException(
+        'pages.products.errors.INVALID_SELLER_TYPE',
+      );
     }
 
     const page = await this.pagesService.getPageBySlug(data.slug);
 
     if (!page) {
-      throw new BadRequestException("pages.products.errors.INVALID_PAGE_ID");
+      throw new BadRequestException('pages.products.errors.INVALID_PAGE_ID');
     }
     if (page.ownerId !== userId) {
       throw new BadRequestException(
@@ -65,13 +67,6 @@ export class ProductsService {
       }
     }
 
-    if (
-      data.marketType &&
-      !['local_business', 'value_driven_business'].includes(data.marketType)
-    ) {
-      throw new BadRequestException('pages.products.errors.INVALID_MARKET_TYPE');
-    }
-
     if (data.topicId) {
       const topicExists = await this.commonRepository.topicExists(data.topicId);
       if (!topicExists) {
@@ -84,15 +79,15 @@ export class ProductsService {
         page.countryId,
       );
       if (!countryExists) {
-        throw new BadRequestException('pages.products.errors.INVALID_COUNTRY_ID');
+        throw new BadRequestException(
+          'pages.products.errors.INVALID_COUNTRY_ID',
+        );
       }
     }
 
     if (page.cityId) {
       if (!page.countryId) {
-        throw new BadRequestException(
-          'pages.products.errors.COUNTRY_REQUIRED',
-        );
+        throw new BadRequestException('pages.products.errors.COUNTRY_REQUIRED');
       }
 
       const districtExists = await this.commonRepository.cityExistsInCountry(
@@ -100,9 +95,7 @@ export class ProductsService {
         page.countryId,
       );
       if (!districtExists) {
-        throw new BadRequestException(
-          'pages.products.errors.INVALID_DISTRICT',
-        );
+        throw new BadRequestException('pages.products.errors.INVALID_DISTRICT');
       }
     }
     const newProduct = await this.marketplaceRepository.insertProduct({
@@ -124,8 +117,10 @@ export class ProductsService {
       }));
       await this.marketplaceRepository.insertProductImages(images);
     }
-    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_CREATED');
-    return { message: translatedMessage};
+    const translatedMessage = await this.i18n.t(
+      'pages.products.notifications.PRODUCT_CREATED',
+    );
+    return { message: translatedMessage };
   }
 
   async getPageProducts(
@@ -167,7 +162,9 @@ export class ProductsService {
     }
 
     await this.marketplaceRepository.deleteProduct(productId, page.id);
-    const translatedMessage = await this.i18n.t('pages.products.notifications.PRODUCT_DELETED');
-    return { message: translatedMessage};
+    const translatedMessage = await this.i18n.t(
+      'pages.products.notifications.PRODUCT_DELETED',
+    );
+    return { message: translatedMessage };
   }
 }
