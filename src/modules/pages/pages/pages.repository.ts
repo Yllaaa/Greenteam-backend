@@ -70,6 +70,8 @@ export class PagesRepository {
       avatar?: string;
       cover?: string;
       websiteUrl?: string;
+      countryId?: number;
+      cityId?: number;
     },
     slug: string,
   ) {
@@ -79,7 +81,8 @@ export class PagesRepository {
         name: page.name,
         description: page.description,
         topicId: page.topicId,
-
+        cityId: page.cityId,
+        countryId: page.countryId,
         category: page.category,
         why: page.why,
         how: page.how,

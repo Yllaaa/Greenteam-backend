@@ -154,7 +154,6 @@ export class CommonRepository {
       .from(countries)
       .where(eq(countries.id, countryId))
       .limit(1);
-
     return result.length > 0;
   }
 
@@ -163,11 +162,10 @@ export class CommonRepository {
     countryId: number,
   ): Promise<boolean> {
     const result = await this.drizzleService.db
-      .select({ id: cities.id })
+      .select({ id: cities.id, nameEn: cities.nameEn })
       .from(cities)
       .where(and(eq(cities.id, cityId), eq(cities.countryId, countryId)))
       .limit(1);
-
     return result.length > 0;
   }
 

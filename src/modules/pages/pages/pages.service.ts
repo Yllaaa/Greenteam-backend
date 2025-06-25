@@ -89,6 +89,9 @@ export class PagesService {
     if (pageData.ownerId !== userId) {
       throw new ForbiddenException('pages.pages.errors.NOT_AUTHORIZED');
     }
+    if (pageData.countryId && pageData.cityId) {
+      await this.commonService.validateLocation(page.countryId, page.cityId);
+    }
 
     let uploadedAvatar;
     if (avatar) {
