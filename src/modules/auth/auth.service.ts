@@ -246,7 +246,10 @@ export class AuthService {
 
   // forgot password
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+    platform: 'android' | 'ios' | 'web',
+  ) {
     const user = await this.authRepository.getUserByEmail(
       forgotPasswordDto.email,
     );
@@ -270,7 +273,12 @@ export class AuthService {
         hashedToken,
         resetExpires,
       );
-      await this.mailService.sendPasswordResetEmail(user.email, rawToken);
+
+      await this.mailService.sendPasswordResetEmail(
+        user.email,
+        rawToken,
+        platform,
+      );
 
       return {
         message: translatedMessage,

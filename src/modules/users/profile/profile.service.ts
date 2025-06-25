@@ -114,7 +114,6 @@ export class ProfileService {
       avatar: uploadedAvatar?.location,
       cover: uploadedCover?.location,
     };
-
     if (dto.countryId && dto.cityId) {
       await this.commonService.validateLocation(dto.countryId, dto.cityId);
       await this.profileRepository.updateUserLocation(

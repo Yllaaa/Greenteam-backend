@@ -66,12 +66,25 @@ export class AuthController {
     try {
       const user = req.user;
       const response = await this.authService.googleLogin(user);
-      this.setAuthCookie(res, response?.accessToken);
 
-      res.redirect(`${process.env.APP_URL}?token=${response?.accessToken}`);
+      const userAgent = req.headers['user-agent'] || '';
+      const platform = this.detectPlatform(userAgent);
+
+      let redirectUrl: string;
+
+      if (platform === 'android' || platform === 'ios') {
+        redirectUrl = `${process.env.MOBILE_LINK}/google-callback?token=${response.accessToken}`;
+      } else {
+        redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
+      }
+
+      this.setAuthCookie(res, response.accessToken);
+      return res.redirect(redirectUrl);
     } catch (error) {
       console.error('Google auth error:', error);
-      res.redirect(`${process.env.APP_URL}/auth/error?message=login_failed`);
+      return res.redirect(
+        `${process.env.APP_URL}/auth/error?message=login_failed`,
+      );
     }
   }
 
@@ -94,8 +107,13 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgotPasswordDto);
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+    @Req() req,
+  ) {
+    const userAgent = req.headers['user-agent'] || '';
+    const platform = this.detectPlatform(userAgent);
+    return this.authService.forgotPassword(forgotPasswordDto, platform);
   }
 
   @Post('reset-password/:token')
@@ -110,5 +128,14 @@ export class AuthController {
     );
     this.setAuthCookie(res, response?.accessToken);
     res.json(response);
+  }
+
+  private detectPlatform(userAgent: string): 'android' | 'ios' | 'web' {
+    const ua = userAgent.toLowerCase();
+    console.log('User Agent:', ua);
+    if (ua.includes('iphone') || ua.includes('ipad')) return 'ios';
+    if (ua.includes('android')) return 'android';
+
+    return 'web';
   }
 }

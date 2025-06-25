@@ -24,13 +24,14 @@ import { GetPostsDto } from './dto/get-posts.dto';
 import { ValidateMediaInterceptor } from 'src/modules/common/upload-media/interceptors/validateMedia.interceptor';
 import { I18nService } from 'nestjs-i18n';
 
-@UseGuards(JwtAuthGuard)
 @Controller('')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
-    private readonly i18n: I18nService) { }
+    private readonly i18n: I18nService,
+  ) {}
 
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(AnyFilesInterceptor(), ValidateMediaInterceptor)
   @Post('publish-post')
   async createPost(
@@ -48,7 +49,7 @@ export class PostsController {
 
   @Get()
   async getPosts(@Query() dto: GetPostsDto, @Req() req) {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     const posts = await this.postsService.getPosts(dto, userId);
 
     return posts.map((post) => ({
@@ -59,15 +60,18 @@ export class PostsController {
 
   @Get(':id')
   async getPost(@Param('id') id: string, @Req() req) {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     return this.postsService.getPostInDetails(id, userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deletePost(@Param('id') id: string, @Req() req) {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     await this.postsService.deletePost(id, userId);
-    const translatedMessage = await this.i18n.t('pages.posts.notifications.POST_DELETED');
+    const translatedMessage = await this.i18n.t(
+      'pages.posts.notifications.POST_DELETED',
+    );
     return { message: translatedMessage };
   }
 }

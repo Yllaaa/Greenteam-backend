@@ -57,4 +57,14 @@ export class UpdatePageDto {
   @IsOptional()
   @Type(() => String)
   what: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  countryId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  cityId?: number;
 }
