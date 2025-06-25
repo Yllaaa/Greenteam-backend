@@ -90,6 +90,7 @@ export class ProfileRepository {
     });
     const userLocation =
       await this.drizzleService.db.query.usersLocations.findFirst({
+        where: eq(usersLocations.userId, id),
         columns: {},
         with: {
           country: {
@@ -189,6 +190,7 @@ export class ProfileRepository {
         countryId: usersLocations.countryId,
         cityId: usersLocations.cityId,
       });
+      console.log('updatedUserLocatison', updatedUserLocation);
     return updatedUserLocation;
   }
 
