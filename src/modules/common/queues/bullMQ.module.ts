@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MailJobModule } from './mails/mail-job.module';
 import { QueuesService } from './queues.service';
 import { PointsQueueProcessor } from './queues.processor';
 import { BullModule } from '@nestjs/bullmq';
@@ -7,8 +6,6 @@ import { NotificationQueueModule } from './notification-queue/notification-queue
 
 @Module({
   imports: [
-    MailJobModule,
-
     BullModule.registerQueue({
       name: 'pointsQueue',
       defaultJobOptions: {
