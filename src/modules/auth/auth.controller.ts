@@ -73,7 +73,7 @@ export class AuthController {
       let redirectUrl: string;
 
       if (platform === 'android' || platform === 'ios') {
-        redirectUrl = `${process.env.MOBILE_LINK}/google-callback?token=${response.accessToken}`;
+        redirectUrl = `${process.env.MOBILE_LINK}/open?token=${response.accessToken}`;
       } else {
         redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
       }
