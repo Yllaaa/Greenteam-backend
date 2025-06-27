@@ -52,7 +52,6 @@ export class AuthService {
     );
 
     if (existingUser[0]) {
-      console.log('existingUsername', existingUser[0]);
       throw new ConflictException('auth.auth.validations.USERNAME_IN_USE');
     }
 
@@ -87,7 +86,6 @@ export class AuthService {
     }
 
     const user = await this.validateUser(identifier, password);
-    console.log(user);
     return this.generateToken(user);
   }
 

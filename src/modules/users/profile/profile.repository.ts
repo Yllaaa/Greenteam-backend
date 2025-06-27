@@ -190,7 +190,6 @@ export class ProfileRepository {
         countryId: usersLocations.countryId,
         cityId: usersLocations.cityId,
       });
-      console.log('updatedUserLocatison', updatedUserLocation);
     return updatedUserLocation;
   }
 

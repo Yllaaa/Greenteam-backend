@@ -1,20 +1,20 @@
 {
-    "errors": {
-        "PAGE_NOT_FOUND": "page not found",
-        "NOT_AUTHORIZED": "You are not the owner of this page",
-        "SLAG_PAGE_NOT_FOUND": "Page with slug {slug} not found",
-        "PAGE_ID_NOT_FOUND": "Page with ID ${pageId} not found",
-        "CONTACT_ID_NOT_FOUND": "Contact with ID {contactId} not found`"
-    },
-    "validations": {
-        "LONG_SLUG": "Slug is too long",
-        "SLUG_TAKEN": "Slug {slug} is already taken",
-        "INVALID_PAGE_ID": "Invalid page ID",
-        "INVALID_SLUG_PAGE": "Invalid page slug"
-    },
-    "notifications": {
-        "PAGE_DELETED": "Page deleted successfully",
-        "CONTACT_ADDED_SUCCESSFULLY": "Contact added successfully",
-        "CONTACT_DELETED": "Contact deleted"
-    }
+  "errors": {
+    "PAGE_NOT_FOUND": "page not found",
+    "NOT_AUTHORIZED": "You are not the owner of this page",
+    "SLUG_PAGE_NOT_FOUND": "Page with slug {slug} not found",
+    "PAGE_ID_NOT_FOUND": "Page with ID ${pageId} not found",
+    "CONTACT_ID_NOT_FOUND": "Contact with ID {contactId} not found`"
+  },
+  "validations": {
+    "LONG_SLUG": "Slug is too long",
+    "SLUG_TAKEN": "Slug {slug} is already taken",
+    "INVALID_PAGE_ID": "Invalid page ID",
+    "INVALID_SLUG_PAGE": "Invalid page slug"
+  },
+  "notifications": {
+    "PAGE_DELETED": "Page deleted successfully",
+    "CONTACT_ADDED_SUCCESSFULLY": "Contact added successfully",
+    "CONTACT_DELETED": "Contact deleted"
+  }
 }

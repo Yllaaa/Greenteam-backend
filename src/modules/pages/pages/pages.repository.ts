@@ -13,6 +13,7 @@ import {
 } from 'src/modules/db/schemas/schema';
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
+import { UpdatePageContactDto } from './dto/update-page-contact.dto';
 
 @Injectable()
 export class PagesRepository {
@@ -261,11 +262,17 @@ export class PagesRepository {
         email: contact.email,
         phoneNum: contact.phoneNum,
       })
-      .returning();
+      .returning({
+        id: pagesContacts.id,
+        pageId: pagesContacts.pageId,
+        name: pagesContacts.name,
+        title: pagesContacts.title,
+        email: pagesContacts.email,
+        phoneNum: pagesContacts.phoneNum,
+      });
   }
-
-  async getPageContacts(pageId: string) {
-    return await this.drizzleService.db.query.pagesContacts.findMany({
+  async getPageContact(pageId: string) {
+    return await this.drizzleService.db.query.pagesContacts.findFirst({
       where: eq(pagesContacts.pageId, pageId),
       columns: {
         id: true,
@@ -276,10 +283,31 @@ export class PagesRepository {
       },
     });
   }
-  async deletePageContact(contactId: string) {
+
+  async updatePageContact(pageId: string, contact: UpdatePageContactDto) {
+    return await this.drizzleService.db
+      .update(pagesContacts)
+      .set({
+        name: contact.name,
+        title: contact.title,
+        email: contact.email,
+        phoneNum: contact.phoneNum,
+      })
+      .where(eq(pagesContacts.pageId, pageId))
+      .returning({
+        id: pagesContacts.id,
+        pageId: pagesContacts.pageId,
+        name: pagesContacts.name,
+        title: pagesContacts.title,
+        email: pagesContacts.email,
+        phoneNum: pagesContacts.phoneNum,
+      });
+  }
+
+  async deletePageContact(pageId: string) {
     return await this.drizzleService.db
       .delete(pagesContacts)
-      .where(eq(pagesContacts.id, contactId));
+      .where(eq(pagesContacts.pageId, pageId));
   }
 
   async getPageContactById(contactId: string) {

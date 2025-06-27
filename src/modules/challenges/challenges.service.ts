@@ -147,7 +147,6 @@ export class ChallengesService {
     content: string,
     files: any,
   ) {
-    console.log('postId', postId);
     const userDoPostChallenge =
       await this.challengesRepository.findDoPostChallenge(postId, userId);
     if (!userDoPostChallenge) {

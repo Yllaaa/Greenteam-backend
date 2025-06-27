@@ -92,7 +92,6 @@ export class PaymentsService {
         'succeeded',
         tx,
       );
-      console.log('payment' + payment);
       // Create invoice record
       await this.subscriptionsService.createSubscriptionInvoice(
         subscription,

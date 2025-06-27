@@ -21,7 +21,6 @@ export class SettingsController {
   @Post('fcm-token')
   async setUserFcmToken(@Request() req, @Body() dto: SetFcmTokenDto) {
     const userId = req.user.id;
-    console.log(userId);
     return await this.settingsService.setUserFcmtoken(userId, dto.fcmToken);
   }
 

@@ -74,7 +74,6 @@ export class AuthController {
 
       if (platform === 'android' || platform === 'ios') {
         redirectUrl = `${process.env.MOBILE_LINK}open?token=${response.accessToken}`;
-        console.log('Redirecting to mobile app:', redirectUrl);
       } else {
         redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
       }
@@ -133,7 +132,6 @@ export class AuthController {
 
   private detectPlatform(userAgent: string): 'android' | 'ios' | 'web' {
     const ua = userAgent.toLowerCase();
-    console.log('User Agent:', ua);
     if (ua.includes('iphone') || ua.includes('ipad')) return 'ios';
     if (ua.includes('android')) return 'android';
 

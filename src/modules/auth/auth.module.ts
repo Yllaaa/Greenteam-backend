@@ -9,6 +9,8 @@ import { AuthController } from './auth.controller';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { MailModule } from '../common/mail/mail.module';
 import { UsersModule } from '../users/users.module';
+import { Subscription } from 'rxjs';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { UsersModule } from '../users/users.module';
     }),
     MailModule,
     UsersModule,
+    SubscriptionsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, AuthRepository, GoogleStrategy],

@@ -7,7 +7,6 @@ import {
   Get,
   Req,
   UseGuards,
-  Res,
   HttpStatus,
   Query,
   NotFoundException,
@@ -25,13 +24,17 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { I18nService } from 'nestjs-i18n';
+import { UpdatePageContactDto } from './dto/update-page-contact.dto';
+import { SubscriptionGuard } from 'src/modules/auth/guards/subscription.guard';
+import { SubscriptionRequired } from 'src/modules/subscriptions/decorator/subscription-required.decorator';
 
 @Controller('')
 @UseGuards(JwtAuthGuard)
 export class PagesController {
-  constructor(private readonly pagesService: PagesService,
-    private readonly i18n: I18nService
-  ) { }
+  constructor(
+    private readonly pagesService: PagesService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @Post('create-page')
   @UseInterceptors(
@@ -90,6 +93,8 @@ export class PagesController {
     return await this.pagesService.getPageDetails(slug, userId);
   }
 
+  @UseGuards(SubscriptionGuard)
+  @SubscriptionRequired()
   @Post(':slug/add-contact')
   async addPageContact(
     @Param('slug') pageSlug: string,
@@ -98,30 +103,38 @@ export class PagesController {
   ) {
     const userId = req.user.id;
     await this.pagesService.addPageContact(contact, pageSlug, userId);
-    const translatedMessage = await this.i18n.t('pages.pages.notifications.CONTACT_ADDED_SUCCESSFULLY');
+    const translatedMessage = await this.i18n.t(
+      'pages.pages.notifications.CONTACT_ADDED_SUCCESSFULLY',
+    );
     return { message: translatedMessage };
   }
 
-  @Get(':slug/contacts')
+  @Get(':slug/contact')
   async getPageContact(@Param('slug') slug: string) {
-    return await this.pagesService.getPageContactsBySlug(slug);
+    const contact = await this.pagesService.getPageContactBySlug(slug);
+    return { contact };
   }
 
-  @Get(':id/contacts-by-Id')
-  async getPageContactById(@Param('id') id: string) {
-    return await this.pagesService.getPageContactsById(id);
-  }
-
-  @Delete(':slug/contacts/:id')
-  async deletePageContact(
-    @Param('id') contactId: string,
+  @UseGuards(SubscriptionGuard)
+  @SubscriptionRequired()
+  @Put(':slug/contact')
+  async updatePageContact(
+    @Param('slug') slug: string,
+    @Body() contactData: UpdatePageContactDto,
     @Req() req,
-    @Res() res: Response,
   ) {
     const userId = req.user.id;
-    await this.pagesService.deletePageContact(contactId, userId);
-    const translatedMessage = await this.i18n.t('pages.pages.notifications.CONTACT_DELETED');
-    return res.status(HttpStatus.OK).json({ message: translatedMessage });
+    return await this.pagesService.updatePageContact(slug, contactData, userId);
+  }
+
+  @Delete(':slug/contact')
+  async deletePageContact(@Param('slug') slug: string, @Req() req) {
+    const userId = req.user.id;
+    await this.pagesService.deletePageContact(slug, userId);
+    const translatedMessage = await this.i18n.t(
+      'pages.pages.notifications.CONTACT_DELETED',
+    );
+    return { message: translatedMessage };
   }
 
   @Post(':slug/toggle-follow')
