@@ -9,7 +9,11 @@ import {
 import { ChallengesRepository } from './challenges.repository';
 import { PostsService } from '../shared-modules/posts/posts/posts.service';
 import { SQL } from 'drizzle-orm';
-import { CreatorType, UserChallengeStatus } from '../db/schemas/schema';
+import {
+  CreatorType,
+  messageRelations,
+  UserChallengeStatus,
+} from '../db/schemas/schema';
 import { I18nService } from 'nestjs-i18n';
 @Injectable()
 export class ChallengesService {
@@ -268,6 +272,27 @@ export class ChallengesService {
       pagination,
       userId,
     );
+  }
+
+  async deleteUserGreenChallenge(userId: string, challengeId: string) {
+    const userGreenChallenge =
+      await this.challengesRepository.findUserGreenChallenge(
+        userId,
+        challengeId,
+      );
+    if (!userGreenChallenge) {
+      throw new NotFoundException(
+        'challenges.challenges.errors.USER_HAS_NOT_ADDED',
+      );
+    }
+    await this.challengesRepository.deleteUserGreenChallenge(
+      userId,
+      challengeId,
+    );
+
+    return {
+      message: 'challenge removed',
+    };
   }
 
   async getUsersDoPosts(

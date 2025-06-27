@@ -107,6 +107,12 @@ export class ChallengesController {
     );
   }
 
+  @Delete('green-challenges/:id')
+  async deleteGreenChallenge(@Req() req, @Param('id') challengeId: string) {
+    const userId = req.user.id;
+    return this.challengesService.deleteUserGreenChallenge(userId, challengeId);
+  }
+
   @Post('green-challenges/:id/add-to-do')
   async addGreenChallengeToUser(@Req() req, @Param('id') challengeId: string) {
     const userId = req.user.id;
