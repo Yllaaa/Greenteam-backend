@@ -45,7 +45,6 @@ export class MailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log('email sent');
     } catch (error) {
       console.error('Error sending email:', error);
       throw new Error('Failed to send verification email');

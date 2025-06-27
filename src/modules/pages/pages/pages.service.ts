@@ -16,6 +16,7 @@ import { getNotificationMessage } from 'src/modules/notifications/notification-m
 import { UsersService } from 'src/modules/users/users.service';
 import { NotificationQueueService } from 'src/modules/common/queues/notification-queue/notification-queue.service';
 import { I18nService, I18nContext } from 'nestjs-i18n';
+import { UpdatePageContactDto } from './dto/update-page-contact.dto';
 @Injectable()
 export class PagesService {
   constructor(
@@ -188,7 +189,7 @@ export class PagesService {
     return await this.pagesRepository.addPageContact(contact, page.id);
   }
 
-  async getPageContactsBySlug(slug: string) {
+  async getPageContactBySlug(slug: string) {
     const page = await this.pagesRepository.getPageBySlug(slug);
     if (!page) {
       throw new NotFoundException(
@@ -197,31 +198,49 @@ export class PagesService {
         }),
       );
     }
-    return await this.pagesRepository.getPageContacts(page?.id);
+    const contact = await this.pagesRepository.getPageContact(page?.id);
+
+    return contact || null;
   }
 
-  async getPageContactsById(contactId: string) {
-    const contact = await this.pagesRepository.getPageContacts(contactId);
-
-    return contact;
-  }
-
-  async deletePageContact(contactId: string, userId: string) {
-    const contact = await this.pagesRepository.getPageContactById(contactId);
-    if (!contact) {
+  async updatePageContact(
+    slug: string,
+    contactData: UpdatePageContactDto,
+    userId: string,
+  ) {
+    const page = await this.pagesRepository.getPageBySlug(slug);
+    if (!page) {
       throw new NotFoundException(
-        this.i18n.translate('pages.pages.errors.CONTACT_ID_NOT_FOUND', {
-          args: { contactId },
+        this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND'),
+      );
+    }
+
+    if (page.ownerId !== userId) {
+      throw new BadRequestException('pages.pages.errors.NOT_AUTHORIZED');
+    }
+    const contact = await this.pagesRepository.getPageContact(page.id);
+    if (!contact) {
+      return await this.pagesRepository.addPageContact(contactData, page.id);
+    }
+    return await this.pagesRepository.updatePageContact(page.id, contactData);
+  }
+
+  async deletePageContact(slug: string, userId: string) {
+    const page = await this.pagesRepository.getPageBySlug(slug);
+    if (!page) {
+      throw new NotFoundException(
+        this.i18n.translate('pages.pages.errors.SLUG_PAGE_NOT_FOUND', {
+          args: { slug },
         }),
       );
     }
 
-    const pageOwnerId = await this.getPageOwnerId(contact.pageId);
+    const pageOwnerId = await this.getPageOwnerId(page.id);
     if (pageOwnerId !== userId) {
       throw new BadRequestException('pages.pages.errors.NOT_AUTHORIZED');
     }
 
-    return await this.pagesRepository.deletePageContact(contactId);
+    return await this.pagesRepository.deletePageContact(page.id);
   }
 
   async getPageBySlug(slug: string) {

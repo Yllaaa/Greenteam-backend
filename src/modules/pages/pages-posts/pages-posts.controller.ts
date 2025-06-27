@@ -25,8 +25,8 @@ import { I18nService } from 'nestjs-i18n';
 export class PagesPostsController {
   constructor(
     private readonly pagesPostsService: PagesPostsService,
-    private readonly i18n: I18nService
-  ) { }
+    private readonly i18n: I18nService,
+  ) {}
 
   @Get('')
   async getPagePosts(
@@ -60,7 +60,6 @@ export class PagesPostsController {
       document?: Express.Multer.File[];
     },
   ) {
-    console.log('files', files);
     return await this.pagesPostsService.createPost(
       {
         dto,
@@ -78,7 +77,9 @@ export class PagesPostsController {
   ) {
     const userId = req.user.id;
     await this.pagesPostsService.deletePost(postId, slug, userId);
-    const translatedMessage = await this.i18n.t('pages.posts.notifications.POST_DELETED');
+    const translatedMessage = await this.i18n.t(
+      'pages.posts.notifications.POST_DELETED',
+    );
     return { message: translatedMessage };
   }
 }

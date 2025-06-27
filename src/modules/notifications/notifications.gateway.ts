@@ -41,7 +41,6 @@ export class NotificationsGateway
       const authHeader = client.handshake?.headers?.authorization;
       const authQuery = client.handshake?.query?.token as string;
       const authAuth = client.handshake?.auth?.token;
-      console.log('Auth Header:', authHeader);
       const token = authHeader?.startsWith('Bearer ')
         ? authHeader.split(' ')[1]
         : authQuery || authAuth;

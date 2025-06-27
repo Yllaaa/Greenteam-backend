@@ -1,0 +1,1 @@
+ALTER TABLE "pages_contacts" ADD CONSTRAINT "pages_contacts_page_id_unique" UNIQUE("page_id");

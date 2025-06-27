@@ -267,7 +267,6 @@ export class ProfileService {
     return await Promise.all(
       events.map(async (event) => {
         const hostName = await this.GetEventHostName(event);
-        console.log('hostName', hostName);
         const { userCreator, pageCreator, ...rest } = event;
 
         return {

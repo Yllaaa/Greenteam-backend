@@ -82,6 +82,7 @@ export const pagesContacts = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     pageId: uuid('page_id')
       .notNull()
+      .unique()
       .references(() => pages.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 256 }).notNull(),
     title: varchar('title', { length: 256 }).notNull(),

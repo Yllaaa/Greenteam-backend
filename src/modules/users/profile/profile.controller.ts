@@ -96,7 +96,6 @@ export class ProfileController {
     @Query() pagination: PaginationDto,
   ) {
     const userId: string = req.user.id;
-    console.log('userId', userId);
     return await this.profileService.getUserGroups(
       username,
       userId,
