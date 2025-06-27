@@ -51,6 +51,7 @@ export class PaymentsRepository {
       })
       .returning({
         id: subscriptionsPayments.id,
+        subscriptionId: subscriptionsPayments.subscriptionId,
       });
   }
 

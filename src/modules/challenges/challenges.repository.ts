@@ -304,6 +304,17 @@ export class ChallengesRepository {
       );
   }
 
+  async deleteUserGreenChallenge(userId: string, challengeId: string) {
+    return await this.drizzleService.db
+      .delete(usersGreenChallenges)
+      .where(
+        and(
+          eq(usersGreenChallenges.userId, userId),
+          eq(usersGreenChallenges.challengeId, challengeId),
+        ),
+      );
+  }
+
   async markDoPostChallengeAsDone(userId: string, postId: string) {
     return await this.drizzleService.db
       .update(usersDoPosts)
