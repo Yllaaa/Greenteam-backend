@@ -4,7 +4,8 @@
     "NOT_AUTHORIZED": "You are not the owner of this page",
     "SLUG_PAGE_NOT_FOUND": "Page with slug {slug} not found",
     "PAGE_ID_NOT_FOUND": "Page with ID ${pageId} not found",
-    "CONTACT_ID_NOT_FOUND": "Contact with ID {contactId} not found`"
+    "CONTACT_ID_NOT_FOUND": "Contact with ID {contactId} not found`",
+    "CONTACT_ALREADY_EXISTS": "Contact already exists for this page"
   },
   "validations": {
     "LONG_SLUG": "Slug is too long",

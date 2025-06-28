@@ -102,11 +102,15 @@ export class PagesController {
     @Req() req,
   ) {
     const userId = req.user.id;
-    await this.pagesService.addPageContact(contact, pageSlug, userId);
+    const newContact = await this.pagesService.addPageContact(
+      contact,
+      pageSlug,
+      userId,
+    );
     const translatedMessage = await this.i18n.t(
       'pages.pages.notifications.CONTACT_ADDED_SUCCESSFULLY',
     );
-    return { message: translatedMessage };
+    return { message: translatedMessage, contact: newContact };
   }
 
   @Get(':slug/contact')

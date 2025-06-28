@@ -185,7 +185,10 @@ export class PagesService {
     if (page.ownerId !== userId) {
       throw new BadRequestException('pages.pages.errors.NOT_AUTHORIZED');
     }
-
+    const existingContact = await this.pagesRepository.getPageContact(page.id);
+    if (existingContact) {
+      return await this.pagesRepository.updatePageContact(page.id, contact);
+    }
     return await this.pagesRepository.addPageContact(contact, page.id);
   }
 
