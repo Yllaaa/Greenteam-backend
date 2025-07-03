@@ -206,6 +206,17 @@ export class PagesService {
     return contact || null;
   }
 
+  async getPageContactByPageId(id: string) {
+    try {
+      const contact = await this.pagesRepository.getPageContactByPageId(id);
+      return contact || null;
+    } catch (error) {
+      throw new NotFoundException(
+        this.i18n.translate('pages.pages.errors.CONTACT_NOT_FOUND'),
+      );
+    }
+  }
+
   async updatePageContact(
     slug: string,
     contactData: UpdatePageContactDto,

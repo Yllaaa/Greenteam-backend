@@ -310,9 +310,9 @@ export class PagesRepository {
       .where(eq(pagesContacts.pageId, pageId));
   }
 
-  async getPageContactById(contactId: string) {
+  async getPageContactByPageId(pageId: string) {
     return await this.drizzleService.db.query.pagesContacts.findFirst({
-      where: eq(pagesContacts.id, contactId),
+      where: eq(pagesContacts.pageId, pageId),
     });
   }
 

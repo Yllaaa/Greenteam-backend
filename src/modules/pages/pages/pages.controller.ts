@@ -119,6 +119,12 @@ export class PagesController {
     return { contact };
   }
 
+  @Get(':id/contact-by-id')
+  async getPageContactById(@Param('id') id: string) {
+    const contact = await this.pagesService.getPageContactByPageId(id);
+    return { contact };
+  }
+
   @UseGuards(SubscriptionGuard)
   @SubscriptionRequired()
   @Put(':slug/contact')
