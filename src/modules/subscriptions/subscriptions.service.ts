@@ -79,7 +79,6 @@ export class SubscriptionsService {
       if (!user) {
         throw new NotFoundException('users.profiles.errors.USER_NOT_FOUND');
       }
-
       const stripeCustomerId = await this.getOrCreateStripeCustomer(user);
 
       // 4. Get or create Stripe product and price
@@ -196,8 +195,8 @@ export class SubscriptionsService {
 
     if (!stripeProductId || !stripePriceId) {
       const product = await this.stripeService.createProduct(
-        tier.name,
-        `${tier.name} subscription plan`,
+        tier.nameEn,
+        `${tier.nameEn} subscription plan`,
       );
       stripeProductId = product.id;
 
