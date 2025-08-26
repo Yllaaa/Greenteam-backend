@@ -1,26 +1,28 @@
 import {
   Injectable,
-  HttpException,
-  HttpCode,
   NotFoundException,
   InternalServerErrorException,
   ConflictException,
   Logger,
-  BadRequestException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { SubscriptionsRepository } from './subscriptions.repository';
 import { PaymentsService } from '../payments/payments/payments.service';
 import { StripeService } from '../payments/stripe/stripe.service';
 import Stripe from 'stripe';
 import { SubscriptionStatus } from '../db/schemas/schema';
+
 @Injectable()
 export class SubscriptionsService {
+  private readonly logger = new Logger(SubscriptionsService.name);
+
   constructor(
     private readonly subscriptionsRepository: SubscriptionsRepository,
+    @Inject(forwardRef(() => PaymentsService))
     private readonly paymentsService: PaymentsService,
     private readonly stripeService: StripeService,
   ) {}
-  private readonly logger = new Logger(SubscriptionsService.name);
 
   async getSubscriptionTiers(lang?: string) {
     const tiers = await this.subscriptionsRepository.getSubscriptionTiers();

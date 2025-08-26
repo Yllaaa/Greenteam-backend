@@ -7,7 +7,7 @@ import { StripeModule } from '../payments/stripe/stripe.module';
 import { SubscriptionsExpirationService } from './subscriptions-expiration.service';
 
 @Module({
-  imports: [StripeModule, PaymentsModule],
+  imports: [forwardRef(() => StripeModule), forwardRef(() => PaymentsModule)],
   exports: [SubscriptionsService, SubscriptionsRepository],
   providers: [
     SubscriptionsService,

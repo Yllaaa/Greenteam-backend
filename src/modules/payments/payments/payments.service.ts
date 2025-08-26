@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PaymentsRepository } from './payments.repository';
 import { StripeService } from '../stripe/stripe.service';
-import { SubscriptionsService } from 'src/modules/subscriptions/subscriptions.service';
+import { SubscriptionsService } from '../../subscriptions/subscriptions.service';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import { I18nService } from 'nestjs-i18n';
 @Injectable()
@@ -20,7 +20,7 @@ export class PaymentsService {
     private readonly i18n: I18nService,
     private readonly drizzleService: DrizzleService,
   ) {}
-  private readonly logger = new Logger(SubscriptionsService.name);
+  private readonly logger = new Logger(PaymentsService.name);
 
   async getUserStripeCustomerId(userId: string) {
     return this.paymentsRepository.getUserStripeCustomerId(userId);
