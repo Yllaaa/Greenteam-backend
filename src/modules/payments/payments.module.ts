@@ -9,7 +9,7 @@ import { RouterModule } from '@nestjs/core';
 const paymentsRoutes = [{ path: '/stripe', module: StripeModule }];
 @Module({
   imports: [
-    StripeModule,
+    forwardRef(() => StripeModule),
     forwardRef(() => SubscriptionsModule),
     RouterModule.register([
       { path: 'payments', module: PaymentsModule, children: paymentsRoutes },

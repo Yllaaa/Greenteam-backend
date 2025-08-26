@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
 import { PaymentsService } from '../payments/payments.service';
 import { StripeEventLogsRepository } from './stripe-event-logs.repository';
@@ -8,7 +8,8 @@ export class StripeWebhookService {
   private readonly logger = new Logger(StripeWebhookService.name);
 
   constructor(
-    private paymentsService: PaymentsService,
+    @Inject(forwardRef(() => PaymentsService))
+    private readonly paymentsService: PaymentsService,
     private stripeEventLogsRepository: StripeEventLogsRepository,
   ) {}
 

@@ -61,7 +61,11 @@ export class PostsController {
   @Get(':id')
   async getPost(@Param('id') id: string, @Req() req) {
     const userId = req.user?.id;
-    return this.postsService.getPostInDetails(id, userId);
+    const post = await this.postsService.getPostInDetails(id, userId);
+    return {
+      ...post,
+      isAuthor: post.author?.id === userId,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
