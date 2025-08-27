@@ -49,4 +49,11 @@ export class UsersRepository {
       .delete(users)
       .where(eq(users.id, userId));
   }
+
+  async deactivateUser(userId: string) {
+    return await this.drizzleService.db
+      .update(users)
+      .set({ status: 'DEACTIVATED', deactivatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
 }
