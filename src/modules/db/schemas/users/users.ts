@@ -24,6 +24,7 @@ import {
 } from '../schema';
 import { forumPublications } from '../forums/forums';
 import { conversations, messages } from '../chat/chat';
+import { d } from 'drizzle-kit/index-BAUrj6Ib';
 
 export const userStatus = pgEnum('USER_STATUS', [
   'ACTIVE',
@@ -61,6 +62,7 @@ export const users = pgTable(
 
     joinedAt: timestamp('joined_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
+    deactivatedAt: timestamp('deactivated_at'),
   },
   (table) => [
     uniqueIndex('user_email_idx').on(table.email),

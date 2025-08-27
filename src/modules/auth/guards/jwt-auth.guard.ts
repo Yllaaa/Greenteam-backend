@@ -21,12 +21,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isJwtValid = await super.canActivate(context);
-    if (!isJwtValid) {
-      return false;
-    }
+    if (!isJwtValid) return false;
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+
     const savedUser = await this.drizzle.db.query.users.findFirst({
       where: eq(users.id, user.id),
       columns: {
@@ -36,14 +35,34 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         username: true,
         avatar: true,
         isEmailVerified: true,
+        status: true,
       },
     });
 
-    if (!savedUser?.isEmailVerified) {
-      throw new UnauthorizedException('auth.auth.notifications.PLEASE_VERIFY_EMAIL');
-    }
+    this.validateUser(savedUser);
 
     request.user = savedUser;
     return true;
+  }
+
+  private validateUser(user: any): void {
+    if (!user) {
+      throw new UnauthorizedException('auth.auth.errors.USER_NOT_FOUND');
+    }
+
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedException(
+        'auth.auth.notifications.PLEASE_VERIFY_EMAIL',
+      );
+    }
+
+    const statusErrors: Record<string, Error> = {
+      BANNED: new ForbiddenException('auth.auth.errors.USER_BANNED'),
+      DEACTIVATED: new ForbiddenException('auth.auth.errors.USER_DEACTIVATED'),
+    };
+
+    if (statusErrors[user.status]) {
+      throw statusErrors[user.status];
+    }
   }
 }

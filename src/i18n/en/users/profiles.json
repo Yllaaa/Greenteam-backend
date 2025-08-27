@@ -1,8 +1,12 @@
 {
-    "errors": {
-        "USER_NOT_FOUND": "User not found"
-    },
-    "validations": {
-        "USERNAME_TAKEN": "Username already taken, please choose another one."
-    }
+  "errors": {
+    "USER_NOT_FOUND": "User not found"
+  },
+  "validations": {
+    "USERNAME_TAKEN": "Username already taken, please choose another one."
+  },
+  "notifications": {
+    "PROFILE_UPDATED": "Profile updated successfully",
+    "USER_DEACTIVATED": "User has been deactivated"
+  }
 }
