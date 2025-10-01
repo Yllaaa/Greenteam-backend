@@ -18,6 +18,8 @@ import { LoginDto, RegisterDto } from './dtos/auth.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 import { I18nService } from 'nestjs-i18n';
+import { detectPlatform } from './utils/auth-utils';
+import { AppleAuthGuard } from './guards/apple-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -68,7 +70,7 @@ export class AuthController {
       const response = await this.authService.googleLogin(user);
 
       const userAgent = req.headers['user-agent'] || '';
-      const platform = this.detectPlatform(userAgent);
+      const platform = detectPlatform(userAgent);
 
       let redirectUrl: string;
 
@@ -112,7 +114,7 @@ export class AuthController {
     @Req() req,
   ) {
     const userAgent = req.headers['user-agent'] || '';
-    const platform = this.detectPlatform(userAgent);
+    const platform = detectPlatform(userAgent);
     return this.authService.forgotPassword(forgotPasswordDto, platform);
   }
 
@@ -129,12 +131,35 @@ export class AuthController {
     this.setAuthCookie(res, response?.accessToken);
     res.json(response);
   }
+  @Get('apple/login')
+  @UseGuards(AppleAuthGuard)
+  async appleAuth() {}
 
-  private detectPlatform(userAgent: string): 'android' | 'ios' | 'web' {
-    const ua = userAgent.toLowerCase();
-    if (ua.includes('iphone') || ua.includes('ipad')) return 'ios';
-    if (ua.includes('android')) return 'android';
+  @Post('apple/callback')
+  @UseGuards(AppleAuthGuard)
+  async appleAuthRedirect(@Req() req, @Res() res: Response) {
+    try {
+      const user = req.user;
+      const response = await this.authService.appleLogin(user);
 
-    return 'web';
+      const userAgent = req.headers['user-agent'] || '';
+      const platform = detectPlatform(userAgent);
+
+      let redirectUrl: string;
+
+      if (platform === 'android' || platform === 'ios') {
+        redirectUrl = `${process.env.MOBILE_LINK}open?token=${response.accessToken}`;
+      } else {
+        redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
+      }
+
+      this.setAuthCookie(res, response.accessToken);
+      return res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('Apple auth error:', error);
+      return res.redirect(
+        `${process.env.APP_URL}/auth/error?message=login_failed`,
+      );
+    }
   }
 }

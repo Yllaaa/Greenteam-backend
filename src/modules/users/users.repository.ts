@@ -44,6 +44,16 @@ export class UsersRepository {
       .where(eq(users.id, userId));
   }
 
+  async updateUserAppleId(userId: string, appleId: string) {
+    await this.drizzleService.db
+      .update(users)
+      .set({
+        appleId: appleId,
+        isEmailVerified: true,
+      })
+      .where(eq(users.id, userId));
+  }
+
   async deleteUser(userId: string) {
     return await this.drizzleService.db
       .delete(users)

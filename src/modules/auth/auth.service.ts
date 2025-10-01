@@ -14,6 +14,7 @@ import { ForgotPasswordDto, ResetPasswordDto } from './dtos/password-reset.dto';
 import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { I18nService } from 'nestjs-i18n';
+import { generateUniqueUsername } from './utils/auth-utils';
 
 @Injectable()
 export class AuthService {
@@ -66,6 +67,7 @@ export class AuthService {
       username: registerDto.username,
       isEmailVerified: false,
       verificationToken,
+      fullName: '',
     };
 
     await this.mailService.sendVerificationEmail(
@@ -120,7 +122,7 @@ export class AuthService {
 
       if (!user) {
         const baseUsername = profile.email.split('@')[0];
-        const username = await this.generateUniqueUsername(baseUsername);
+        const username = await generateUniqueUsername(baseUsername);
 
         const randomPassword = crypto.randomBytes(16).toString('hex');
         const hashedPassword = await argon2.hash(randomPassword);
@@ -153,6 +155,51 @@ export class AuthService {
 
       throw new UnauthorizedException(
         this.i18n.translate('auth.auth.errors.GOOGLE_AUTHENTICATION_FAILED', {
+          args: { errorMessage: errorMessage },
+        }),
+      );
+    }
+  }
+
+  async appleLogin(profile: any) {
+    try {
+      let user = await this.authRepository.getUserByEmail(profile.email);
+
+      if (user && (!user.appleId || !user.isEmailVerified)) {
+        await this.userService.updateUserAppleId(user.id, profile.appleId);
+      }
+
+      if (!user) {
+        const baseUsername = profile.email.split('@')[0];
+        const username = await generateUniqueUsername(baseUsername);
+
+        const randomPassword = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await argon2.hash(randomPassword);
+
+        const newUser = {
+          email: profile.email,
+          fullName: profile.fullName || 'Apple User',
+          appleId: profile.appleId,
+          username,
+          password: hashedPassword,
+          avatar: null,
+          isEmailVerified: true,
+        };
+
+        const createdUsers = await this.authRepository.createUser(newUser);
+        user = createdUsers[0];
+      }
+
+      const token = this.generateToken(user);
+      return token;
+    } catch (error) {
+      let errorMessage = 'Failed to authenticate with Apple';
+      if (error.message) {
+        errorMessage += `: ${error.message}`;
+      }
+
+      throw new UnauthorizedException(
+        this.i18n.translate('auth.auth.errors.APPLE_AUTHENTICATION_FAILED', {
           args: { errorMessage: errorMessage },
         }),
       );
@@ -335,38 +382,5 @@ export class AuthService {
       .digest('hex');
 
     return { rawToken, hashedToken };
-  }
-
-  private async generateUniqueUsername(baseUsername: string): Promise<string> {
-    const sanitizedBase = baseUsername
-      .replace(/[^a-zA-Z0-9_]/g, '')
-      .slice(0, 20);
-
-    for (let counter = 0; counter < 5; counter++) {
-      const usernameToTry =
-        counter === 0 ? sanitizedBase : `${sanitizedBase}${counter}`;
-
-      try {
-        const existingUser = await Promise.race([
-          this.authRepository.getUserByUsername(usernameToTry),
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error('Username lookup timed out')),
-              2000,
-            ),
-          ),
-        ]);
-
-        if (!existingUser) {
-          return usernameToTry;
-        }
-      } catch (error) {
-        console.error(`Error checking username ${usernameToTry}:`, error);
-        break;
-      }
-    }
-
-    const timestamp = Date.now().toString().slice(-6);
-    return `${sanitizedBase}_${timestamp}`;
   }
 }
