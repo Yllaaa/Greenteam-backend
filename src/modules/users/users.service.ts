@@ -25,6 +25,10 @@ export class UsersService {
     return await this.usersRepository.updateUserGoogleId(userId, googleId);
   }
 
+  async updateUserAppleId(userId: string, appleId: string) {
+    return await this.usersRepository.updateUserAppleId(userId, appleId);
+  }
+
   async deleteUser(userId: string) {
     return await this.usersRepository.deleteUser(userId);
   }

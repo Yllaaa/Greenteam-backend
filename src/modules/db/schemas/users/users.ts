@@ -1,4 +1,4 @@
-import { is, relations, sql } from 'drizzle-orm';
+import { InferInsertModel, relations } from 'drizzle-orm';
 
 import {
   pgTable,
@@ -9,7 +9,6 @@ import {
   uniqueIndex,
   integer,
   boolean,
-  check,
   index,
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
@@ -24,7 +23,6 @@ import {
 } from '../schema';
 import { forumPublications } from '../forums/forums';
 import { conversations, messages } from '../chat/chat';
-import { d } from 'drizzle-kit/index-BAUrj6Ib';
 
 export const userStatus = pgEnum('USER_STATUS', [
   'ACTIVE',
@@ -35,6 +33,8 @@ export const userStatus = pgEnum('USER_STATUS', [
 export const accountType = pgEnum('account_type', ['normal', 'sponsor']);
 
 export const languageEnum = pgEnum('language_preference', ['en', 'es']);
+
+export type UserInsert = InferInsertModel<typeof users>;
 
 export const users = pgTable(
   'Users_accounts',
@@ -49,6 +49,7 @@ export const users = pgTable(
     cover: varchar('cover', { length: 255 }),
     phoneNumber: varchar('phone_number', { length: 255 }),
     googleId: varchar('google_id', { length: 255 }),
+    appleId: varchar('apple_id', { length: 255 }),
     passwordResetToken: varchar('password_reset_token', { length: 255 }),
     passwordResetTokenExpires: timestamp('password_reset_token_expires'),
     status: userStatus().default('ACTIVE'),

@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { DrizzleService } from '../db/drizzle.service';
-import { users } from '../db/schemas/users/users';
-import { eq, is } from 'drizzle-orm';
+import { UserInsert, users } from '../db/schemas/users/users';
+import { eq } from 'drizzle-orm';
 import { User } from './interfaces/user.interface';
 import { I18nService } from 'nestjs-i18n';
 
@@ -9,8 +9,8 @@ import { I18nService } from 'nestjs-i18n';
 export class AuthRepository {
   constructor(
     private drizzle: DrizzleService,
-    private readonly i18n: I18nService
-  ) { }
+    private readonly i18n: I18nService,
+  ) {}
 
   async validateUser(field: 'email' | 'username', value: string) {
     return await this.drizzle.db.query.users.findFirst({
@@ -52,6 +52,7 @@ export class AuthRepository {
         fullName: true,
         username: true,
         googleId: true,
+        appleId: true,
         isEmailVerified: true,
       },
     });
@@ -70,7 +71,7 @@ export class AuthRepository {
     });
   }
 
-  async createUser(newUser: any): Promise<User> {
+  async createUser(newUser: UserInsert): Promise<User> {
     const createdUser = await this.drizzle.db
       .insert(users)
       .values({
@@ -80,10 +81,11 @@ export class AuthRepository {
         fullName: newUser.fullName
           ? newUser.fullName
           : newUser.email.split('@')[0],
-        avatar: newUser.avatar ?? null,
-        googleId: newUser.googleId ?? null,
-        isEmailVerified: newUser.isEmailVerified ?? false,
-        verificationToken: newUser.verificationToken ?? null,
+        avatar: newUser.avatar,
+        googleId: newUser.googleId,
+        appleId: newUser.appleId,
+        isEmailVerified: newUser.isEmailVerified,
+        verificationToken: newUser.verificationToken,
       })
       .returning({
         id: users.id,
@@ -92,6 +94,7 @@ export class AuthRepository {
         avatar: users.avatar,
         fullName: users.fullName,
         googleId: users.googleId,
+        appleId: users.appleId,
         isEmailVerified: users.isEmailVerified,
       });
 
@@ -128,14 +131,14 @@ export class AuthRepository {
       });
   }
 
-  async resendVerificationEmail(email: string, verificationToken: string) {
+  async resendVerificationEmail(
+    email: string,
+    verificationToken: string,
+  ): Promise<void> {
     await this.drizzle.db
       .update(users)
       .set({ verificationToken })
       .where(eq(users.email, email));
-    const translatedMessage = await this.i18n.t('auth.auth.notifications.VERIFICATION_EMAIL_SENT');
-
-    return { message: translatedMessage };
   }
 
   async forgotPassword(
