@@ -17,7 +17,9 @@ class ImportPostsScript {
     // Load CSV
     const rows: any[] = await new Promise((resolve, reject) => {
       const data: any[] = [];
-      fs.createReadStream('./Wo_Posts_with_header.csv')
+      fs.createReadStream(
+        'src/scripts/import-old-data/Wo_Posts_with_header.csv',
+      )
         .pipe(csv())
         .on('data', (row) => data.push(row))
         .on('end', () => resolve(data))

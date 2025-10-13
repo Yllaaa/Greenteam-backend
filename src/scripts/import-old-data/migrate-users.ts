@@ -17,7 +17,7 @@ class ImportUsersScript {
 
     const rows: any[] = await new Promise((resolve, reject) => {
       const data: any[] = [];
-      fs.createReadStream('./users_backup.csv')
+      fs.createReadStream('src/scripts/import-old-data/users_backup.csv')
         .pipe(csv())
         .on('data', (row) => data.push(row))
         .on('end', () => resolve(data))
