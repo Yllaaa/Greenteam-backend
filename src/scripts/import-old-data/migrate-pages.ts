@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import * as fs from 'fs';
-import csv from 'csv-parser';
+import * as csv from 'csv-parser';
+
 import { Injectable } from '@nestjs/common';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import { PageCategoryType, pages } from 'src/modules/db/schemas/schema';
