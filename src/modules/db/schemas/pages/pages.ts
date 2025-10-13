@@ -43,6 +43,7 @@ export const pages = pgTable(
       .references(() => cities.id)
       .notNull(),
     isVerified: boolean('is_verified').default(false),
+    oldId: integer('old_id'),
     updatedAt: timestamp('updated_at').defaultNow(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
