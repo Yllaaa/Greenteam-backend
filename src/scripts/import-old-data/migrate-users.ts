@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import fs from 'fs';
+import * as fs from 'fs';
 import csv from 'csv-parser';
 
 import { Injectable } from '@nestjs/common';
