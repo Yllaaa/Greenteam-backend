@@ -37,7 +37,7 @@ export const languageEnum = pgEnum('language_preference', ['en', 'es']);
 export type UserInsert = InferInsertModel<typeof users>;
 
 export const users = pgTable(
-  'Users_accounts',
+  'users',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     email: varchar('email', { length: 255 }).notNull().unique(),
@@ -60,8 +60,8 @@ export const users = pgTable(
     fcmToken: varchar('fcm_token', { length: 255 }),
     isVerified: boolean('is_verified').default(false),
     accountType: accountType('account_type').default('normal'),
-
-    joinedAt: timestamp('joined_at').defaultNow(),
+    oldId: integer('old_id'),
+    createdAt: timestamp('createdAt').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
     deactivatedAt: timestamp('deactivated_at'),
   },

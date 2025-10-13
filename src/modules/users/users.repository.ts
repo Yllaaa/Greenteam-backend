@@ -32,7 +32,7 @@ export class UsersRepository {
         bio: true,
         languagePreference: true,
         fcmToken: true,
-        joinedAt: true,
+        createdAt: true,
       },
     });
   }
