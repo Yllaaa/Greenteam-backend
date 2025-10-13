@@ -17,7 +17,7 @@ class ImportPagesScript {
 
     const rows: any[] = await new Promise((resolve, reject) => {
       const data: any[] = [];
-      fs.createReadStream('./pages_backup.csv')
+      fs.createReadStream('src/scripts/import-old-data/pages_backup.csv')
         .pipe(csv())
         .on('data', (row) => data.push(row))
         .on('end', () => resolve(data))
