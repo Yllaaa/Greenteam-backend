@@ -37,7 +37,7 @@ class ImportPostsScript {
 
         // Determine creator: user or page
         let creatorId: string | null = null;
-        let creatorType: CreatorType = 'User' as CreatorType;
+        let creatorType: CreatorType = 'user' as CreatorType;
 
         if (pageId) {
           const page = await db.query.pages.findFirst({
@@ -45,7 +45,7 @@ class ImportPostsScript {
           });
           if (page) {
             creatorId = page.id;
-            creatorType = 'Page' as CreatorType;
+            creatorType = 'page' as CreatorType;
           }
         }
 
@@ -55,7 +55,7 @@ class ImportPostsScript {
           });
           if (user) {
             creatorId = user.id;
-            creatorType = 'User' as CreatorType;
+            creatorType = 'user' as CreatorType;
           }
         }
 
