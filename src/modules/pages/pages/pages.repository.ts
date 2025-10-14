@@ -14,6 +14,7 @@ import {
 import { CreatePageContactDto } from './dto/create-page-contact.dto';
 import { GetAllPagesDto } from 'src/modules/pages/pages/dto/get-pages.dto';
 import { UpdatePageContactDto } from './dto/update-page-contact.dto';
+import { PageDetails } from './interfaces/page-profile.interface';
 
 @Injectable()
 export class PagesRepository {

@@ -37,6 +37,7 @@ import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { EventResponse } from 'src/modules/events/events/interfaces/events.interface';
 import { GetAllProductsDto } from 'src/modules/marketplace/dtos/getAllProducts.dto';
 import { PaginationDto } from '../favorites/dto/paginations.dto';
+import { UserWithRelations } from './interface/user-profile.interface';
 
 @Injectable()
 export class ProfileRepository {
@@ -55,7 +56,7 @@ export class ProfileRepository {
         avatar: true,
         cover: true,
         bio: true,
-        joinedAt: true,
+        createdAt: true,
       },
 
       extras: currentUserId
