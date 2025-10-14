@@ -7,6 +7,7 @@ import {
   foreignKey,
   index,
   serial,
+  integer,
 } from 'drizzle-orm/pg-core';
 import { posts } from '../posts/posts';
 import { relations } from 'drizzle-orm';
@@ -17,7 +18,7 @@ export const topics = pgTable(
   {
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
-    parentId: serial('parent_id').references(() => topics.id),
+    parentId: integer('parent_id').references(() => topics.id),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },

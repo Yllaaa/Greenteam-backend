@@ -22,42 +22,61 @@ class TopicSeedScript {
     const rawData = await fs.readFile(filePath, 'utf-8');
     const topicData = JSON.parse(rawData);
 
-    let success = 0;
+    let parentSuccess = 0;
+    let childSuccess = 0;
     let failed = 0;
 
+    // 1️⃣ Insert parent topics first
     for (const topic of topicData) {
       try {
-        // Insert parent
         await this.db
           .insert(topics)
           .values({
-            id: topic.id,
+            id: topic.id, // only if you REALLY want fixed ids
             name: topic.name,
+            parentId: null, // ensure no FK error
           })
           .onConflictDoNothing();
 
-        // Insert children
-        if (Array.isArray(topic.subtopics)) {
-          for (const sub of topic.subtopics) {
+        parentSuccess++;
+      } catch (error: any) {
+        failed++;
+        console.error(
+          `❌ Failed to insert parent topic ${topic.id}:`,
+          error.message,
+        );
+      }
+    }
+
+    // 2️⃣ Insert subtopics with valid parentId now guaranteed
+    for (const topic of topicData) {
+      if (Array.isArray(topic.subtopics)) {
+        for (const sub of topic.subtopics) {
+          try {
             await this.db
               .insert(topics)
               .values({
                 id: sub.id,
                 name: sub.name,
-                parentId: topic.id,
+                parentId: topic.id, // parent is now ensured
               })
               .onConflictDoNothing();
+
+            childSuccess++;
+          } catch (error: any) {
+            failed++;
+            console.error(
+              `❌ Failed to insert subtopic ${sub.id} (parent ${topic.id}):`,
+              error.message,
+            );
           }
         }
-
-        success++;
-      } catch (error: any) {
-        failed++;
-        console.error(`❌ Failed to insert topic ${topic.id}:`, error.message);
       }
     }
 
-    console.log(`✅ Done. Seeded ${success} parent topics, failed ${failed}.`);
+    console.log(
+      `✅ Done. Seeded ${parentSuccess} parents, ${childSuccess} children, failed ${failed}.`,
+    );
   }
 }
 
