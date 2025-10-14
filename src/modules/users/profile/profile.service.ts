@@ -15,6 +15,10 @@ import { GetEventsDto } from 'src/modules/events/events/dto/getEvents.dto';
 import { PaginationDto } from '../favorites/dto/paginations.dto';
 import { CommonService } from 'src/modules/common/common.service';
 import { I18nContext } from 'nestjs-i18n';
+import {
+  GetUserProfileResult,
+  UserProfileWithTranslatedLocation,
+} from './interface/user-profile.interface';
 
 @Injectable()
 export class ProfileService {

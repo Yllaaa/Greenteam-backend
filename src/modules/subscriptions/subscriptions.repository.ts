@@ -9,6 +9,7 @@ import {
   usersSubscriptions,
 } from '../db/schemas/schema';
 import { subscriptionsInvoice } from '../db/schemas/subscriptions/payments';
+import { SubscriptionTier } from './interfaces/tiers.interface';
 @Injectable()
 export class SubscriptionsRepository {
   constructor(private readonly drizzleService: DrizzleService) {}

@@ -1,21 +1,21 @@
-interface Topic {
+export interface Topic {
   id: number;
   name: string;
 }
 
-interface UserSeller {
+export interface UserSeller {
   id: string;
   fullName: string;
   avatar: string | null;
 }
 
-interface PageSeller {
+export interface PageSeller {
   id: string;
   name: string;
   avatar: string | null;
 }
 
-interface Product {
+export interface Product {
   id: string;
   name: string;
   description: string;

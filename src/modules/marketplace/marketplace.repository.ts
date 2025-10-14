@@ -13,6 +13,7 @@ import {
 } from '../db/schemas/schema';
 import { and, eq, SQL, sql } from 'drizzle-orm';
 import { GetAllProductsDto } from './dtos/getAllProducts.dto';
+import { Product } from './interfaces/product.inteface';
 
 @Injectable()
 export class MarketplaceRepository {

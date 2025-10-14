@@ -1,13 +1,13 @@
-interface SubscriptionBenefit {
+export interface SubscriptionBenefit {
   benefitEn: string;
   benefitEs: string;
 }
 
-interface TierBenefit {
+export interface TierBenefit {
   benefit: SubscriptionBenefit;
 }
 
-interface SubscriptionTier {
+export interface SubscriptionTier {
   id: number;
   nameEn: string;
   nameEs: string;

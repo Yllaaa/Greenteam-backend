@@ -1,4 +1,4 @@
-interface PageDetails {
+export interface PageDetails {
   id: string;
   name: string;
   description: string | null;

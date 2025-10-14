@@ -1,61 +1,61 @@
-interface Country {
+export interface Country {
   id: string;
   nameEn: string;
   nameEs: string;
 }
 
-interface TranslatedCountry {
+export interface TranslatedCountry {
   id: string;
   name: string;
 }
 
-interface City {
+export interface City {
   id: string;
   name: string;
 }
 
-interface UserLocation {
+export interface UserLocation {
   country: Country | null;
   city: City | null;
 }
 
-interface TranslatedUserLocation {
+export interface TranslatedUserLocation {
   country: TranslatedCountry | null;
   city: City | null;
 }
 
 // User profile interfaces
-interface UserBase {
+export interface UserBase {
   id: string;
   fullName: string;
   username: string;
   avatar: string | null;
   cover: string | null;
   bio: string | null;
-  joinedAt: Date;
+  createdAt: Date;
 }
 
-interface UserWithRelations extends UserBase {
+export interface UserWithRelations extends UserBase {
   isFollowing?: boolean;
   isFollower?: boolean;
   isBlocked?: boolean;
   location: UserLocation | null;
 }
 
-interface UserProfileWithTranslatedLocation extends UserBase {
+export interface UserProfileWithTranslatedLocation extends UserBase {
   isFollowing?: boolean;
   isFollower?: boolean;
   isBlocked?: boolean;
   location: TranslatedUserLocation | null;
 }
 
-interface GetUserProfileResult {
+export interface GetUserProfileResult {
   userData: UserProfileWithTranslatedLocation;
   userScore?: number;
   isMyProfile: boolean;
 }
 
-interface ProfileRepository {
+export interface ProfileRepository {
   getUserByUsername(username: string): Promise<UserBase | null>;
 
   getUserProfile(
@@ -66,7 +66,7 @@ interface ProfileRepository {
   getUserScore(userId: string): Promise<number>;
 }
 
-interface ProfileService {
+export interface ProfileService {
   getUserProfile(
     id: string,
     currentUserId?: string,
