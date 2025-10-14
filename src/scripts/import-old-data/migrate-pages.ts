@@ -52,11 +52,11 @@ class ImportPagesScript {
             slug: row.page_name?.toLowerCase().replace(/\s+/g, '-'),
             websiteUrl: row.website,
             category: 'Project' as PageCategoryType,
-            why: row.company || '',
-            how: row.address || '',
-            what: row.call_action_type_url || '',
-            countryId: 1,
-            cityId: 1,
+            why: '',
+            how: '',
+            what: '',
+            countryId: 163,
+            cityId: 53039,
             createdAt,
           })
           .onConflictDoNothing();
