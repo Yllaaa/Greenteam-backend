@@ -32,8 +32,9 @@ export class AuthController {
     res.cookie('accessToken', token, {
       httpOnly: true,
       secure: true,
+      sameSite: 'none',
+      domain: '.greenteam.app',
       maxAge: 24 * 60 * 60 * 1000 * 90,
-      sameSite: 'lax',
     });
   }
 
