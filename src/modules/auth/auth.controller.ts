@@ -70,12 +70,15 @@ export class AuthController {
       const user = req.user;
       const response = await this.authService.googleLogin(user);
 
-      const userAgent = req.headers['user-agent'] || '';
-      const platform = detectPlatform(userAgent);
+      const referer = req.headers.referer || req.headers.origin || '';
+      const isMobile =
+        referer.includes('myapp://') ||
+        req.query.mobile === 'true' ||
+        req.headers['x-requested-with'] === 'mobile-app';
 
       let redirectUrl: string;
 
-      if (platform === 'android' || platform === 'ios') {
+      if (isMobile) {
         redirectUrl = `${process.env.MOBILE_LINK}open?token=${response.accessToken}`;
       } else {
         redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
