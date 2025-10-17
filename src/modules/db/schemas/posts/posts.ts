@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   serial,
+  integer,
 } from 'drizzle-orm/pg-core';
 import { creatorTypeEnum } from './enums';
 import { users } from '../users/users';
@@ -25,6 +26,7 @@ export const posts = pgTable('posts', {
   groupId: uuid('group_id').references(() => groups.id, {
     onDelete: 'cascade',
   }),
+  oldId: integer('old_id'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
