@@ -3,7 +3,7 @@
 /node_modules
 /build
 
-/drizzle
+drizzle/
 
 # configs
 /src/configs/firebase-service-account.json

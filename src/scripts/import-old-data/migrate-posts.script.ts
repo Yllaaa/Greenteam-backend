@@ -75,7 +75,7 @@ class ImportPostsScript {
           .values({
             content: row.postText,
             oldId: row.id,
-            mainTopicId: 1,
+            mainTopicId: 2,
             creatorType,
             creatorId,
             createdAt,
