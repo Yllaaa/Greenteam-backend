@@ -10,6 +10,7 @@ import {
   HttpStatus,
   HttpException,
   Param,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -60,8 +61,25 @@ export class AuthController {
   }
 
   @Get('google/login')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuth() {}
+  async googleAuth(
+    @Req() req,
+    @Res() res: Response,
+    @Query('source') source?: string,
+  ) {
+    const state = Buffer.from(
+      JSON.stringify({ source: source || 'web' }),
+    ).toString('base64');
+
+    const googleAuthUrl =
+      `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${process.env.GOOGLE_CLIENT_ID}` +
+      `&redirect_uri=${encodeURIComponent(process.env.API_URL + '/api/v1/auth/google/callback')}` +
+      `&response_type=code` +
+      `&scope=email%20profile` +
+      `&state=${state}`;
+
+    return res.redirect(googleAuthUrl);
+  }
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
@@ -70,12 +88,26 @@ export class AuthController {
       const user = req.user;
       const response = await this.authService.googleLogin(user);
 
+      const state = req.query.state;
+      let stateData: any = {};
+
+      if (state) {
+        try {
+          stateData = JSON.parse(
+            Buffer.from(state as string, 'base64').toString(),
+          );
+        } catch (error) {
+          console.log('Failed to parse state:', error);
+        }
+      }
+
+      const isMobileApp = stateData.source === 'mobile-app';
       const userAgent = req.headers['user-agent'] || '';
       const platform = detectPlatform(userAgent);
 
       let redirectUrl: string;
 
-      if (platform === 'android' || platform === 'ios') {
+      if (isMobileApp && (platform === 'android' || platform === 'ios')) {
         redirectUrl = `${process.env.MOBILE_LINK}open?token=${response.accessToken}`;
       } else {
         redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
