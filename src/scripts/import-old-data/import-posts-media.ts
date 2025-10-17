@@ -2,10 +2,32 @@ import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as csv from 'csv-parser';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { DrizzleService } from 'src/modules/db/drizzle.service';
 import { entitiesMedia, posts } from 'src/modules/db/schemas/schema';
 import { UploadMediaService } from 'src/modules/common/upload-media/upload-media.service';
+import { I18nService } from 'nestjs-i18n';
+import { ConfigService } from '@nestjs/config';
+
+// Minimal mocks for standalone script
+class MockI18nService {
+  translate(key: string, options?: any) {
+    // just return key for simplicity
+    return key;
+  }
+}
+
+class MockConfigService {
+  get<T>(key: string): T {
+    const map: Record<string, any> = {
+      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+      AWS_REGION: process.env.AWS_REGION,
+      AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
+    };
+    return map[key] as T;
+  }
+}
 
 @Injectable()
 class ImportPostsMediaScript {
@@ -19,7 +41,7 @@ class ImportPostsMediaScript {
 
     console.log('🚀 Starting media import...');
 
-    // Read CSV
+    // Load CSV
     const rows: any[] = await new Promise((resolve, reject) => {
       const data: any[] = [];
       fs.createReadStream('src/scripts/import-old-data/posts_backup.csv')
@@ -31,26 +53,18 @@ class ImportPostsMediaScript {
 
     console.log(`📦 Loaded ${rows.length} rows.`);
 
-    let uploaded = 0;
-    let skipped = 0;
-    let failed = 0;
+    let uploaded = 0,
+      skipped = 0,
+      failed = 0;
 
     for (const row of rows) {
       try {
         const postFile = row.postFile?.trim();
-        if (!postFile) {
+        if (!postFile || !/\.(jpg|jpeg|png|gif|webp)$/i.test(postFile)) {
           skipped++;
           continue;
         }
 
-        // Only allow images
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(postFile);
-        if (!isImage) {
-          skipped++;
-          continue;
-        }
-
-        // Find the post using oldId
         const postOldId = Number(row.id);
         const post = await db.query.posts.findFirst({
           where: (p, { eq }) => eq(p.oldId, postOldId),
@@ -61,44 +75,37 @@ class ImportPostsMediaScript {
           continue;
         }
 
-        // Build local file path
         const localPath = path.join(
           '/home/olddata/old-greanteam-data',
           postFile,
         );
-
         if (!fs.existsSync(localPath)) {
           console.warn(`⚠️ File not found: ${localPath}`);
           skipped++;
           continue;
         }
 
-        // Simulate Multer-like file object
         const buffer = fs.readFileSync(localPath);
         const mimetype = this.getMimeType(localPath);
-        const fileName = path.basename(localPath);
-
         const mockFile: Express.Multer.File = {
           fieldname: 'file',
-          originalname: fileName,
+          originalname: path.basename(localPath),
           encoding: '7bit',
           mimetype,
           size: buffer.length,
           destination: '',
-          filename: fileName,
+          filename: path.basename(localPath),
           path: '',
           buffer,
           stream: fs.createReadStream(localPath),
         };
 
-        // Upload to S3 using your existing service
         const uploadedFiles = await this.uploadMediaService.uploadFilesToS3(
           { images: [mockFile] },
           'posts',
         );
 
-        // Attach media to the post using your existing handler
-        if (uploadedFiles?.images?.length > 0) {
+        if (uploadedFiles.images?.length > 0) {
           await this.handlePostMedia(post.id, uploadedFiles);
           uploaded++;
         } else {
@@ -115,7 +122,6 @@ class ImportPostsMediaScript {
     );
   }
 
-  // Utility to determine MIME type by extension
   private getMimeType(filePath: string): string {
     const ext = path.extname(filePath).toLowerCase();
     switch (ext) {
@@ -133,16 +139,10 @@ class ImportPostsMediaScript {
     }
   }
 
-  // You already have this in your post service — import if needed
   private async handlePostMedia(
     postId: string,
-    uploadedFiles: {
-      images: any[];
-      audio: any[];
-      document: any[];
-    },
+    uploadedFiles: { images: any[]; audio: any[]; document: any[] },
   ) {
-    // If you're using a specific service or method, replace this
     for (const file of uploadedFiles.images) {
       await this.drizzleService.db.insert(entitiesMedia).values({
         parentId: postId,
@@ -154,13 +154,15 @@ class ImportPostsMediaScript {
   }
 }
 
-// Standalone runner
+// Runner
 (async () => {
   const drizzleService = new DrizzleService();
   await drizzleService.onModuleInit();
 
-  // you must instantiate your UploadMediaService correctly based on your DI setup
-  const uploadMediaService = new UploadMediaService(/* inject deps here */);
+  const uploadMediaService = new UploadMediaService(
+    new MockI18nService() as unknown as I18nService,
+    new MockConfigService() as unknown as ConfigService,
+  );
 
   const importer = new ImportPostsMediaScript(
     drizzleService,
