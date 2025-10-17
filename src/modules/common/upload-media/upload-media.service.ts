@@ -29,11 +29,11 @@ export class UploadMediaService {
   ];
   private readonly ALLOWED_DOCS = ['.pdf', '.docx'];
   private readonly ALLOWED_AUDIO = ['.mp3', '.wav'];
-  
 
   constructor(
     private readonly i18n: I18nService,
-    private readonly configService: ConfigService) {
+    private readonly configService: ConfigService,
+  ) {
     this.s3 = new S3({
       accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
@@ -77,15 +77,20 @@ export class UploadMediaService {
     return new Promise((resolve, reject) => {
       ffmpeg(file.path).ffprobe((err, metadata) => {
         if (err) {
-          return reject(new BadRequestException('common.common.errors.INVALID_AUDIO_TYPE'));
+          return reject(
+            new BadRequestException('common.common.errors.INVALID_AUDIO_TYPE'),
+          );
         }
         const duration = metadata.format.duration;
         if (duration > this.MAX_AUDIO_DURATION) {
           return reject(
             new BadRequestException(
-              this.i18n.translate('common.common.errors.AUDIO_LIMIT_TIME_EXCEEDED', {
-                args: { AUDIO_LIMIT_TIME_EXCEEDED: this.MAX_AUDIO_DURATION },
-              }),
+              this.i18n.translate(
+                'common.common.errors.AUDIO_LIMIT_TIME_EXCEEDED',
+                {
+                  args: { AUDIO_LIMIT_TIME_EXCEEDED: this.MAX_AUDIO_DURATION },
+                },
+              ),
             ),
           );
         }

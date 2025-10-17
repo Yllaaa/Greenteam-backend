@@ -34,6 +34,7 @@ export class ChallengesController {
     @Req() req,
   ) {
     const userId = req.user.id;
+    console.log(userChallengesDto);
     return this.challengesService.getUsersDoPosts(
       userId,
       userChallengesDto,

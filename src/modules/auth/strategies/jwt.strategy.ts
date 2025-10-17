@@ -16,6 +16,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
           const token = request?.cookies?.accessToken;
+          console.log(token);
+          console.log('JWT_SECRET:', configService.get<string>('JWT_SECRET'));
+
           if (token) return token;
           return null;
         },
@@ -27,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const userId = payload.sub;
-    return this.authService.validateJwtUser(userId);
+    console.log('Payload:', payload);
+    return { id: payload.sub }; // bypass DB
   }
 }

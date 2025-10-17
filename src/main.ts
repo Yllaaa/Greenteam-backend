@@ -15,12 +15,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
   app.enableCors({
-    origin: [
-      'https://greenteam.app',
-      'https://www.greenteam.app',
-      'https://api.greenteam.app',
-      'https://admin.greenteam.app',
-    ],
+    origin: ['*'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

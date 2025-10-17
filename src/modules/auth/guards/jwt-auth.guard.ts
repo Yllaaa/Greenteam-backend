@@ -20,11 +20,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    console.log('JwtAuthGuard');
     const isJwtValid = await super.canActivate(context);
+    console.log(isJwtValid);
+
     if (!isJwtValid) return false;
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+    console.log(user);
 
     const savedUser = await this.drizzle.db.query.users.findFirst({
       where: eq(users.id, user.id),
