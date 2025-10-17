@@ -1,2 +1,0 @@
---ALTER TABLE "events" DROP COLUMN "mode";--> statement-breakpoint
---DROP TYPE "public"."event_mode";
