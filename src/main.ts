@@ -15,7 +15,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
   app.enableCors({
-    origin: ['*'],
+    origin: [
+      'http://localhost:3000',
+      'https://greenteam.app',
+      'http://greenteam.app',
+      'https://admin.greenteam.app',
+      'https://api.greenteam.app',
+      'https://greentest-henna.vercel.app',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
