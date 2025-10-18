@@ -22,6 +22,7 @@ async function bootstrap() {
       'https://admin.greenteam.app',
       'https://api.greenteam.app',
       'https://greentest-henna.vercel.app',
+      'https://greenteam.yllaaa.com',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
