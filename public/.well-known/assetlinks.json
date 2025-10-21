@@ -3,9 +3,11 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.greenTeam.app",
+      "package_name": "com.greenteam.app",
       "sha256_cert_fingerprints": [
-        "F3:D7:F7:71:0A:05:8D:B8:65:45:E6:0A:C0:34:CA:27:25:B9:41:32:51:88:84:5A:98:5C:90:1A:12:53:8D:63"
+        "F3:D7:F7:71:0A:05:8D:B8:65:45:E6:0A:C0:34:CA:27:25:B9:41:32:51:88:84:5A:98:5C:90:1A:12:53:8D:63",
+        "A6:E3:C9:BD:2C:8E:B6:34:A8:F4:45:FF:F3:2B:42:2C:19:3D:19:35:4C:4E:A1:6D:76:93:9B:89:6F:34:E4:F3",
+        "A1:20:AD:5B:D5:92:1D:09:77:11:FA:DC:3A:C6:D7:D8:BE:41:1E:69:33:69:D7:5E:05:7A:19:FD:CA:F5:01:62"
       ]
     }
   }
