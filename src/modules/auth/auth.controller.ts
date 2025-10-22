@@ -60,31 +60,41 @@ export class AuthController {
   }
 
   @Get('google/login')
-  @UseGuards(GoogleAuthGuard)
+  @UseGuards(AuthGuard('google'))
   async googleAuth() {}
 
+  @Get('google/login/mobile')
+  @UseGuards(AuthGuard('google-mobile'))
+  async googleAuthMobile() {}
+
   @Get('google/callback')
-  @UseGuards(GoogleAuthGuard)
+  @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     try {
       const user = req.user;
       const response = await this.authService.googleLogin(user);
 
-      const referer = req.headers.referer || req.headers.origin || '';
-      const isMobile =
-        referer.includes('myapp://') ||
-        req.query.mobile === 'true' ||
-        req.headers['x-requested-with'] === 'mobile-app';
+      const redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
 
-      let redirectUrl: string;
+      this.setAuthCookie(res, response.accessToken);
+      return res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('Google auth error:', error);
+      return res.redirect(
+        `${process.env.APP_URL}/auth/error?message=login_failed`,
+      );
+    }
+  }
 
-      if (isMobile) {
-        redirectUrl = `${process.env.MOBILE_LINK}open?token=${response.accessToken}`;
-      } else {
-        redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
-      }
-      console.log(isMobile);
-      console.log(redirectUrl);
+  @Get('google/callback/mobile')
+  @UseGuards(AuthGuard('google-mobile'))
+  async googleAuthRedirectMobile(@Req() req, @Res() res: Response) {
+    try {
+      const user = req.user;
+      const response = await this.authService.googleLogin(user);
+
+      const redirectUrl = `${process.env.MOBILE_LINK}open?token=${response.accessToken}`;
+
       this.setAuthCookie(res, response.accessToken);
       return res.redirect(redirectUrl);
     } catch (error) {
