@@ -11,6 +11,7 @@ import { MailModule } from '../common/mail/mail.module';
 import { UsersModule } from '../users/users.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { AppleStrategy } from './strategies/apple.strategy';
+import { GoogleMobileStrategy } from './strategies/google-mobile.strategy';
 
 @Module({
   imports: [
@@ -33,6 +34,8 @@ import { AppleStrategy } from './strategies/apple.strategy';
     JwtStrategy,
     AuthRepository,
     GoogleStrategy,
+    GoogleMobileStrategy,
+
     AppleStrategy,
   ],
   exports: [AuthService],
