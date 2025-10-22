@@ -83,7 +83,8 @@ export class AuthController {
       } else {
         redirectUrl = `${process.env.APP_URL}?token=${response.accessToken}`;
       }
-
+      console.log(isMobile);
+      console.log(redirectUrl);
       this.setAuthCookie(res, response.accessToken);
       return res.redirect(redirectUrl);
     } catch (error) {
